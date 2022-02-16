@@ -60,7 +60,7 @@ contract RollingRandom is IForceMoveApp {
         RollingRandomAppData memory newState = appData(b.appData);
         
         // we only support 2 participants at this time otherwise the channel is frozen
-        require(nParticipants == 2);
+        require(nParticipants == 2, "Only two participant channels are allowed");
 
         /* The rest of your logic */
 
@@ -68,17 +68,17 @@ contract RollingRandom is IForceMoveApp {
         // No need to enforce these because players who fail to update the commits only disadvantage themselves
         if( turnNumB > 1) {
             // ensure the previous commit is migrated correctly
-            require(newState.prev_commit == prevState.commit);
+            require(newState.prev_commit == prevState.commit, "Commit from prior state was not moved to prev_commit in new state");
 
             // ensure the new reveal is for the i-2 commit
-            require(prevState.prev_commit == keccak256(abi.encode(newState.reveal)));
+            require(prevState.prev_commit == keccak256(abi.encode(newState.reveal)), "The revealed value is not the keccak256 preimage of the commitment stored in the prev_state.prev_commit");
         }
 
         // for turn 3 and onward we have access to randomness and so must put it in the state
         if ( turnNumB > 2 ) {
             // ensure the random seed is produced correctly. In an actual application this should would instead be for a state transition
             // that made use of the random seed. In this case the state transition is just adding the seed to the state.
-            require(newState.random_seed == mergeSeeds(prevState.reveal, newState.reveal));
+            require(newState.random_seed == mergeSeeds(prevState.reveal, newState.reveal), "The combined random seed included in the new state is not correctly produced from the seeds");
         }
 
 
