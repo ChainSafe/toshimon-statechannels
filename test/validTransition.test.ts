@@ -16,7 +16,7 @@ import {
 	getVariablePart,
 } from '@statechannels/nitro-protocol';
 
-import { getRandomNonce, encodeAppData, initialAppData, RRAppData } from "./test-helpers";
+import { getRandomNonce, encodeAppData, initialAppData, RRAppData, getRandomValue, makeCommit } from "./test-helpers";
 
 // global test vars
 let rrApp: Contract;
@@ -35,24 +35,24 @@ function makeState(data: RRAppData, turnNum: number): State {
 	};
 }
 
-describe("RollingRandom - validTransition", function () {
+before(async function () {
+	// setup a channel
+	channel = {
+		participants: [Wallet.createRandom().address, Wallet.createRandom().address],
+		chainId: process.env.CHAIN_NETWORK_ID as string,
+		channelNonce: getRandomNonce('rollingRandomApp'),
+	};
+	// deploy our app contract
+	const RollingRandom = await ethers.getContractFactory("RollingRandom");
+	rrApp = await RollingRandom.deploy();
+	await rrApp.deployed();
+});
 
-	before(async function () {
-		// setup a channel
-		channel = {
-			participants: [Wallet.createRandom().address, Wallet.createRandom().address],
-			chainId: process.env.CHAIN_NETWORK_ID as string,
-			channelNonce: getRandomNonce('rollingRandomApp'),
-		};
-		// deploy our app contract
-		const RollingRandom = await ethers.getContractFactory("RollingRandom");
-		rrApp = await RollingRandom.deploy();
-		await rrApp.deployed();
-	});
+describe("RollingRandom - validTransition", function () {
 
 	it("Expects nothing for turn 0", async function () {
 
-		const prevState = makeState(initialAppData(), 0)
+		const prevState = makeState(initialAppData(makeCommit(getRandomValue('seed'))), 0)
 		const newState: State = {...prevState, turnNum: 1};
 
 		expect(
@@ -63,20 +63,34 @@ describe("RollingRandom - validTransition", function () {
 
 	// TODO: finish these tests
 
-	it("Fails on later turns because a valid commit/reveal is expected", async function () {
+	it("Fails on later turns if the prev_commit isnt idental to the commit field in prevState", async function () {
 
-		const prevState = makeState(initialAppData(), 3)
+		const prevState = makeState(initialAppData(makeCommit(getRandomValue('seed'))), 3)
 		const newState: State = {...prevState, turnNum: 4};
 
-		expect(
-			await validTransition(prevState, newState, rrApp)
-		).to.equal(true);
+		await expect(
+			validTransition(prevState, newState, rrApp)
+		).to.be.revertedWith('Commit from prior state was not moved to prev_commit in new state');
 	});
 
-	it("Succeeds if the prev commit is set correctly", async function () {
+	it("If the prev commit is set correctly, fails because counter not correctly incremented", async function () {
+		let r0 = getRandomValue("r0");
+		let c0 = makeCommit(r0);
 
-		const prevAppState = initialAppData()
-		const newAppState = {...prevAppState, prev_commit: prevAppState.commit }
+		const prevAppState = { ...initialAppData(makeCommit(getRandomValue('seed'))), prev_commit: c0 }
+		const newAppState = {...prevAppState, prev_commit: prevAppState.commit, reveal: r0 }
+
+		await expect(
+			validTransition(makeState(prevAppState, 3), makeState(newAppState, 4), rrApp)
+		).to.be.revertedWith('a_counter was not incremented when it should have been');
+	});
+
+	it("Succeeds if the correct counter is incremented", async function () {
+		let r0 = getRandomValue("r0");
+		let c0 = makeCommit(r0);
+
+		const prevAppState = { ...initialAppData(makeCommit(getRandomValue('seed'))), prev_commit: c0 }
+		const newAppState = {...prevAppState, prev_commit: prevAppState.commit, reveal: r0, a_counter: 1 } // increment the a_counter
 
 		expect(
 			await validTransition(makeState(prevAppState, 3), makeState(newAppState, 4), rrApp)

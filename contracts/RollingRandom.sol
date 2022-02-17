@@ -15,7 +15,11 @@ contract RollingRandom is IForceMoveApp {
         bytes32 commit; // The fresh new commit being added by this move
         bytes32 prev_commit; // commit from state i-1, required due to state cacheing
         uint256 reveal; // the reveal of the commit from state i-2
-        bytes32 random_seed; // This is the result of combining the previons n reveals. In a proper app this need not be included, only the result of using this to randomly progress the state
+
+        // Depending on the combined random seed either A or Bs counter will increase.
+        // If the seed is even A will increase, if it is odd B will increase.
+        uint8 a_counter;
+        uint8 b_counter;
     }
 
     /**
@@ -74,13 +78,21 @@ contract RollingRandom is IForceMoveApp {
             require(prevState.prev_commit == keccak256(abi.encode(newState.reveal)), "The revealed value is not the keccak256 preimage of the commitment stored in the prev_state.prev_commit");
         }
 
-        // for turn 3 and onward we have access to randomness and so must put it in the state
+        // for turn 3 and onward we have access to randomness and therefore must increase the counter for either A or B
         if ( turnNumB > 2 ) {
-            // ensure the random seed is produced correctly. In an actual application this should would instead be for a state transition
-            // that made use of the random seed. In this case the state transition is just adding the seed to the state.
-            require(newState.random_seed == mergeSeeds(prevState.reveal, newState.reveal), "The combined random seed included in the new state is not correctly produced from the seeds");
-        }
+            bytes32 randomSeed = mergeSeeds(prevState.reveal, newState.reveal);
 
+            if (uint(randomSeed) % 2 == 0) { // even. NOTE: this is a silly and expensive way to do this, for an example only..
+                require(newState.a_counter == prevState.a_counter + 1, "a_counter was not incremented when it should have been"); // a counter incremented
+                require(newState.b_counter == prevState.b_counter, "b_counter was modified when it should not have been"); // b counter must remain the same
+            } else { // odd
+                require(newState.a_counter == prevState.a_counter, "a_counter was modified when it should not have been"); // a counter must remain the same            }
+                require(newState.b_counter == prevState.b_counter + 1, "b_counter was not incremented when it should have been"); // b counter incremented
+            }
+        } else { // in the initialization states these must remain the same
+            require(newState.a_counter == prevState.a_counter, "a_counter was modified when it should not have been during initialization phase"); // a counter must remain the same            }
+            require(newState.b_counter == prevState.b_counter, "b_counter was modified when it should not have been during initialization phase"); // b counter must remain the same            }
+        }
 
         return true;
     }

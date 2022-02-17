@@ -4,7 +4,7 @@
   "description": "A nitro app that has randomness available at each turn",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "hardhat test"
   },
   "author": "Willem Olding (willemolding@gmail.com)",
   "license": "MIT",
