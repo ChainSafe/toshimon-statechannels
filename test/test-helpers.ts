@@ -8,8 +8,10 @@ type Uint8 = number;
 
 export interface RRAppData {
 	commit: Bytes32,
-	prev_commit: Bytes32,
-	reveal: Uint256,
+	seed: Bytes32,
+	reveal_salt_seed: Bytes32,
+	reveal_move: Uint8,
+
 	a_counter: Uint8,
 	b_counter: Uint8,
 };
@@ -17,7 +19,7 @@ export interface RRAppData {
 // Convert some RR App data to its byte array form to be send in a tx
 export function encodeAppData(data: RRAppData): string {
   return ethers.utils.defaultAbiCoder.encode(
-    ['tuple(bytes32 commit, bytes32 prev_commit, uint256 reveal, uint8 a_counter, uint8 b_counter)'],
+    ['tuple(bytes32 commit, bytes32 seed, bytes32 reveal_salt_seed, uint8 reveal_move, uint8 a_counter, uint8 b_counter)'],
     [data]
   );
 }
@@ -31,8 +33,9 @@ export function makeCommit(value: Uint256): Bytes32 {
 export function initialAppData(commit: Bytes32): RRAppData {
 	return {
 		commit,
-		prev_commit: ethers.utils.keccak256("0x"),
-		reveal: "0x00",
+		seed: ethers.utils.keccak256("0x"),
+		reveal_salt_seed: ethers.utils.keccak256("0x"),
+		reveal_move: 0,
 		a_counter: 0,
 		b_counter: 0,
 	}
