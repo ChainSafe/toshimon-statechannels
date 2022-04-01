@@ -15,15 +15,25 @@ Many games require a source of randomness to determine the outcomes of particula
 
 The above protocol can take place in a state channel such that the result of the shared randomness generation is determinisitic and can be used to determine future state transitions.
 
-The disadvantage of the above protocol is that is requires 4 messages to be sent/signed before the randomness is ready to use. If randomness is required for every move this is a significant messaging overhead
+The disadvantage of the above protocol is that:
+
+- It requires 4 messages to be sent/signed before the randomness is ready to use. If randomness is required for every move this is a significant messaging overhead
+- Neither party commited to what they plan to do with the randomness. In games where a player has multiple possible actions this could allow them to always pick the most advantageous
 
 ## Proposed Solution
 
-To reduce messaging overhead the idea is to pipeline the above process such that, after an initialization period, each player both commits and reveals some randomness at each turn and the reveal from the current and previous turn can be used to generate a shared random value. 
+The solution is to use a 3-stage scheme for each move. If it is player A's move:
 
-Because the randomness at turn $i$ is produced from values committed at rounds $i-1 and i-2$ (2-player case) it is unmanipulatable. 
+- A commits to their move and a random seed.
+	- The seed is used to salt the move so lookup tables are not possible if the space of possible moves is small.
+- B submits a seed, no commitment is required
+- A reveals their move, their seed and takes any actions to modify the state based on their move
 
-The state transition function must enforce that the reveals do indeed correspond to their commitment, and that any state transition which use the random value for that round do indeed have the expected outcome. There is one small dififculty that the reveal depends on a commitment made $n$ states ago, where $n$ is the number of participants. So that the state transition can be validated given only the current and previous states there needs to be state caching in place the stores the prior $n-1$ commits in addition to the current commit. 
+The roles are then reversed and B can make a move
+
+## Example Game
+
+For an example this repo implements a simplified version of blackjack. Each turn a player chose to either Hit or Stand. A dice is rolled based on the shared randomness and the value added to the players total. If their total exceeds 21 then the player busts and loses. If a player Stands while the other is standing them the game is over and the player with the highest score wins of if they are equal it is a tie.
 
 ## Using this repo
 
