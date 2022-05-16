@@ -22,7 +22,7 @@ The disadvantage of the above protocol is that:
 
 ## Proposed Solution
 
-The solution is to use a 3-stage scheme for each move. If it is player A's move:
+The solution is to use a 3-stage scheme for each move with a pre-commitment. If it is player A's move:
 
 - A commits to their move and a random seed.
 	- The seed is used to salt the move so lookup tables are not possible if the space of possible moves is small.
