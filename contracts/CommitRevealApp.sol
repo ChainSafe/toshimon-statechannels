@@ -68,6 +68,7 @@ abstract contract CommitRevealApp is IForceMoveApp {
         uint256 nParticipants
     ) public pure override returns (bool) {
         require(nParticipants == 2, "Only two participant commit/reveal games are supported");
+        require(a.turnNum == b.turnNum + 1, "Transition must increment turn number"); // not sure if we have to check this...
 
         // we are in the commit reveal cycle of gameplay
         uint48 phase = b.turnNum % 4;
@@ -96,7 +97,7 @@ abstract contract CommitRevealApp is IForceMoveApp {
             require(compareReveals(aData.revealA, bData.revealA), "Cannot mutate A's reveal in [B reveal] move");
             // reveal matches preCommit
             require(aData.preCommitB == keccak256(abi.encode(bData.revealB)));
-            // game state update performed with commit to moves and is valid
+            // game state update is made correctly with respect to the committed moves and random seeds
             bytes32 randomSeed = mergeSeeds(bData.revealA.seed, bData.revealB.seed);
             require(
                 compareBytes(
@@ -107,6 +108,72 @@ abstract contract CommitRevealApp is IForceMoveApp {
         }
 
         return true;
+    }
+
+    // checks a transition between two outcomes for validity
+    // ensures the outcomes follow the requirements of:
+    //  - single asset
+    //  - always redistributed (no balance is created or destroyed)
+    //  - all allocations are simple and can be withdrawns
+    //  - there are two allocations for the single asset (one per player)
+    function _validOutcomeTransition(
+        Outcome.SingleAssetExit[] memory outcomeA,
+        Outcome.SingleAssetExit[] memory outcomeB
+    ) private pure returns (bool) {
+        require(_validOutcome(outcomeA), "a state does not have a valid outcome");
+        require(_validOutcome(outcomeB), "a state does not have a valid outcome");
+
+        Outcome.SingleAssetExit memory assetOutcomeA = outcomeA[0];
+        Outcome.SingleAssetExit memory assetOutcomeB = outcomeB[0];
+
+        Outcome.Allocation[] memory allocationsA = assetOutcomeA.allocations;
+        Outcome.Allocation[] memory allocationsB = assetOutcomeB.allocations;
+
+
+        // Interprets the nth outcome as benefiting participant n
+        // checks the destinations have not changed
+        // Checks that the sum of assets hasn't changed
+        // And that for all non-movers
+        // the balance hasn't decreased
+        require(
+            allocationsB[0].destination == allocationsA[0].destination,
+            'Destinations may not change'
+        );
+        require(
+            allocationsB[1].destination == allocationsA[1].destination,
+            'Destinations may not change'
+        );
+
+        require(allocationsA[0].amount + allocationsA[1].amount == allocationsB[0].amount + allocationsB[1].amount, 
+            'Total allocated cannot change');
+
+        return (true);
+    }
+
+    // checks a single outcome for validity
+    function _validOutcome(
+        Outcome.SingleAssetExit[] memory outcome
+    ) private pure returns (bool) {
+        require(outcome.length == 1, 'Only one asset allowed');
+
+        Outcome.SingleAssetExit memory assetOutcome = outcome[0];
+
+        // Throws unless that allocation has exactly 2 outcomes
+        Outcome.Allocation[] memory allocations = assetOutcome.allocations;
+
+        require(allocations.length == 2, '|AllocationA|!=|participants|');
+
+        // require all to be simple allocations
+        require(
+            allocations[0].allocationType == uint8(Outcome.AllocationType.simple),
+            'not a simple allocation'
+        );
+        require(
+            allocations[1].allocationType == uint8(Outcome.AllocationType.simple),
+            'not a simple allocation'
+        );
+
+        return (true);
     }
 
 
