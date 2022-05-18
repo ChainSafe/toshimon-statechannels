@@ -22,12 +22,14 @@ The disadvantage of the above protocol is that:
 
 ## Proposed Solution
 
-The solution is to use a 3-stage scheme for each move with a pre-commitment. If it is player A's move:
+The solution is to use an alternating commit and reveal scheme for each move with a pre-commitment. If it is player A's move:
 
 - A commits to their move and a random seed.
 	- The seed is used to salt the move so lookup tables are not possible if the space of possible moves is small.
-- B submits a seed, no commitment is required
-- A reveals their move, their seed and takes any actions to modify the state based on their move
+- B submits move commitment and seed
+
+- A and B reveals their moves and seeds. This can happen in any order but will follow the alternating turn ordering (A first then B)
+	- These reveals allow each player to update their representation of the state
 
 The roles are then reversed and B can make a move
 
