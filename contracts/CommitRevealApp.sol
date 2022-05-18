@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.7.4;
+pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
 
-import '@statechannels/nitro-protocol/contracts/interfaces/IForceMoveApp.sol';
-import '@statechannels/nitro-protocol/contracts/Outcome.sol';
+import './nitro-protocol/contracts/interfaces/IForceMoveApp.sol';
+import {ExitFormat as Outcome} from '@statechannels/exit-format/contracts/ExitFormat.sol';
 
 abstract contract CommitRevealApp is IForceMoveApp {
 
@@ -65,13 +65,12 @@ abstract contract CommitRevealApp is IForceMoveApp {
     function validTransition(
         VariablePart memory a,
         VariablePart memory b,
-        uint48 turnNumB,
         uint256 nParticipants
     ) public pure override returns (bool) {
         require(nParticipants == 2, "Only two participant commit/reveal games are supported");
 
         // we are in the commit reveal cycle of gameplay
-        uint48 phase = turnNumB % 4;
+        uint48 phase = b.turnNum % 4;
 
         AppData memory aData = appData(a.appData);
         AppData memory bData = appData(b.appData);
