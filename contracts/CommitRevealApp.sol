@@ -8,6 +8,9 @@ import {ExitFormat as Outcome} from '@statechannels/exit-format/contracts/ExitFo
 
 abstract contract CommitRevealApp is IForceMoveApp {
 
+    // The phases of the protocol
+    enum Phase { A_COMMIT, B_COMMIT, A_REVEAL, B_REVEAL }
+
     struct Reveal {
         uint8 move;
         bytes32 seed;
@@ -48,18 +51,24 @@ abstract contract CommitRevealApp is IForceMoveApp {
      * @param partSeedB A random value
      * @return A random seed from the combined randomness
      */
-    function mergeSeeds(bytes32 partSeedA, bytes32 partSeedB) internal pure returns (bytes32) {
+    function _mergeSeeds(bytes32 partSeedA, bytes32 partSeedB) internal pure returns (bytes32) {
         return keccak256(abi.encode(partSeedA, partSeedB));
     }
 
     // helper to do byte array comparison
-    function compareBytes(bytes memory a, bytes memory b) public pure returns (bool) {
+    // can replace with a more efficient version later
+    function _compareBytes(bytes memory a, bytes memory b) internal pure returns (bool) {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
     }
 
     // helper to do byte array comparison
-    function compareReveals(Reveal memory a, Reveal memory b) public pure returns (bool) {
+    function _compareReveals(Reveal memory a, Reveal memory b) internal pure returns (bool) {
         return (keccak256(abi.encode((a))) == keccak256(abi.encode((b))));
+    }
+
+    function _phase(uint48 turnNum) internal pure returns (Phase) {
+        // This conversion is safe as the modulo is always < 4
+        return Phase(turnNum % 4);
     }
 
     function validTransition(
@@ -71,36 +80,36 @@ abstract contract CommitRevealApp is IForceMoveApp {
         require(a.turnNum == b.turnNum + 1, "Transition must increment turn number"); // not sure if we have to check this...
 
         // we are in the commit reveal cycle of gameplay
-        uint48 phase = b.turnNum % 4;
+        Phase phase = _phase(b.turnNum);
 
         AppData memory aData = appData(a.appData);
         AppData memory bData = appData(b.appData);
 
-        if        (phase == 0) { // A commit
+        if        (phase == Phase.A_COMMIT) {
             // no change constraints
-            require(compareBytes(aData.gameState, bData.gameState), "Cannot mutate the game state in [A commitment] move");
-        } else if (phase == 1) { // B commit
+            require(_compareBytes(aData.gameState, bData.gameState), "Cannot mutate the game state in [A commitment] move");
+        } else if (phase == Phase.B_COMMIT) {
             // no change constraints
-            require(compareBytes(aData.gameState, bData.gameState), "Cannot mutate the game state in [B commitment] move");
+            require(_compareBytes(aData.gameState, bData.gameState), "Cannot mutate the game state in [B commitment] move");
             require(aData.preCommitA == bData.preCommitA, "Cannot mutate A's preCommit in [B commitment] move");
-        } else if (phase == 2) { // A reveal
+        } else if (phase == Phase.A_REVEAL) {
             // no change constraints
-            require(compareBytes(aData.gameState, bData.gameState), "Cannot mutate the game state in [A reveal] move");
+            require(_compareBytes(aData.gameState, bData.gameState), "Cannot mutate the game state in [A reveal] move");
             require(aData.preCommitA == bData.preCommitA, "Cannot mutate A's preCommit in [A reveal] move");
             require(aData.preCommitB == bData.preCommitB, "Cannot mutate B's preCommit in [A reveal] move");
             // reveal matches preCommit
             require(aData.preCommitA ==  keccak256(abi.encode(bData.revealA)));
-        } else if (phase == 3) { // B reveal
+        } else if (phase == Phase.B_REVEAL) {
             // no change constraints
             require(aData.preCommitA == bData.preCommitA, "Cannot mutate A's preCommit in [B reveal] move");
             require(aData.preCommitB == bData.preCommitB, "Cannot mutate B's preCommit in [B reveal] move");
-            require(compareReveals(aData.revealA, bData.revealA), "Cannot mutate A's reveal in [B reveal] move");
+            require(_compareReveals(aData.revealA, bData.revealA), "Cannot mutate A's reveal in [B reveal] move");
             // reveal matches preCommit
             require(aData.preCommitB == keccak256(abi.encode(bData.revealB)));
             // game state update is made correctly with respect to the committed moves and random seeds
-            bytes32 randomSeed = mergeSeeds(bData.revealA.seed, bData.revealB.seed);
+            bytes32 randomSeed = _mergeSeeds(bData.revealA.seed, bData.revealB.seed);
             require(
-                compareBytes(
+                _compareBytes(
                     advanceState(aData.gameState, bData.revealA.move, bData.revealB.move, randomSeed),
                     bData.gameState
                 ), "New state must be computed based on preCommit moves in [B reveal] move"
