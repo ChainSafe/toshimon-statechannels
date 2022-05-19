@@ -2,40 +2,40 @@
 
 - Idea from here https://statechannels.discourse.group/t/rolling-commit-reveal-an-idea-for-randomness-in-force-move-games/138
 
-## Problem Statement
+# Commit-Reveal Randomness Scheme
 
-Many games require a source of randomness to determine the outcomes of particular moves. With two non-colluding players it is actually trivial to compute shared randomness via the following interactive commit/reveal protocol:
+Moves in the card game can have an outcome based on randomness. For example most attacks are not guaranteed to hit and might miss with some percentage chance. There is no source of randomness that can be queried in a state channel and so the players must use a two party protocol to produce random seed which can be used to calculate the outcome of certain moves.
 
-- A sends $\text{hash}(r_A)$ to B
-- B sends $\text{hash}(r_B)$ to A
-- A sends $r_A$ to B
-- B sends $r_B$ to A
-- A and B both compute randomness as $f(r_A, r_B)$
+This shared randomness protocol must have the following properties:
 
+1. Neither participant can influence the outcome in any predictable way.
+2. At no point does one participant have an information advantage over the other that they can act on.
 
-The above protocol can take place in a state channel such that the result of the shared randomness generation is determinisitic and can be used to determine future state transitions.
+The first point is intuitive. If either participant could influence the random outcome they would likely do so in their favor, breaking the fairness property. The second point is more nuanced. Take for example a protocol where each participant commits to a random seed which is later revealed along with the move they intend to make. When the second player reveals their seed they already know what the shared randomness will be as the other player revealed their seed in the prior move. They have the advantage that they can select their move with knowledge of the outcome in each case. This breaks the second point.
 
-The disadvantage of the above protocol is that:
+## Proposed Scheme
 
-- It requires 4 messages to be sent/signed before the randomness is ready to use. If randomness is required for every move this is a significant messaging overhead
-- Neither party commited to what they plan to do with the randomness. In games where a player has multiple possible actions this could allow them to always pick the most advantageous
+A simple scheme that satisfies both of the required properties is a commit-reveal scheme where both parties commit to both a random seed and the hash of the move they want to make in the round. The random seed doubles as a salt for the move, without which it would be trivial to perform a hash reversal. After both players have published their commitment either can reveal in any order and the combined random seeds can be used to compute an outcome. The alternate turn taking requirement of a force-move channel determines which player must reveal first.
 
-## Proposed Solution
+1. A signs update with commitment to random seed and move.
+2. B signs a similar update with their random seed and move.
+3. A reveals their seed and move.
+4. B reveals their seed and move. This update also contains the game state update.
 
-The solution is to use an alternating commit and reveal scheme for each move with a pre-commitment. If it is player A's move:
+There is an additional consideration for state channels that despite committing to a move in step 2, B has an additional move available to them at step 4 which is to not sign a new update and exit the game. Recall that this is always available to any player at any time. This requires consideration of the Outcomes at each stage. TODO.
 
-- A commits to their move and a random seed.
-	- The seed is used to salt the move so lookup tables are not possible if the space of possible moves is small.
-- B submits move commitment and seed
+## Generalized Implementation
 
-- A and B reveals their moves and seeds. This can happen in any order but will follow the alternating turn ordering (A first then B)
-	- These reveals allow each player to update their representation of the state
+In the above protocol the only game specific logic is that which relates to the available moves and the game state update. The randomness protocol can be abstracted to its own abstract contract (`CommitRevealApp.sol`) and developers need only implement their own contract which derives this and adds an implementation of `advanceState`, a function which takes an old state as bytes and produces a new state given the player moves and the shared randomness.
 
-The roles are then reversed and B can make a move
-
-## Example Game
-
-For an example this repo implements a simplified version of blackjack. Each turn a player chose to either Hit or Stand. A dice is rolled based on the shared randomness and the value added to the players total. If their total exceeds 21 then the player busts and loses. If a player Stands while the other is standing them the game is over and the player with the highest score wins of if they are equal it is a tie.
+```solidity
+    function advanceState(
+        bytes memory gameState,
+        uint8 moveA,
+        uint8 moveB,
+        bytes32 randomSeed
+    ) virtual public pure returns (bytes memory);
+```
 
 ## Using this repo
 

@@ -19,6 +19,15 @@ contract ExampleCommitRevealApp is CommitRevealApp {
         uint8 speed;
     }
 
+    /**
+     * Compute the next game state given a move from each player and the previous state
+     * @param  bytes   gameState     Serialized prior game state
+     * @param  uint8   moveA         The move by player A
+     * @param  uint8   moveB         The move by player B
+     * @param  bytes32 randomSeed    A seed produced by the shared randomness protocol. 
+     *                               This is safe to use to compute the new state
+     * @return bytes        The new game state in byte serialized form
+     */
     function advanceState(
         bytes memory gameState,
         uint8 moveA,

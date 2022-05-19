@@ -26,6 +26,15 @@ abstract contract CommitRevealApp is IForceMoveApp {
         bytes gameState;
     }
 
+    /**
+     * Compute the next game state given a move from each player and the previous state
+     * @param  bytes   gameState     Serialized prior game state
+     * @param  uint8   moveA         The move by player A
+     * @param  uint8   moveB         The move by player B
+     * @param  bytes32 randomSeed    A seed produced by the shared randomness protocol. 
+     *                               This is safe to use to compute the new state
+     * @return bytes        The new game state in byte serialized form
+     */
     function advanceState(
         bytes memory gameState,
         uint8 moveA,
@@ -119,71 +128,71 @@ abstract contract CommitRevealApp is IForceMoveApp {
         return true;
     }
 
-    // checks a transition between two outcomes for validity
-    // ensures the outcomes follow the requirements of:
-    //  - single asset
-    //  - always redistributed (no balance is created or destroyed)
-    //  - all allocations are simple and can be withdrawns
-    //  - there are two allocations for the single asset (one per player)
-    function _validOutcomeTransition(
-        Outcome.SingleAssetExit[] memory outcomeA,
-        Outcome.SingleAssetExit[] memory outcomeB
-    ) private pure returns (bool) {
-        require(_validOutcome(outcomeA), "a state does not have a valid outcome");
-        require(_validOutcome(outcomeB), "a state does not have a valid outcome");
+    // // checks a transition between two outcomes for validity
+    // // ensures the outcomes follow the requirements of:
+    // //  - single asset
+    // //  - always redistributed (no balance is created or destroyed)
+    // //  - all allocations are simple and can be withdrawns
+    // //  - there are two allocations for the single asset (one per player)
+    // function _validOutcomeTransition(
+    //     Outcome.SingleAssetExit[] memory outcomeA,
+    //     Outcome.SingleAssetExit[] memory outcomeB
+    // ) private pure returns (bool) {
+    //     require(_validOutcome(outcomeA), "a state does not have a valid outcome");
+    //     require(_validOutcome(outcomeB), "a state does not have a valid outcome");
 
-        Outcome.SingleAssetExit memory assetOutcomeA = outcomeA[0];
-        Outcome.SingleAssetExit memory assetOutcomeB = outcomeB[0];
+    //     Outcome.SingleAssetExit memory assetOutcomeA = outcomeA[0];
+    //     Outcome.SingleAssetExit memory assetOutcomeB = outcomeB[0];
 
-        Outcome.Allocation[] memory allocationsA = assetOutcomeA.allocations;
-        Outcome.Allocation[] memory allocationsB = assetOutcomeB.allocations;
+    //     Outcome.Allocation[] memory allocationsA = assetOutcomeA.allocations;
+    //     Outcome.Allocation[] memory allocationsB = assetOutcomeB.allocations;
 
 
-        // Interprets the nth outcome as benefiting participant n
-        // checks the destinations have not changed
-        // Checks that the sum of assets hasn't changed
-        // And that for all non-movers
-        // the balance hasn't decreased
-        require(
-            allocationsB[0].destination == allocationsA[0].destination,
-            'Destinations may not change'
-        );
-        require(
-            allocationsB[1].destination == allocationsA[1].destination,
-            'Destinations may not change'
-        );
+    //     // Interprets the nth outcome as benefiting participant n
+    //     // checks the destinations have not changed
+    //     // Checks that the sum of assets hasn't changed
+    //     // And that for all non-movers
+    //     // the balance hasn't decreased
+    //     require(
+    //         allocationsB[0].destination == allocationsA[0].destination,
+    //         'Destinations may not change'
+    //     );
+    //     require(
+    //         allocationsB[1].destination == allocationsA[1].destination,
+    //         'Destinations may not change'
+    //     );
 
-        require(allocationsA[0].amount + allocationsA[1].amount == allocationsB[0].amount + allocationsB[1].amount, 
-            'Total allocated cannot change');
+    //     require(allocationsA[0].amount + allocationsA[1].amount == allocationsB[0].amount + allocationsB[1].amount, 
+    //         'Total allocated cannot change');
 
-        return (true);
-    }
+    //     return (true);
+    // }
 
-    // checks a single outcome for validity
-    function _validOutcome(
-        Outcome.SingleAssetExit[] memory outcome
-    ) private pure returns (bool) {
-        require(outcome.length == 1, 'Only one asset allowed');
+    // // checks a single outcome for validity
+    // function _validOutcome(
+    //     Outcome.SingleAssetExit[] memory outcome
+    // ) private pure returns (bool) {
+    //     require(outcome.length == 1, 'Only one asset allowed');
 
-        Outcome.SingleAssetExit memory assetOutcome = outcome[0];
+    //     Outcome.SingleAssetExit memory assetOutcome = outcome[0];
 
-        // Throws unless that allocation has exactly 2 outcomes
-        Outcome.Allocation[] memory allocations = assetOutcome.allocations;
+    //     // Throws unless that allocation has exactly 2 outcomes
+    //     Outcome.Allocation[] memory allocations = assetOutcome.allocations;
 
-        require(allocations.length == 2, '|AllocationA|!=|participants|');
+    //     require(allocations.length == 2, '|AllocationA|!=|participants|');
 
-        // require all to be simple allocations
-        require(
-            allocations[0].allocationType == uint8(Outcome.AllocationType.simple),
-            'not a simple allocation'
-        );
-        require(
-            allocations[1].allocationType == uint8(Outcome.AllocationType.simple),
-            'not a simple allocation'
-        );
+    //     // require all to be simple allocations
+    //     require(
+    //         allocations[0].allocationType == uint8(Outcome.AllocationType.simple),
+    //         'not a simple allocation'
+    //     );
+    //     require(
+    //         allocations[1].allocationType == uint8(Outcome.AllocationType.simple),
+    //         'not a simple allocation'
+    //     );
 
-        return (true);
-    }
+    //     return (true);
+    // }
 
 
 }
