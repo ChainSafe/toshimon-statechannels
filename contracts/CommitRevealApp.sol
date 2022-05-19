@@ -26,15 +26,6 @@ abstract contract CommitRevealApp is IForceMoveApp {
         bytes gameState;
     }
 
-    /**
-     * Compute the next game state given a move from each player and the previous state
-     * @param  bytes   gameState     Serialized prior game state
-     * @param  uint8   moveA         The move by player A
-     * @param  uint8   moveB         The move by player B
-     * @param  bytes32 randomSeed    A seed produced by the shared randomness protocol. 
-     *                               This is safe to use to compute the new state
-     * @return bytes        The new game state in byte serialized form
-     */
     function advanceState(
         bytes memory gameState,
         uint8 moveA,
@@ -48,9 +39,8 @@ abstract contract CommitRevealApp is IForceMoveApp {
      * @param appDataBytes The abi.encode of an AppData struct describing the application-specific data.
      * @return A AppData struct containing the application-specific data.
      */
-    function appData(bytes memory appDataBytes) internal pure returns (AppData memory) {
-        bytes memory decodedAppData = abi.decode(appDataBytes, (bytes));
-        return abi.decode(decodedAppData, (AppData));
+    function _appData(bytes memory appDataBytes) internal pure returns (AppData memory) {
+        return abi.decode(appDataBytes, (AppData));
     }
 
     /**
@@ -91,8 +81,8 @@ abstract contract CommitRevealApp is IForceMoveApp {
         // we are in the commit reveal cycle of gameplay
         Phase phase = _phase(next.turnNum);
 
-        AppData memory prevData = appData(prev.appData);
-        AppData memory nextData = appData(next.appData);
+        AppData memory prevData = _appData(prev.appData);
+        AppData memory nextData = _appData(next.appData);
 
         if        (phase == Phase.A_COMMIT) {
             // no change constraints
