@@ -3,9 +3,13 @@
 pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
 
+
+
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import './CommitRevealApp.sol';
 
 contract ExampleCommitRevealApp is CommitRevealApp {
+    using SafeMath for uint8;
 
     enum Move { ATTACK, DEFEND, COFFEE }
 
@@ -41,10 +45,11 @@ contract ExampleCommitRevealApp is CommitRevealApp {
     }
 
     function _resolveBothAttack(GameState memory gameState, uint8 firstMover) internal pure returns (GameState memory) {
-         _attack(gameState, ~firstMover, ATTACK);
+        gameState = _attack(gameState, ~firstMover, ATTACK);
         if (gameState.players[~firstMover].health > 0) {  // other player attacks only if still alive
-            _attack(gameState, firstMover, ATTACK);
+            gameState = _attack(gameState, firstMover, ATTACK);
         }
+        return (gameState);
     }
 
     function advanceState(
@@ -60,7 +65,7 @@ contract ExampleCommitRevealApp is CommitRevealApp {
 
         // enumerate all the combinations
         if        (moveA == Move.ATTACK && moveB == Move.ATTACK) {
-            // fastest player hits first
+            // Both attack, fastest player hits first
             if (gameState.players[A].speed > gameState.players[B].speed) {
                 gameState = _resolveBothAttack(gameState, A);
             } else if (gameState.players[B].speed > gameState.players[A].speed) {
