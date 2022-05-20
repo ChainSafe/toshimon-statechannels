@@ -19,7 +19,7 @@ import {
 import { getRandomNonce, encodeAppData, initialAppData, RRAppData, getRandomValue, makeCommit } from "./test-helpers";
 
 // global test vars
-let rrApp: Contract;
+let app: Contract;
 let channel: Channel;
 
 // make some state with typical values for all fields
@@ -30,7 +30,7 @@ function makeState(data: RRAppData, turnNum: number): State {
 		turnNum,
 		isFinal: false,
 		challengeDuration: 0x0,
-		appDefinition: rrApp.address,
+		appDefinition: app.address,
 		appData: encodeAppData(data),
 	};
 }
@@ -43,9 +43,9 @@ before(async function () {
 		channelNonce: getRandomNonce('rollingRandomApp'),
 	};
 	// deploy our app contract
-	const RollingRandom = await ethers.getContractFactory("RollingRandom");
-	rrApp = await RollingRandom.deploy();
-	await rrApp.deployed();
+	const contract = await ethers.getContractFactory("ExampleCommitRevealApp");
+	app = await contract.deploy();
+	await app.deployed();
 });
 
 describe("RollingRandom - validTransition", function () {
@@ -56,41 +56,7 @@ describe("RollingRandom - validTransition", function () {
 		const newState: State = {...prevState, turnNum: 1};
 
 		expect(
-			await validTransition(prevState, newState, rrApp)
+			await validTransition(prevState, newState, app)
 		).to.equal(true);
 	});
-
-
-	// // TODO: finish these tests
-
-	it("Fails on later turns if the prev_commit isnt idental to the commit field in prevState", async function () {
-
-		const prevAppState = { ...initialAppData(makeCommit(getRandomValue('seed'))) }
-		const newAppState = {...prevAppState, commit: makeCommit(getRandomValue('different-seed')) }
-
-		await expect(
-			validTransition(makeState(prevAppState, 0), makeState(newAppState, 1), rrApp)
-		).to.be.revertedWith('Updated state did not bring forward commit from prior state');
-	});
-
-	it("If the prev commit is set correctly, fails because counter not correctly incremented", async function () {
-		const prevAppState = { ...initialAppData(makeCommit(getRandomValue('seed'))) }
-		const newAppState = {...prevAppState, a_counter: 2 }
-
-		await expect(
-			validTransition(makeState(prevAppState, 0), makeState(newAppState, 1), rrApp)
-		).to.be.revertedWith('Counter was illegally updated');
-	});
-
-	// it("Succeeds on next turn the correct counter is incremented", async function () {
-	// 	let r0 = getRandomValue("r0");
-	// 	let c0 = makeCommit(r0);
-
-	// 	const prevAppState = { ...initialAppData(makeCommit(getRandomValue('seed'))), prev_commit: c0 }
-	// 	const newAppState = {...prevAppState, prev_commit: prevAppState.commit, reveal: r0, a_counter: 1 } // increment the a_counter
-
-	// 	expect(
-	// 		await validTransition(makeState(prevAppState, 3), makeState(newAppState, 4), rrApp)
-	// 	).to.equal(true);
-	// });
 });
