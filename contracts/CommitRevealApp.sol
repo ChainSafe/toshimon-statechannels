@@ -28,10 +28,20 @@ abstract contract CommitRevealApp is IForceMoveApp {
 
     function advanceState(
         bytes memory gameState,
+        Outcome.SingleAssetExit[] memory outcome,
         uint8 moveA,
         uint8 moveB,
         bytes32 randomSeed
-    ) virtual public pure returns (bytes memory);
+    ) virtual public pure returns (bytes memory, Outcome.SingleAssetExit[] memory, bool);
+
+    /// Take an old outcome and update it given the current phase
+    /// This is useful for switching the outcome to favour alternating players to
+    /// ensure the incentive is to continue playing the game
+    function updateOutcome(
+        Outcome.SingleAssetExit[] memory outcome,
+        Phase phase
+    ) virtual public pure returns (Outcome.SingleAssetExit[] memory);
+
 
     /**
      * @notice Decodes the appData.
@@ -107,9 +117,10 @@ abstract contract CommitRevealApp is IForceMoveApp {
             require(prevData.preCommitB == keccak256(abi.encode(nextData.revealB)));
             // game state update is made correctly with respect to the committed moves and random seeds
             bytes32 randomSeed = _mergeSeeds(nextData.revealA.seed, nextData.revealB.seed);
+            (bytes memory newState,,) = advanceState(prevData.gameState, prev.outcome, nextData.revealA.move, nextData.revealB.move, randomSeed);
             require(
                 _compareBytes(
-                    advanceState(prevData.gameState, nextData.revealA.move, nextData.revealB.move, randomSeed),
+                    newState,
                     nextData.gameState
                 ), "New state must be computed based on preCommit moves in [B reveal] move"
             );
