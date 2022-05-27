@@ -13,9 +13,6 @@ contract ExampleCommitRevealApp is CommitRevealApp {
 
     enum Move { ATTACK, DEFEND, COFFEE }
 
-    uint8 constant A = 0;
-    uint8 constant B = 1;
-
     // the damage done in each case, can adjust for balance
     uint8 constant MINIMAL_ATTACK = 2;
     uint8 constant ATTACK = 5;
@@ -107,9 +104,9 @@ contract ExampleCommitRevealApp is CommitRevealApp {
         // check if the game is concluded and update the conclude flag and outcome
         // as required
         if (gameState.players[A].health == 0) {
-            return (abi.encode(gameState), _setOutcomeWinner(outcome, A), true);
+            return (abi.encode(gameState), updateOutcomeFavourPlayer(outcome, A), true);
         } else if (gameState.players[A].health == 0) {
-            return (abi.encode(gameState), _setOutcomeWinner(outcome, B), true);
+            return (abi.encode(gameState), updateOutcomeFavourPlayer(outcome, B), true);
         } else {
             return (abi.encode(gameState), outcome, false);
         }
@@ -120,36 +117,15 @@ contract ExampleCommitRevealApp is CommitRevealApp {
     // For incentive reasons it needs to ensure that each time a player makes
     // a state update they set themselves as the winning player
     // unless the game forces otherwise via a conclusion
-    function updateOutcome(
+    function updateOutcomeFavourPlayer(
         Outcome.SingleAssetExit[] memory outcome,
-        Phase phase
+        uint8 playerIndex
     ) override public pure returns (Outcome.SingleAssetExit[] memory) {
-        if        ( phase == Phase.A_COMMIT ) {
-            return (_setOutcomeWinner(outcome, A));
-        } else if ( phase == Phase.B_COMMIT ) {
-            return (_setOutcomeWinner(outcome, B));
-        } else if ( phase == Phase.A_REVEAL ) {
-            return (_setOutcomeWinner(outcome, A));
-        } else if ( phase == Phase.B_REVEAL ) { 
-            return (_setOutcomeWinner(outcome, B));
-        } else {
-            return (outcome);
-        }
-    }
-
-    // converts an outcome to make a given player the winner
-    // Assumes:
-    //  The allocations are stored in order of player index
-    //  Only the first asset exit should be modified
-    function _setOutcomeWinner(
-        Outcome.SingleAssetExit[] memory outcome,
-        uint8 player
-    ) private pure returns (Outcome.SingleAssetExit[] memory) {
         Outcome.SingleAssetExit memory assetExit = outcome[0];
         uint256 total = assetExit.allocations[0].amount + assetExit.allocations[1].amount;
 
-        outcome[0].allocations[player].amount = total;
-        outcome[0].allocations[~player].amount = 0;
+        outcome[0].allocations[playerIndex].amount = total;
+        outcome[0].allocations[~playerIndex].amount = 0;
 
         return (outcome);
     }

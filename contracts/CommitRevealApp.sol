@@ -8,6 +8,10 @@ import {ExitFormat as Outcome} from '@statechannels/exit-format/contracts/ExitFo
 
 abstract contract CommitRevealApp is IForceMoveApp {
 
+    // player indices
+    uint8 constant A = 0;
+    uint8 constant B = 1;
+
     // The phases of the protocol
     enum Phase { A_COMMIT, B_COMMIT, A_REVEAL, B_REVEAL }
 
@@ -17,6 +21,9 @@ abstract contract CommitRevealApp is IForceMoveApp {
     }
 
     struct AppData {
+        uint256 wager;
+        uint256 bond;
+
         bytes32 preCommitA;
         bytes32 preCommitB;
 
@@ -34,12 +41,11 @@ abstract contract CommitRevealApp is IForceMoveApp {
         bytes32 randomSeed
     ) virtual public pure returns (bytes memory, Outcome.SingleAssetExit[] memory, bool);
 
-    /// Take an old outcome and update it given the current phase
-    /// This is useful for switching the outcome to favour alternating players to
-    /// ensure the incentive is to continue playing the game
-    function updateOutcome(
+    /// Take an old outcome and update it to favour a given player
+    /// Assumes the outcome allocations can be indexed by the playerIndex
+    function updateOutcomeFavourPlayer(
         Outcome.SingleAssetExit[] memory outcome,
-        Phase phase
+        uint8 playerIndex
     ) virtual public pure returns (Outcome.SingleAssetExit[] memory);
 
 
@@ -75,6 +81,11 @@ abstract contract CommitRevealApp is IForceMoveApp {
         return (keccak256(abi.encode((a))) == keccak256(abi.encode((b))));
     }
 
+    // helper to do byte array comparison
+    function _compareOutcomes(Outcome.SingleAssetExit[] memory a, Outcome.SingleAssetExit[] memory b) internal pure returns (bool) {
+        return (keccak256(abi.encode((a))) == keccak256(abi.encode((b))));
+    }
+
     function _phase(uint48 turnNum) internal pure returns (Phase) {
         // This conversion is safe as the modulo is always < 4
         return Phase(turnNum % 4);
@@ -86,7 +97,6 @@ abstract contract CommitRevealApp is IForceMoveApp {
         uint256 nParticipants
     ) public pure override returns (bool) {
         require(nParticipants == 2, "Only two participant commit/reveal games are supported");
-        require(prev.turnNum == next.turnNum + 1, "Transition must increment turn number"); // not sure if we have to check this...
 
         // we are in the commit reveal cycle of gameplay
         Phase phase = _phase(next.turnNum);
@@ -97,24 +107,32 @@ abstract contract CommitRevealApp is IForceMoveApp {
         if        (phase == Phase.A_COMMIT) {
             // no change constraints
             require(_compareBytes(prevData.gameState, nextData.gameState), "Cannot mutate the game state in [A commitment] move");
+            // outcome
+            require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, A)));
         } else if (phase == Phase.B_COMMIT) {
             // no change constraints
             require(_compareBytes(prevData.gameState, nextData.gameState), "Cannot mutate the game state in [B commitment] move");
             require(prevData.preCommitA == nextData.preCommitA, "Cannot mutate A's preCommit in [B commitment] move");
+            // outcome
+            require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, B)));
         } else if (phase == Phase.A_REVEAL) {
             // no change constraints
             require(_compareBytes(prevData.gameState, nextData.gameState), "Cannot mutate the game state in [A reveal] move");
-            require(prevData.preCommitA == nextData.preCommitA, "Cannot mutate A's preCommit in [A reveal] move");
+            // require(prevData.preCommitA == nextData.preCommitA, "Cannot mutate A's preCommit in [A reveal] move");
             require(prevData.preCommitB == nextData.preCommitB, "Cannot mutate B's preCommit in [A reveal] move");
             // reveal matches preCommit
             require(prevData.preCommitA ==  keccak256(abi.encode(nextData.revealA)));
+            // outcome
+            require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, A)));
         } else if (phase == Phase.B_REVEAL) {
             // no change constraints
-            require(prevData.preCommitA == nextData.preCommitA, "Cannot mutate A's preCommit in [B reveal] move");
-            require(prevData.preCommitB == nextData.preCommitB, "Cannot mutate B's preCommit in [B reveal] move");
-            require(_compareReveals(prevData.revealA, nextData.revealA), "Cannot mutate A's reveal in [B reveal] move");
+            // require(prevData.preCommitA == nextData.preCommitA, "Cannot mutate A's preCommit in [B reveal] move");
+            // require(prevData.preCommitB == nextData.preCommitB, "Cannot mutate B's preCommit in [B reveal] move");
+            // require(_compareReveals(prevData.revealA, nextData.revealA), "Cannot mutate A's reveal in [B reveal] move");
             // reveal matches preCommit
             require(prevData.preCommitB == keccak256(abi.encode(nextData.revealB)));
+            // outcome
+            require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, B)));
             // game state update is made correctly with respect to the committed moves and random seeds
             bytes32 randomSeed = _mergeSeeds(nextData.revealA.seed, nextData.revealB.seed);
             (bytes memory newState,,) = advanceState(prevData.gameState, prev.outcome, nextData.revealA.move, nextData.revealB.move, randomSeed);
@@ -128,72 +146,4 @@ abstract contract CommitRevealApp is IForceMoveApp {
 
         return true;
     }
-
-    // // checks a transition between two outcomes for validity
-    // // ensures the outcomes follow the requirements of:
-    // //  - single asset
-    // //  - always redistributed (no balance is created or destroyed)
-    // //  - all allocations are simple and can be withdrawns
-    // //  - there are two allocations for the single asset (one per player)
-    // function _validOutcomeTransition(
-    //     Outcome.SingleAssetExit[] memory outcomeA,
-    //     Outcome.SingleAssetExit[] memory outcomeB
-    // ) private pure returns (bool) {
-    //     require(_validOutcome(outcomeA), "a state does not have a valid outcome");
-    //     require(_validOutcome(outcomeB), "a state does not have a valid outcome");
-
-    //     Outcome.SingleAssetExit memory assetOutcomeA = outcomeA[0];
-    //     Outcome.SingleAssetExit memory assetOutcomeB = outcomeB[0];
-
-    //     Outcome.Allocation[] memory allocationsA = assetOutcomeA.allocations;
-    //     Outcome.Allocation[] memory allocationsB = assetOutcomeB.allocations;
-
-
-    //     // Interprets the nth outcome as benefiting participant n
-    //     // checks the destinations have not changed
-    //     // Checks that the sum of assets hasn't changed
-    //     // And that for all non-movers
-    //     // the balance hasn't decreased
-    //     require(
-    //         allocationsB[0].destination == allocationsA[0].destination,
-    //         'Destinations may not change'
-    //     );
-    //     require(
-    //         allocationsB[1].destination == allocationsA[1].destination,
-    //         'Destinations may not change'
-    //     );
-
-    //     require(allocationsA[0].amount + allocationsA[1].amount == allocationsB[0].amount + allocationsB[1].amount, 
-    //         'Total allocated cannot change');
-
-    //     return (true);
-    // }
-
-    // // checks a single outcome for validity
-    // function _validOutcome(
-    //     Outcome.SingleAssetExit[] memory outcome
-    // ) private pure returns (bool) {
-    //     require(outcome.length == 1, 'Only one asset allowed');
-
-    //     Outcome.SingleAssetExit memory assetOutcome = outcome[0];
-
-    //     // Throws unless that allocation has exactly 2 outcomes
-    //     Outcome.Allocation[] memory allocations = assetOutcome.allocations;
-
-    //     require(allocations.length == 2, '|AllocationA|!=|participants|');
-
-    //     // require all to be simple allocations
-    //     require(
-    //         allocations[0].allocationType == uint8(Outcome.AllocationType.simple),
-    //         'not a simple allocation'
-    //     );
-    //     require(
-    //         allocations[1].allocationType == uint8(Outcome.AllocationType.simple),
-    //         'not a simple allocation'
-    //     );
-
-    //     return (true);
-    // }
-
-
 }
