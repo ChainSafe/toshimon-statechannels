@@ -1,7 +1,7 @@
 {
   "name": "rolling-commit-reveal",
   "version": "1.0.0",
-  "description": "A nitro app that has randomness available at each turn",
+  "description": "Contracts for the toshimon state channels",
   "main": "index.js",
   "scripts": {
     "test": "hardhat test"
