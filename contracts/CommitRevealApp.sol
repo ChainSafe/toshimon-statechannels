@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: MIT
 
+/**
+ * Created on 2022-06-02 12:37
+ * @summary: An abstract contract for implementing a ForceMove application with shared randomness
+ * @author: Willem Olding (ChainSafe)
+ */
 pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
 
@@ -15,15 +20,15 @@ abstract contract CommitRevealApp is IForceMoveApp {
     // The phases of the protocol
     enum Phase { A_COMMIT, B_COMMIT, A_REVEAL, B_REVEAL }
 
+    // Data that must be included in each reveal phase state update
     struct Reveal {
         uint8 move;
         bytes32 seed;
     }
 
+    // Application specific data for the ForceMove app
+    // This itself contains game specific data
     struct AppData {
-        uint256 wager;
-        uint256 bond;
-
         bytes32 preCommitA;
         bytes32 preCommitB;
 
@@ -33,6 +38,18 @@ abstract contract CommitRevealApp is IForceMoveApp {
         bytes gameState;
     }
 
+
+
+    /**
+     * @dev Takes a game state and outcome and mutates it using a move from each player
+     *      collaboratively produced randomness
+     * @param gameState The prior game state to be mutated and returned
+     * @param outcome The prior outcome that can be mutated and returned
+     * @param moveA Move from player A
+     * @param moveB Move from player B
+     * @param randomSeed The combined random seed produced by the protocol 
+     * @return The outcome resulting in a rebalance to the given player
+     */
     function advanceState(
         bytes memory gameState,
         Outcome.SingleAssetExit[] memory outcome,
@@ -41,8 +58,13 @@ abstract contract CommitRevealApp is IForceMoveApp {
         bytes32 randomSeed
     ) virtual public pure returns (bytes memory, Outcome.SingleAssetExit[] memory, bool);
 
-    /// Take an old outcome and update it to favour a given player
-    /// Assumes the outcome allocations can be indexed by the playerIndex
+    /**
+     * @dev Take an old outcome and update it to favour a given player
+     *       Assumes the outcome allocations can be indexed by the playerIndex
+     * @param outcome An outcome object to be rebalanced
+     * @param playerIndex Zero based index of the player to be assigned the favoured outcome
+     * @return The outcome resulting in a rebalance to the given player
+     */
     function updateOutcomeFavourPlayer(
         Outcome.SingleAssetExit[] memory outcome,
         uint8 playerIndex
@@ -86,11 +108,19 @@ abstract contract CommitRevealApp is IForceMoveApp {
         return (keccak256(abi.encode((a))) == keccak256(abi.encode((b))));
     }
 
+    /**
+     * @dev Get the current phase given the turn number
+     * @param turnNum The current sequence/turn number
+     * @return Phase
+     */
     function _phase(uint48 turnNum) internal pure returns (Phase) {
         // This conversion is safe as the modulo is always < 4
         return Phase(turnNum % 4);
     }
 
+    /**
+     * @dev Override of IForceMove validTransition for the randomness protocol
+     */
     function validTransition(
         VariablePart memory prev,
         VariablePart memory next,
@@ -98,7 +128,7 @@ abstract contract CommitRevealApp is IForceMoveApp {
     ) public pure override returns (bool) {
         require(nParticipants == 2, "Only two participant commit/reveal games are supported");
 
-        // we are in the commit reveal cycle of gameplay
+        // we are in the commit/reveal cycle of gameplay
         Phase phase = _phase(next.turnNum);
 
         AppData memory prevData = _appData(prev.appData);
@@ -125,10 +155,6 @@ abstract contract CommitRevealApp is IForceMoveApp {
             // outcome
             require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, A)));
         } else if (phase == Phase.B_REVEAL) {
-            // no change constraints
-            // require(prevData.preCommitA == nextData.preCommitA, "Cannot mutate A's preCommit in [B reveal] move");
-            // require(prevData.preCommitB == nextData.preCommitB, "Cannot mutate B's preCommit in [B reveal] move");
-            // require(_compareReveals(prevData.revealA, nextData.revealA), "Cannot mutate A's reveal in [B reveal] move");
             // reveal matches preCommit
             require(prevData.preCommitB == keccak256(abi.encode(nextData.revealB)));
             // outcome

@@ -1,9 +1,15 @@
 // SPDX-License-Identifier: MIT
 
+/**
+ * Created on 2022-06-02 12:37
+ * @summary: An example commit-reveal randomness application. It is a simple battle game where
+ * players can attack, defend or drink coffee. The player with the highest speed state (obtained from drinking the most coffee)
+ * gets to attack first each turn. If the players speed is equal then the combined random seed is used to randomly select which 
+ * player is first.
+ * @author: Willem Olding (ChainSafe)
+ */
 pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
-
-
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import './CommitRevealApp.sol';
@@ -117,6 +123,10 @@ contract ExampleCommitRevealApp is CommitRevealApp {
     // For incentive reasons it needs to ensure that each time a player makes
     // a state update they set themselves as the winning player
     // unless the game forces otherwise via a conclusion
+    // 
+    // The entire balance is reallocated to the winning player index by this function
+    // 
+    // This assumes the outcome is ordered according to the players.
     function updateOutcomeFavourPlayer(
         Outcome.SingleAssetExit[] memory outcome,
         uint8 playerIndex
