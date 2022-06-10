@@ -14,6 +14,15 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import './CommitRevealApp.sol';
 
+struct GameState {
+    PlayerState[2] players;
+}
+
+struct PlayerState {
+    uint8 health;
+    uint8 speed;
+}
+
 contract ExampleCommitRevealApp is CommitRevealApp {
     using SafeMath for uint8;
 
@@ -23,15 +32,6 @@ contract ExampleCommitRevealApp is CommitRevealApp {
     uint8 constant MINIMAL_ATTACK = 2;
     uint8 constant ATTACK = 5;
     uint8 constant COFFEE_SPEED_INCREASE = 1;
-
-    struct GameState {
-        PlayerState[2] players;
-    }
-
-    struct PlayerState {
-        uint8 health;
-        uint8 speed;
-    }
 
     function _gameState(bytes memory gameStateBytes) internal pure returns (GameState memory) {
         return abi.decode(gameStateBytes, (GameState));

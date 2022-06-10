@@ -20,6 +20,7 @@ import { getRandomNonce, encodeAppData, initialAppData, RRAppData, getRandomValu
 
 // global test vars
 let app: Contract;
+let adj: Contract;
 let channel: Channel;
 
 // make some state with typical values for all fields
@@ -42,10 +43,20 @@ before(async function () {
 		chainId: process.env.CHAIN_NETWORK_ID as string,
 		channelNonce: getRandomNonce('rollingRandomApp'),
 	};
-	// deploy our app contract
+	// deploy our app contract (ExampleCommitRevealApp)
 	const contract = await ethers.getContractFactory("ExampleCommitRevealApp");
 	app = await contract.deploy();
 	await app.deployed();
+
+	// deploy the NitroAdjudicator
+	const adjContract = await ethers.getContractFactory("NitroAdjudicator");
+	adj = await adjContract.deploy();
+	await adj.deployed();
+
+	// deploy an ExampleMove
+	const moveContract = await ethers.getContractFactory("ExampleMove");
+	const move = await moveContract.deploy();
+	await move.deployed();
 });
 
 describe("RollingRandom - validTransition", function () {

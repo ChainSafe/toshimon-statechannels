@@ -1,5 +1,6 @@
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
+import "hardhat-gas-reporter";
 
 require("dotenv").config();
 
@@ -17,5 +18,26 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
 // Go to https://hardhat.org/config/ to learn more
 
 export default {
-  solidity: "0.7.6"
+  solidity: {
+    version: "0.7.6",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 2000,
+        details: {
+          yul: true,
+          yulDetails: {
+            stackAllocation: true,
+            optimizerSteps: "dhfoDgvulfnTUtnIf"
+          }
+        }
+      },
+    },
+  },
+  gasReporter: {
+    currency: 'USD',
+    // token: 'MATIC',
+    // gasPriceApi: 'https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice',
+    coinmarketcap: "ebaf9c41-43a2-4afa-9fe3-16e7d9484e5b",
+  },
 };
