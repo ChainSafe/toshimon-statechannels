@@ -1,6 +1,7 @@
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import "hardhat-gas-reporter";
+import "hardhat-abi-exporter";
 
 require("dotenv").config();
 
@@ -40,4 +41,13 @@ export default {
     // gasPriceApi: 'https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice',
     coinmarketcap: "ebaf9c41-43a2-4afa-9fe3-16e7d9484e5b",
   },
+  abiExporter: {
+    path: './abis',
+    runOnCompile: true,
+    clear: true,
+    flat: true,
+    // only: [':ERC20$'],
+    spacing: 2,
+    pretty: true,
+  }
 };

@@ -8,7 +8,7 @@
 pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
 
-import './nitro-protocol/contracts/interfaces/IForceMoveApp.sol';
+import '../state-channel/interfaces/IForceMoveApp.sol';
 import {ExitFormat as Outcome} from '@statechannels/exit-format/contracts/ExitFormat.sol';
 
 abstract contract CommitRevealApp is IForceMoveApp {
@@ -114,6 +114,12 @@ abstract contract CommitRevealApp is IForceMoveApp {
      * @return Phase
      */
     function _phase(uint48 turnNum) internal pure returns (Phase) {
+
+        // The first 4 turnNums (0,1,2,3) are used for the pre-fund and post-fund setup phase
+        // This function will be called at all with those turnNums.
+        // Coincidentally this is a multiple of the number of phases in CommitReveal so there 
+        // is no need to adjust.
+        
         // This conversion is safe as the modulo is always < 4
         return Phase(turnNum % 4);
     }
