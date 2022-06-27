@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 
 /**
  * Created on 2022-06-06
@@ -47,7 +47,6 @@ library ToshimonState {
 	}
 
 	struct ItemCard {
-		uint256 id;
 		address defintion;
 		bool used;
 	}
