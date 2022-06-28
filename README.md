@@ -1,22 +1,14 @@
-# Toshimon State Channels Battle System
+# Toshimon State Channel Implementation
 
-WORK IN PROGRESS
+A monorepo for the Toshimon battle game implemented in state channels. This is split into two main components.
 
-This repo contains Solidity contracts and testing code to implement the Toshimon battle game using the ForceMove and Nitro frameworks for state channels.
+## On-Chain
 
-The contracts mostly serve as examples along side the [specification](https://github.com/toshimon-io/toshimon-specification). Not for production use!
+ The on-chain components are contracts which live on-chain and provide the adjudicator for the state channels.
 
-## Usage
+## Client_libary
 
-To build and test the contracts:
-
-(tested with Node v16.14.2)
-
-Install the depedencies and test
-```shell
-npm install
-npm run test
-```
+The client library is a collection of C# class libs designed to help with the implementation of the peer-to-peer aspect of the protocol as well as the on-chain interactions.
 
 ## Contributors
 
