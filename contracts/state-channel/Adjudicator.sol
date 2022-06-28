@@ -7,9 +7,9 @@ import {ExitFormat as Outcome} from '@statechannels/exit-format/contracts/ExitFo
 import './MultiAssetHolder.sol';
 
 /**
- * @dev The NitroAdjudicator contract extends MultiAssetHolder and ForceMove
+ * @dev The Adjudicator contract extends MultiAssetHolder and ForceMove
  */
-contract NitroAdjudicator is ForceMove, MultiAssetHolder {
+contract Adjudicator is ForceMove, MultiAssetHolder {
     /**
      * @notice Finalizes a channel by providing a finalization proof, and liquidates all assets for the channel.
      * @dev Finalizes a channel by providing a finalization proof, and liquidates all assets for the channel.

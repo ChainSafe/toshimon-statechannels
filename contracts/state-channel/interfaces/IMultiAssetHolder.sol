@@ -8,6 +8,11 @@ import {ExitFormat as Outcome} from '@statechannels/exit-format/contracts/ExitFo
  * @dev The IMultiAssetHolder interface calls for functions that allow assets to be transferred from one channel to other channel and/or external destinations, as well as for guarantees to be claimed.
  */
 interface IMultiAssetHolder {
+
+    enum AssetType {
+        Native, ERC20, ERC721, ERC1155,
+    }
+
     /**
      * @notice Deposit ETH or erc20 assets against a given destination.
      * @dev Deposit ETH or erc20 assets against a given destination.
@@ -17,10 +22,21 @@ interface IMultiAssetHolder {
      * @param amount The intended number of wei to be deposited.
      */
     function deposit(
-        address asset,
         bytes32 destination,
+        address assetContract,
+        AssetType assetType,
+        uint256 tokenId,
         uint256 expectedHeld,
         uint256 amount
+    ) external payable;
+
+    function depositBatch(
+        bytes32 destination,
+        address assetContract,
+        AssetType assetType,
+        uint256[] tokenIds,
+        uint256[] expectedHelds,
+        uint256[] amounts
     ) external payable;
 
     /**
@@ -39,36 +55,6 @@ interface IMultiAssetHolder {
         bytes32 stateHash,
         uint256[] memory indices
     ) external;
-
-    /**
-     * @param sourceChannelId Unique identifier for a guarantor state channel.
-     * @param sourceStateHash Hash of the state stored when the guarantor channel finalized.
-     * @param sourceOutcomeBytes The abi.encode of guarantor channel outcome
-     * @param sourceAssetIndex the index of the targetted asset in the source outcome.
-     * @param indexOfTargetInSource The index of the guarantee allocation to the target channel in the source outcome.
-     * @param targetStateHash Hash of the state stored when the target channel finalized.
-     * @param targetOutcomeBytes The abi.encode of target channel outcome
-     * @param targetAssetIndex the index of the targetted asset in the target outcome.
-     * @param targetAllocationIndicesToPayout Array with each entry denoting the index of a destination (in the target channel) to transfer funds to. Should be in increasing order. An empty array indicates "all"
-     */
-    struct ClaimArgs {
-        bytes32 sourceChannelId;
-        bytes32 sourceStateHash;
-        bytes sourceOutcomeBytes;
-        uint256 sourceAssetIndex;
-        uint256 indexOfTargetInSource;
-        bytes32 targetStateHash;
-        bytes targetOutcomeBytes;
-        uint256 targetAssetIndex;
-        uint256[] targetAllocationIndicesToPayout;
-    }
-
-    /**
-     * @notice Transfers as many funds escrowed against `sourceChannelId` as can be afforded for the destinations specified by indices in the beneficiaries of the __target__ of the channel at indexOfTargetInSource.
-     * @dev Transfers as many funds escrowed against `sourceChannelId` as can be afforded for the destinations specified by indices in the beneficiaries of the __target__ of the channel at indexOfTargetInSource.
-     * @param claimArgs arguments used in the claim function. Used to avoid stack too deep error.
-     */
-    function claim(ClaimArgs memory claimArgs) external;
 
     /**
      * @dev Indicates that `amountDeposited` has been deposited into `destination`.

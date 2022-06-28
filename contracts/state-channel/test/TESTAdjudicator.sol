@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
-import '../NitroAdjudicator.sol';
+import '../Adjudicator.sol';
 import './TESTForceMove.sol';
 
 /**
  * @dev This contract extends the NitroAdjudicator contract to enable it to be more easily unit-tested. It exposes public or external functions that set storage variables or wrap otherwise internal functions. It should not be deployed in a production environment.
  */
-contract TESTNitroAdjudicator is NitroAdjudicator, TESTForceMove {
+contract TESTAdjudicator is Adjudicator, TESTForceMove {
     /**
      * @dev Manually set the holdings mapping to a given amount for a given channelId.  Shortcuts the deposit workflow (ONLY USE IN A TESTING ENVIRONMENT)
      * @param channelId Unique identifier for a state channel.
