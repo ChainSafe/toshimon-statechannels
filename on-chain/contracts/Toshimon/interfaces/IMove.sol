@@ -6,5 +6,5 @@ pragma experimental ABIEncoderV2;
 import { ToshimonState as TM } from '../ToshimonState.sol';
 
 interface IMove {
-	function applyMove(TM.GameState memory state, uint8 mover, uint randomSeed) external pure returns (TM.GameState memory);
+	function applyMove(TM.GameState memory state, uint8 mover, bytes32 randomSeed) external pure returns (TM.GameState memory);
 }

@@ -8,11 +8,7 @@ import {ExitFormat as Outcome} from '@statechannels/exit-format/contracts/ExitFo
  * @dev The IMultiAssetHolder interface calls for functions that allow assets to be transferred from one channel to other channel and/or external destinations, as well as for guarantees to be claimed.
  */
 interface IMultiAssetHolder {
-
-    enum AssetType {
-        Native, ERC20, ERC721, ERC1155,
-    }
-
+    
     /**
      * @notice Deposit ETH or erc20 assets against a given destination.
      * @dev Deposit ETH or erc20 assets against a given destination.
@@ -22,21 +18,10 @@ interface IMultiAssetHolder {
      * @param amount The intended number of wei to be deposited.
      */
     function deposit(
+        address asset,
         bytes32 destination,
-        address assetContract,
-        AssetType assetType,
-        uint256 tokenId,
         uint256 expectedHeld,
         uint256 amount
-    ) external payable;
-
-    function depositBatch(
-        bytes32 destination,
-        address assetContract,
-        AssetType assetType,
-        uint256[] tokenIds,
-        uint256[] expectedHelds,
-        uint256[] amounts
     ) external payable;
 
     /**

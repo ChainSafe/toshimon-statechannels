@@ -10,18 +10,39 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import '../CommitReveal/CommitRevealApp.sol';
+import { ToshimonState as TM } from './ToshimonState.sol';
+import './interfaces/IMove.sol';
 
 contract ToshimonStateTransition is CommitRevealApp {
 
     function advanceState(
         bytes memory _gameState_,
         Outcome.SingleAssetExit[] memory outcome,
-        uint8 _moveA,
-        uint8 _moveB,
+        uint8 moveA,
+        uint8 moveB,
         bytes32 randomSeed
     ) override public pure returns (bytes memory, Outcome.SingleAssetExit[] memory, bool) {
-        GameState memory gameState = _gameState(_gameState_);
+        TM.GameState memory gameState = _gameState(_gameState_);
+
+        // if either player is unconcious then no more moves can be made
+        // and the game is over. No further state updates possible.
+        if (_is_unconcious(gameState.players[0]) || _is_unconcious(gameState.players[1])) {
+            return (_gameState_, outcome, true);
+        }
         
+        // first up resolve any switch monster actions
+        // These occur first and order between players doesn't matter
+        if ( _isSwapAction(moveA) ) {
+            gameState.players[0].activeMonsterIndex = moveA - 4;
+        }
+        if ( _isSwapAction(moveB) ) {
+            gameState.players[1].activeMonsterIndex = moveB - 4;
+        }
+
+        // next up resolve attacks. A always goes first in this demo
+        gameState = _makeMove(gameState, moveA,  0, randomSeed);
+        gameState = _makeMove(gameState, moveB,  1, randomSeed);
+
     }
 
     // For incentive reasons it needs to ensure that each time a player makes
@@ -42,6 +63,52 @@ contract ToshimonStateTransition is CommitRevealApp {
         outcome[0].allocations[~playerIndex].amount = 0;
 
         return (outcome);
+    }
+
+    // A player is unconcious if all their monsters have HP == 0
+    function _is_unconcious(TM.PlayerState memory playerState) pure internal returns (bool) {
+        bool alive = false;
+        for (uint8 i = 0; i < 5; i++) {
+            if (playerState.monsters[i].stats.hp > 0) {
+                alive = true;
+            }
+        }
+        return (alive);
+    }
+
+    function _isSwapAction(uint8 move) pure internal returns (bool) {
+        return (move >=4 && move <=8);
+    }
+
+    function _makeMove(TM.GameState memory gameState, uint8 moveIndex, uint8 mover, bytes32 randomSeed) pure internal returns (TM.GameState memory) {
+        TM.MonsterCard memory attacker = _getActiveMonster(gameState.players[mover]);
+        TM.MonsterCard memory defender = _getActiveMonster(gameState.players[~mover]);
+
+        // bail if attacker is unconcious or no PP available
+        if (attacker.stats.hp == 0) {
+            return gameState;
+        }
+        if (attacker.stats.pp[moveIndex] == 0) {
+            return gameState;
+        }        
+
+        // reduce the PP of the attacker on that move
+        attacker.stats.pp[moveIndex] -= 1;
+
+        // apply move
+        // This can fail, calling code must catch errors
+        gameState = IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, randomSeed);
+
+        return gameState;
+
+    }
+
+    function _getActiveMonster(TM.PlayerState memory playerState) pure internal returns (TM.MonsterCard memory) {
+        return (playerState.monsters[playerState.activeMonsterIndex]);
+    }
+
+    function _gameState(bytes memory _gameState_) pure internal returns (TM.GameState memory) {
+        return abi.decode(_gameState_, (TM.GameState));
     }
 
 }

@@ -8,7 +8,7 @@
 pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
 
-import '../state-channel/interfaces/IForceMoveApp.sol';
+import '../StateChannel/interfaces/IForceMoveApp.sol';
 import {ExitFormat as Outcome} from '@statechannels/exit-format/contracts/ExitFormat.sol';
 
 abstract contract CommitRevealApp is IForceMoveApp {
@@ -167,13 +167,15 @@ abstract contract CommitRevealApp is IForceMoveApp {
             require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, B)));
             // game state update is made correctly with respect to the committed moves and random seeds
             bytes32 randomSeed = _mergeSeeds(nextData.revealA.seed, nextData.revealB.seed);
-            (bytes memory newState,,) = advanceState(prevData.gameState, prev.outcome, nextData.revealA.move, nextData.revealB.move, randomSeed);
+            (bytes memory newState,, bool isFinal) = advanceState(prevData.gameState, prev.outcome, nextData.revealA.move, nextData.revealB.move, randomSeed);
             require(
                 _compareBytes(
                     newState,
                     nextData.gameState
                 ), "New state must be computed based on preCommit moves in [B reveal] move"
             );
+            // if the game state concluded this must be reflected in the variable part of the channel state
+            require(isFinal == next.isFinal);
         }
 
         return true;
