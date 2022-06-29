@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LinqToCsv" Version="1.5.0" />
+    <PackageReference Include="Nethereum.Web3" Version="4.6.1" />
+    <PackageReference Include="Spectre.Console" Version="0.44.0" />
+    <ProjectReference Include="..\Protocol\Protocol.csproj" />
+    <ProjectReference Include="..\AdvanceState\AdvanceState.csproj" />
+  </ItemGroup>
+
+</Project>

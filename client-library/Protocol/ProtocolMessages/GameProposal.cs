@@ -23,20 +23,23 @@ public record GameProposal: ProtocolMessage
     public string AppDefinition { get; set; }
 
     [Parameter("address", "signingKey", 4)]
-    public List<string> SigningKey { get; set; }
+    public string SigningKey { get; set; }
 
     [Parameter("address", "recoveryKey", 5)]
-    public List<string> RecoveryKey { get; set; }
+    public string RecoveryKey { get; set; }
 
     [Parameter("address", "recipient", 6)]
-    public List<string> Recipient { get; set; }
+    public string Recipient { get; set; }
 
-    [Parameter("uint256", "wager", 7)]
-    public BigInteger Wager { get; set; }
+    [Parameter("address", "wagerAssetAddress", 7)]
+    public string WagerAssetAddress { get; set; }
 
-    [Parameter("uint48", "challengeDuration", 8)]
+    [Parameter("uint256", "wagerAmount", 8)]
+    public BigInteger WagerAmount { get; set; }
+
+    [Parameter("uint48", "challengeDuration", 9)]
     public ulong ChallengeDuration { get; set; }
 
-    [Parameter("tuple", "playerState", 9)]
+    [Parameter("tuple", "playerState", 10)]
     public PlayerState PlayerState { get; set; }
 }

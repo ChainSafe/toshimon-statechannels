@@ -39,9 +39,17 @@ contract ToshimonStateTransition is CommitRevealApp {
             gameState.players[1].activeMonsterIndex = moveB - 4;
         }
 
-        // next up resolve attacks. A always goes first in this demo
-        gameState = _makeMove(gameState, moveA,  0, randomSeed);
-        gameState = _makeMove(gameState, moveB,  1, randomSeed);
+        // next up resolve attacks. Speed should be used to resolve
+        // if both players are attackign but here A always goes first
+        // for demo purposes
+        if ( _isMoveAction(moveA) ) {
+            gameState = _makeMove(gameState, moveA,  0, randomSeed);
+        }
+        if ( _isMoveAction(moveB) ) {
+            gameState = _makeMove(gameState, moveB,  1, randomSeed);
+        }
+
+        return (abi.encode(gameState), outcome, false);
 
     }
 
@@ -78,6 +86,10 @@ contract ToshimonStateTransition is CommitRevealApp {
 
     function _isSwapAction(uint8 move) pure internal returns (bool) {
         return (move >=4 && move <=8);
+    }
+
+    function _isMoveAction(uint8 move) pure internal returns (bool) {
+        return (move < 4);
     }
 
     function _makeMove(TM.GameState memory gameState, uint8 moveIndex, uint8 mover, bytes32 randomSeed) pure internal returns (TM.GameState memory) {
