@@ -13,7 +13,7 @@ public static class TestHelpers {
             SpAttack = 90,
             SpDefense = 90,
             Speed = 90,
-            PP = ImmutableArray.Create<uint>(new uint[]{10, 0, 0, 0}),
+            PP = new List<uint>(new uint[]{10, 0, 0, 0}),
         };
 
         return new MonsterCard(

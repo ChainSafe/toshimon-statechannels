@@ -26,7 +26,7 @@ public static class GameStateExtension {
 public static class PlayerStateExtensions {
 
 	public static PlayerState SetMonster(this PlayerState self, MonsterCard monster, int index) {
-		return self with { Monsters = self.Monsters.SetItem(index, monster) };
+		return self with { Monsters = ImmutableArray.Create<MonsterCard>(self.Monsters.ToArray()).SetItem(index, monster).ToList() };
 	}
 
 	public static MonsterCard GetActiveMonster(this PlayerState self) {
@@ -38,12 +38,12 @@ public static class PlayerStateExtensions {
 	}
 
 	public static PlayerState AddItem(this PlayerState self, ItemCard item) {
-		return self with { Items = self.Items.Add(item) };
+		return self with { Items = ImmutableArray.Create<ItemCard>(self.Items.ToArray()).Add(item).ToList() };
 	}
 
 	public static PlayerState SetItemUsed(this PlayerState self, int itemIndex) {
 		ItemCard item = self.Items[itemIndex] with { Used = true };
-		return self with { Items = self.Items.SetItem(itemIndex, item) };
+		return self with { Items = ImmutableArray.Create<ItemCard>(self.Items.ToArray()).SetItem(itemIndex, item).ToList() };
 	}
 
 	public static bool isUnconcious(this PlayerState self) {
@@ -76,7 +76,7 @@ public static class MonsterCardExtension {
 	}	
 
 	public static MonsterCard DecrementPP(this MonsterCard self, int moveIndex) {
-		Stats stats = self.Stats with { PP = self.Stats.PP.SetItem(moveIndex, SafeMath.subtract(self.Stats.PP[moveIndex], 1)) };
+		Stats stats = self.Stats with { PP = ImmutableArray.Create<uint>(self.Stats.PP.ToArray()).SetItem(moveIndex, SafeMath.subtract(self.Stats.PP[moveIndex], 1)).ToList() };
 		return new MonsterCard(self.BaseStats, stats, self.Moves);
 	}
 }
