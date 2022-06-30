@@ -5,6 +5,7 @@ using Spectre.Console;
 using Protocol;
 using Nethereum.Util;
 using Nethereum.Signer;
+using toshimon_state_machine;
 
 // [Description("Respond to a game proposal by constructing a message which initializes a new state channel")]
 public sealed class PlayCommand : Command<PlayCommand.Settings>
@@ -28,7 +29,7 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
         string keystorePath = settings.KeyStore ?? Environment.GetEnvironmentVariable("KEYSTORE");
         string keystorePassword = settings.KeyStorePassword ?? Environment.GetEnvironmentVariable("KEYSTORE_PASSWORD");
 
-        // load the keyfile specified in KEYSTORE the env vars
+        // load the keyfile
         EthECKey key = Utils.loadKey(
             keystorePath,
             keystorePassword
@@ -93,24 +94,32 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
             }
         } else {
             // the actual gameplay phase
-            Reveal reveal = getReveal();
+            Reveal reveal;
             switch (thisTurnNum % 4) {
                 case 0: // Player A commit phase            
-                    AnsiConsole.WriteLine("Commit phase for Player A.");            
+                    AnsiConsole.WriteLine("Commit phase for Player A.");
+                    reveal = getReveal();
+                    storeReveal(reveal, channelDir, "A.reveal");
                     appData.PreCommitA = reveal.CommitHash;
                 break;
                 case 1: // Player B commit phase
-                    AnsiConsole.WriteLine("Commit phase for Player B.");            
+                    AnsiConsole.WriteLine("Commit phase for Player B.");     
+                    reveal = getReveal(); 
+                    storeReveal(reveal, channelDir, "B.reveal");      
                     appData.PreCommitB = reveal.CommitHash;
                 break;
                 case 2: // Player A reveal phase
-                    AnsiConsole.WriteLine("Reveal phase for Player A. You must select the exact same move as in the commit phase");  
-                    appData.RevealA = reveal; 
+                    AnsiConsole.WriteLine("Reveal phase for Player A.");  
+                    appData.RevealA = loadReveal(channelDir, "A.reveal"); 
+                    AnsiConsole.WriteLine("Loaded commit from file. No further action required.");  
                 break;
                 case 3: // Player B reveal and game state update phase
-                    AnsiConsole.WriteLine("Reveal phase for Player B. You must select the exact same move as in the commit phase");            
-                    appData.RevealB = reveal;
-                    // appData.GameState = // State transition!!
+                    AnsiConsole.WriteLine("Reveal phase for Player B. Attempts to load commit from file.");            
+                    appData.RevealB = loadReveal(channelDir, "B.reveal");
+                    AnsiConsole.WriteLine("Loaded commit from file. No further action required.");  
+                    // state transition!!
+                    (GameState newState, _, _) = new LocalStateTransition().advanceState(gameState, variablePart.Outcome.ToArray(), new GameAction[]{GameAction.Swap2, GameAction.Swap3}, 0);
+                    appData.GameState = newState.AbiEncode();
                 break;
             }
 
@@ -129,6 +138,18 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
             Move = (byte) action,
             Seed = randomSeed,
         };
+    }
+
+    public static void storeReveal(Reveal reveal, string channelDir, string filename) {
+        using (Stream s = File.Create(Path.Combine(channelDir, filename)) ) {
+            byte[] bytes = reveal.AbiEncode();
+            s.Write(bytes, 0, bytes.Length);
+        }
+    }
+
+    public static Reveal loadReveal(string channelDir, string filename) {
+        byte[] revealBytes = File.ReadAllBytes(Path.Combine(channelDir, filename));
+        return Reveal.AbiDecode(revealBytes);
     }
 
     // prompt the user and get a Toshimon move

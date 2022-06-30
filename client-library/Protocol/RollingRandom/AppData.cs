@@ -71,4 +71,14 @@ public record Reveal {
             );
         }
     }
+
+    public byte[] AbiEncode() {
+        ABIEncode abiEncode = new ABIEncode();
+        return abiEncode.GetABIParamsEncoded(this);
+    }
+
+    public static Reveal AbiDecode(byte[] encoded) {
+        var decoder = new ParameterDecoder();
+        return (Reveal) decoder.DecodeAttributes(encoded, typeof(Reveal));
+    }
 }

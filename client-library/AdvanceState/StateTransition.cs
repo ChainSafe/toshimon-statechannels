@@ -93,11 +93,11 @@ using Protocol;
 	}
 
 	private bool isSwapAction(GameAction action) {
-		return ( (int) action >= 4 && (int) action <=5);
+		return ( (int) action >= 4 && (int) action <=8);
 	}
 
 	private bool isItemAction(GameAction action) {
-		return ( (int) action >= 6 && (int) action <=13);
+		return ( (int) action >= 9 && (int) action <=13);
 	}
 
 	// helper for flipping the player index
