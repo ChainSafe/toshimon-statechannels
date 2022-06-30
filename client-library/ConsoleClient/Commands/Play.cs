@@ -1,63 +1,101 @@
+using System.Numerics;
+using System.Collections;
 using Spectre.Console.Cli;
 using Spectre.Console;
 using Protocol;
+using Nethereum.Util;
+using Nethereum.Signer;
 
+// [Description("Respond to a game proposal by constructing a message which initializes a new state channel")]
 public sealed class PlayCommand : Command<PlayCommand.Settings>
 {
     public sealed class Settings : CommandSettings
     {
         [CommandOption("-i|--input")]
-        // [Description("Path to input file containg an encoded state object")]
         public string? InputPath { get; init; }
 
         [CommandOption("-o|--output")]
-        // [Description("Path to write next state file to")]
         public string? OutputPath { get; init; }
     }
 
     public override int Execute(CommandContext context, Settings settings)
     {
-        renderState(build1v1(testMonster1(), testMonster1()), 0);
-        promptForAction();
+        AnsiConsole.Write(new Rule("Respond to a state update"));
+
+        // load the keyfile specified in KEYSTORE the env vars
+        EthECKey key = Utils.loadKey(
+            Environment.GetEnvironmentVariable("KEYSTORE"),
+            Environment.GetEnvironmentVariable("KEYSTORE_PASSWORD")
+        );
+
+        // load the fixedPart/channel spec
+        byte[] encodedFixedPart = File.ReadAllBytes(Environment.GetEnvironmentVariable("CHANNEL_DEF"));
+        var channelDef = FixedPart.AbiDecode(encodedFixedPart);        
+
+        Utils.renderChannelDef(channelDef);
+
+        // figure which player index we are
+        int whoami = channelDef.Participants.FindIndex(x => x == key.GetPublicAddress());
+        if (whoami < 0) {
+            AnsiConsole.WriteLine("The keypair loaded is not a participant in this channel. Did you load the wrong key? Exiting..");
+            return 0;
+        }
+
+        // load the state update
+        byte[] encodedSignedState = File.ReadAllBytes(settings.InputPath);
+        var signedStateUpdate = SignedStateUpdate.AbiDecode(encodedSignedState);
+
+        var variablePart = signedStateUpdate.VariablePart;
+        ulong thisTurnNum = variablePart.TurnNum+1;
+
+        AnsiConsole.WriteLine(String.Format("Turn Number: {0}", thisTurnNum));
+
+        if (thisTurnNum % 2 != (ulong) whoami) {
+            AnsiConsole.WriteLine("It is not this players turn to sign a new state update. Exiting.."); 
+            return 0;           
+        }
+
+        // extract the game state and render
+        var gameState = GameState.AbiDecode(variablePart.AppData);
+        Utils.renderState(gameState, whoami);
+
+        if (thisTurnNum == 1) {
+            // If this is in the pre-fund phase then just increment the TurnNum, sign the update and return
+            AnsiConsole.WriteLine("Channel is in the pre-fund phase. This message must be signed and sent before the opponent can deposit funds");            
+            if(AnsiConsole.Confirm("Would you like to sign this update and confirm initialization of the channel?")) {
+                thisTurnNum += 1;
+                // sign and write to disk
+            }
+            return 0;
+        } else if (thisTurnNum >= 2 && thisTurnNum <= 3) {
+            // Post-fund phase. Player must check that the expected funds have been deposited
+            // Can add an automatic check down the track
+            AnsiConsole.WriteLine("Channel is in the post-fund phase. Only sign this message if you have observed that the channel is fully funded and the chain is finalized.");            
+            if(AnsiConsole.Confirm("Would you like to sign this update and confirm initialization of the channel?")) {
+                thisTurnNum += 1;
+                // sign and write to disk
+            }
+        } else {
+            // the actual gameplay phase
+            GameAction action;
+            switch (thisTurnNum % 4) {
+                case 0: // Player A commit phase
+                    action = promptForAction();
+                    break;
+                case 1: // Player B commit phase
+                    action = promptForAction();
+                    break;
+                case 2: // Player A reveal phase
+                    break;
+                case 3: // Player B reveal phase
+                    break;
+            }
+        }
+        
+
         return 0;
     }
 
-    // Render the state to the console from the perspective of the player whoami
-    public static void renderState(GameState state, int whoami) {
-        // Create a table
-        var table = new Table();
-
-        PlayerState me = state[whoami];
-        MonsterCard myMonster = getActiveMonster(me);
-        PlayerState other = state[not(whoami)];
-        MonsterCard otherMonster = getActiveMonster(other);
-
-        var opponentHp = new BarChart()
-        .AddItem("HP", otherMonster.Stats.Hp, Color.Red)
-        .WithMaxValue(otherMonster.BaseStats.Hp);
-
-        var ownHp = new BarChart()
-        .AddItem("HP", myMonster.Stats.Hp, Color.Green)
-        .WithMaxValue(myMonster.BaseStats.Hp);
-
-        // Add some columns
-        table.AddColumn("");
-        table.AddColumn("");
-
-        // Add some rows
-        table.AddRow(String.Format("Enemy {0}", otherMonster.CardId), "");
-        table.AddRow(new Panel(opponentHp), new Panel(""));
-        table.AddRow("","");
-        table.AddRow("", String.Format("Your {0}", myMonster.CardId));
-        table.AddRow(new Panel(""), new Panel(ownHp));
-
-        table.Border(TableBorder.Rounded);
-        table.HideHeaders();
-        table.Expand();
-
-        // Render the table to the console
-        AnsiConsole.Write(table);
-    }
 
     // prompt the user and get a Toshimon move
     public static GameAction promptForAction() {
@@ -98,43 +136,5 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
             default:
             return GameAction.Noop;
         }
-    }
-
-    public static MonsterCard testMonster1() {
-        Stats stats = new Stats {
-            Hp = 70,
-            Attack = 70,
-            Defense = 70,
-            SpAttack = 90,
-            SpDefense = 90,
-            Speed = 90,
-            PP = new List<uint>(new uint[]{10, 0, 0, 0}),
-        };
-
-        return new MonsterCard(
-            stats,
-            stats,
-            new string[]{ }
-            );
-    }
-
-    // build a game state quickly where each player only has one monster
-    public static GameState build1v1(MonsterCard one, MonsterCard two) {
-        return new GameState(
-            new PlayerState(new MonsterCard[]{one}, new ItemCard[0]),
-            new PlayerState(new MonsterCard[]{two}, new ItemCard[0])
-            );
-    }
-
-    private static int not(int i) {
-        return i switch {
-            0 => 1,
-            1 => 0,
-            _ => throw new IndexOutOfRangeException(),
-        };
-    }
-
-    private static MonsterCard getActiveMonster(PlayerState player) {
-        return player.Monsters[player.ActiveMonsterIndex];
     }
 }

@@ -8,7 +8,7 @@ using Nethereum.ABI.FunctionEncoding.Attributes;
 /**
  * Encoding of a signature supported by ForceMove
  */
-public record Signature: ProtocolMessage
+public record Signature
 {
     [Parameter("uint8", "v", 1)]
     public byte V { get; set; }

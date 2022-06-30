@@ -10,7 +10,7 @@ using Nethereum.ABI.FunctionEncoding.Attributes;
  * As such it only needs to be passed in once per challenge and fields can be ommitted 
  * in the state updates and replaced with the ChannelId instead
  */
-public record VariablePart: ProtocolMessage
+public record VariablePart
 {
     [Parameter("tuple[]", "outcome", 1)]
     public List<SingleAssetExit> Outcome { get; set; }

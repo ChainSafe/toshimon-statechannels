@@ -3,15 +3,16 @@ namespace Protocol;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Nethereum.ABI.FunctionEncoding.Attributes;
 using Nethereum.ABI;
+using Nethereum.ABI.FunctionEncoding;
+using Nethereum.ABI.FunctionEncoding.Attributes;
 
 /**
  * Component of a channel state update that is contant between all updates.
  * As such it only needs to be passed in once per challenge and fields can be ommitted 
  * in the state updates and replaced with the ChannelId instead
  */
-public record FixedPart: ProtocolMessage
+public record FixedPart
 {
     [Parameter("uint256", "chainId", 1)]
     public BigInteger ChainId { get; set; }
@@ -41,5 +42,15 @@ public record FixedPart: ProtocolMessage
                 ChallengeDuration
             );
         } 
+    }
+
+    public byte[] AbiEncode() {
+        ABIEncode abiEncode = new ABIEncode();
+        return abiEncode.GetABIParamsEncoded(this);
+    }
+
+    public static FixedPart AbiDecode(byte[] encoded) {
+        var decoder = new ParameterDecoder();
+        return (FixedPart) decoder.DecodeAttributes(encoded, typeof(FixedPart));
     }
 }
