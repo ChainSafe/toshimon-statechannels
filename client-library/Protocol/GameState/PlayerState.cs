@@ -2,7 +2,6 @@
 
 using System;
 using System.Numerics;
-using System.Collections.Immutable;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 
 /**
@@ -10,18 +9,19 @@ using Nethereum.ABI.FunctionEncoding.Attributes;
  */
 public record PlayerState {
     [Parameter("tuple[]", "monsters", 1)]
-    public ImmutableArray<MonsterCard> Monsters { get; set; }
+    public List<MonsterCard> Monsters { get; set; }
 
     [Parameter("tuple[]", "items", 2)]
-    public ImmutableArray<ItemCard> Items { get; set; }
+    public List<ItemCard> Items { get; set; }
 
     [Parameter("uint8", "activeMonsterIndex", 3)]
     public int ActiveMonsterIndex { get; set; }
 
+    public PlayerState() {}
 
     public PlayerState(MonsterCard[] monsters, ItemCard[] items) {
-        this.Monsters = ImmutableArray.Create<MonsterCard>(monsters);
-        this.Items = ImmutableArray.Create<ItemCard>(items);
+        this.Monsters = new List<MonsterCard>(monsters);
+        this.Items = new List<ItemCard>(items);
         this.ActiveMonsterIndex = 0;
     }
 }

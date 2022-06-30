@@ -2,7 +2,6 @@
 
 using System;
 using System.Numerics;
-using System.Collections.Immutable;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 
 /**
@@ -26,7 +25,7 @@ public record MonsterCard {
     public Stats Stats { get; set; }
     
     [Parameter("address[4]", "moves", 4)]
-    public ImmutableArray<string> Moves { get; set; }
+    public List<string> Moves { get; set; }
 
     // inflicted status conditions
     [Parameter("address", "statusCondition", 5)]
@@ -49,8 +48,9 @@ public record MonsterCard {
     [Parameter("uint8", "activeMoveCounter", 10)]
     public uint ActiveMoveCounter { get; set; } 
 
+    public MonsterCard() { }
 
-    public MonsterCard(Stats baseStats, Stats stats, ImmutableArray<string> moves) {
+    public MonsterCard(Stats baseStats, Stats stats, List<string> moves) {
         this.CardId = 0;
         this.BaseStats = baseStats with {};
         this.Stats = stats with {};
@@ -63,5 +63,5 @@ public record MonsterCard {
         this.ActiveMoveCounter = 0;
     }
 
-    public MonsterCard(Stats baseStats, Stats stats, string[] moves) : this(baseStats, stats, ImmutableArray.Create<string>(moves)) { }
+    public MonsterCard(Stats baseStats, Stats stats, string[] moves) : this(baseStats, stats, new List<string>(moves)) { }
 }

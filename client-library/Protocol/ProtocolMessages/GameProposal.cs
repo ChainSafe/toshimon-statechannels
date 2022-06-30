@@ -2,6 +2,8 @@
 
 using System;
 using System.Numerics;
+using Nethereum.ABI;
+using Nethereum.ABI.FunctionEncoding;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 
 /**
@@ -11,7 +13,7 @@ using Nethereum.ABI.FunctionEncoding.Attributes;
  *
  * This data structure is never submitted on-chain but still uses ABI encoding for consistency.
  */
-public record GameProposal: ProtocolMessage
+public record GameProposal
 {
 	[Parameter("uint256", "chainId", 1)]
     public BigInteger ChainId { get; set; }
@@ -42,4 +44,14 @@ public record GameProposal: ProtocolMessage
 
     [Parameter("tuple", "playerState", 10)]
     public PlayerState PlayerState { get; set; }
+
+    public byte[] AbiEncode() {
+        ABIEncode abiEncode = new ABIEncode();
+        return abiEncode.GetABIParamsEncoded(this);
+    }
+
+    public static GameProposal AbiDecode(byte[] encoded) {
+        var decoder = new ParameterDecoder();
+        return (GameProposal) decoder.DecodeAttributes(encoded, typeof(GameProposal));
+    }
 }

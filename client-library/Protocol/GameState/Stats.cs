@@ -2,7 +2,6 @@
 
 using System;
 using System.Numerics;
-using System.Collections.Immutable;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 
 /**
@@ -30,5 +29,5 @@ public record Stats {
     public uint Speed { get; set; }
 
     [Parameter("uint8[4]", "moves", 10)]
-    public ImmutableArray<uint> PP { get; set; }
+    public List<uint> PP { get; set; }
 }

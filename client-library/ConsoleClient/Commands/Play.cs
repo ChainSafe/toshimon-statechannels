@@ -1,8 +1,6 @@
 using Spectre.Console.Cli;
 using Spectre.Console;
 using Protocol;
-using toshimon_state_machine;
-using System.Collections.Immutable;
 
 public sealed class PlayCommand : Command<PlayCommand.Settings>
 {
@@ -30,9 +28,9 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
         var table = new Table();
 
         PlayerState me = state[whoami];
-        MonsterCard myMonster = me.GetActiveMonster();
+        MonsterCard myMonster = getActiveMonster(me);
         PlayerState other = state[not(whoami)];
-        MonsterCard otherMonster = other.GetActiveMonster();
+        MonsterCard otherMonster = getActiveMonster(other);
 
         var opponentHp = new BarChart()
         .AddItem("HP", otherMonster.Stats.Hp, Color.Red)
@@ -110,7 +108,7 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
             SpAttack = 90,
             SpDefense = 90,
             Speed = 90,
-            PP = ImmutableArray.Create<uint>(new uint[]{10, 0, 0, 0}),
+            PP = new List<uint>(new uint[]{10, 0, 0, 0}),
         };
 
         return new MonsterCard(
@@ -134,5 +132,9 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
             1 => 0,
             _ => throw new IndexOutOfRangeException(),
         };
+    }
+
+    private static MonsterCard getActiveMonster(PlayerState player) {
+        return player.Monsters[player.ActiveMonsterIndex];
     }
 }
