@@ -35,4 +35,8 @@ public class ToshimonDb {
 		return monsters.FirstOrDefault(x => x.ToshidexNumber == toshidexNumber);
 	}
 
+	public MonsterRecord findByCardId(uint cardId) {
+		return monsters.FirstOrDefault(x => x.EthCardIndex == cardId);
+	}
+
 }

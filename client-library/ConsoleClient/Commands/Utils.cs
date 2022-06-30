@@ -1,6 +1,7 @@
 using Spectre.Console;
 using Protocol;
 using Nethereum.Signer;
+using System.Numerics;
 
 using Nethereum.Hex.HexConvertors.Extensions;
 using System.Threading.Tasks;
@@ -37,131 +38,155 @@ public static class Utils {
     }
 
     public static MonsterCard[] selectToshimonParty() {
-		AnsiConsole.Write(new Rule("Select Toshimon Party"));
+      AnsiConsole.Write(new Rule("Select Toshimon Party"));
 
-        List<MonsterCard> monsters = new List<MonsterCard>();
+      List<MonsterCard> monsters = new List<MonsterCard>();
 
         // TODO make this file path an env var or something
-        var db = new ToshimonDb("./toshimon.csv");
+      var db = new ToshimonDb("./toshimon.csv");
 
-        for (int i = 0; i < 5; i++) {
-            MonsterRecord monster;
-            do {
-                int toshimonNumber = AnsiConsole.Ask<int>(String.Format("Input Toshidex number for party member {0}:", i+1));
-                monster = db.findByToshidexNumber(toshimonNumber);
-                renderMonster(monster);
-            } while (!AnsiConsole.Confirm(String.Format("Use this Toshimon?")));
-            monsters.Add(monster.toMonsterCard());
-        }
-        return monsters.ToArray();
+      for (int i = 0; i < 5; i++) {
+        MonsterRecord monster;
+        do {
+            int toshimonNumber = AnsiConsole.Ask<int>(String.Format("Input Toshidex number for party member {0}:", i+1));
+            monster = db.findByToshidexNumber(toshimonNumber);
+            renderMonster(monster);
+        } while (!AnsiConsole.Confirm(String.Format("Use this Toshimon?")));
+        monsters.Add(monster.toMonsterCard());
     }
+    return monsters.ToArray();
+}
 
-    public static EthECKey generateNewKey() {
-    	return EthECKey.GenerateKey();
-    }
+public static EthECKey generateNewKey() {
+   return EthECKey.GenerateKey();
+}
 
-    public static EthECKey createOrLoadKey() {
-    	if (AnsiConsole.Confirm("Generate new ephemeral keypair for this game?")) {
-            AnsiConsole.MarkupLine("Generating new keypair...");
+public static EthECKey createOrLoadKey() {
+   if (AnsiConsole.Confirm("Generate new ephemeral keypair for this game?")) {
+    AnsiConsole.MarkupLine("Generating new keypair...");
             // generate a new keypair
-            EthECKey ecKey = generateNewKey();
+    EthECKey ecKey = generateNewKey();
             // save to file
-            var keyStoreService = new Nethereum.KeyStore.KeyStoreScryptService();
-			var scryptParams = new ScryptParams {Dklen = 32, N = 262144, R = 1, P = 8};
-			string password = "password"; // use no password for ephemeral keys
-			var keyStore = keyStoreService.EncryptAndGenerateKeyStore(password, ecKey.GetPrivateKeyAsBytes(), ecKey.GetPublicAddress(), scryptParams);
-            string json = keyStoreService.SerializeKeyStoreToJson(keyStore);
-			File.WriteAllText("./keystore.json", json);  
+    var keyStoreService = new Nethereum.KeyStore.KeyStoreScryptService();
+    var scryptParams = new ScryptParams {Dklen = 32, N = 262144, R = 1, P = 8};			
 
-            return ecKey;
-        } else {
-            string path = AnsiConsole.Ask<string>("Path to existing key store file");
-            string password = AnsiConsole.Prompt(
-                new TextPrompt<string>("Enter keystore password?")
-                    .Secret());
+    string path = AnsiConsole.Prompt(
+        new TextPrompt<string>("Enter path to save keystore file."));
 
-			return loadKey(path, password);
-        }
+    string password = AnsiConsole.Prompt(
+        new TextPrompt<string>("Enter keystore password?")
+        .Secret());
+
+    var keyStore = keyStoreService.EncryptAndGenerateKeyStore(password, ecKey.GetPrivateKeyAsBytes(), ecKey.GetPublicAddress(), scryptParams);
+    string json = keyStoreService.SerializeKeyStoreToJson(keyStore);
+
+    File.WriteAllText(path, json);  
+
+    return ecKey;
+} else {
+    string path = AnsiConsole.Ask<string>("Path to existing key store file");
+    string password = AnsiConsole.Prompt(
+        new TextPrompt<string>("Enter keystore password?")
+        .Secret());
+
+    return loadKey(path, password);
+}
+}
+
+public static EthECKey loadKey(string path, string password) {
+    string encryptedJson = File.ReadAllText(path);
+    var keyStoreService = new Nethereum.KeyStore.KeyStoreScryptService();
+    byte[] privateKey = keyStoreService.DecryptKeyStoreFromJson(password, encryptedJson);
+    return new EthECKey(privateKey, true);
+}
+
+public static void signAndWriteUpdate(FixedPart fixedPart, VariablePart variablePart, EthECKey key, string path) {
+        // sign this state update with this players key
+    var signature = new StateUpdate(fixedPart, variablePart).Sign(key);    
+
+        // combine into an acceptance message
+    var stateUpdate = new SignedStateUpdate() {
+        VariablePart = variablePart,
+        Signature = signature,
+    };
+        // write to std out or a file if output path provided
+    using (Stream s = File.Create(path) ) {
+        byte[] stateUpdateBytes = stateUpdate.AbiEncode();
+        s.Write(stateUpdateBytes, 0, stateUpdateBytes.Length);
     }
+}
 
-    public static EthECKey loadKey(string path, string password) {
-        string encryptedJson = File.ReadAllText(path);
-        var keyStoreService = new Nethereum.KeyStore.KeyStoreScryptService();
-        byte[] privateKey = keyStoreService.DecryptKeyStoreFromJson(password, encryptedJson);
-        return new EthECKey(privateKey, true);
-    }
+public static void renderProposal() {
 
-    public static void renderProposal() {
-        
-    }
+}
 
-    public static void renderChannelDef(FixedPart channelSpec) {
-        var table = new Table();
-        table.HideHeaders();
+public static void renderChannelDef(FixedPart channelSpec) {
+    var table = new Table();
+    table.HideHeaders();
 
-        var playerTable = new Table();
-        playerTable.HideHeaders();
-        playerTable.AddColumn("");
-        playerTable.AddColumn("");
-        playerTable.AddRow("Player A", channelSpec.Participants[0]);
-        playerTable.AddRow("Player B", channelSpec.Participants[1]);
-        AnsiConsole.Write(playerTable);
-        
-        table.AddColumn("");
-        table.AddColumn("");
-        table.AddRow("Channel Id", Convert.ToBase64String(channelSpec.ChannelId));
-        table.AddRow("Chain Id", channelSpec.ChainId.ToString());
-        table.AddRow("ChannelNonce",channelSpec.ChannelNonce.ToString());
-        table.AddRow("AppDefinition",channelSpec.AppDefinition);
-        table.AddRow("ChallengeDuration",channelSpec.ChallengeDuration.ToString());
-        AnsiConsole.Write(table);
-    }
+    var playerTable = new Table();
+    playerTable.HideHeaders();
+    playerTable.AddColumn("");
+    playerTable.AddColumn("");
+    playerTable.AddRow("Player A", channelSpec.Participants[0]);
+    playerTable.AddRow("Player B", channelSpec.Participants[1]);
+    AnsiConsole.Write(playerTable);
 
-    public static void renderState(GameState state, int whoami) {
+    table.AddColumn("");
+    table.AddColumn("");
+    table.AddRow("Channel Id", Convert.ToBase64String(channelSpec.ChannelId));
+    table.AddRow("Chain Id", channelSpec.ChainId.ToString());
+    table.AddRow("ChannelNonce",channelSpec.ChannelNonce.ToString());
+    table.AddRow("AppDefinition",channelSpec.AppDefinition);
+    table.AddRow("ChallengeDuration",channelSpec.ChallengeDuration.ToString());
+    AnsiConsole.Write(table);
+}
+
+public static void renderState(GameState state, int whoami) {
         // Create a table
-        var table = new Table();
+    var table = new Table();
 
-        PlayerState me = state[whoami];
-        MonsterCard myMonster = GetActiveMonster(me);
-        PlayerState other = state[not(whoami)];
-        MonsterCard otherMonster = GetActiveMonster(other);
-
-        var opponentHp = new BarChart()
-        .AddItem("HP", otherMonster.Stats.Hp, Color.Red)
-        .WithMaxValue(otherMonster.BaseStats.Hp);
-
-        var ownHp = new BarChart()
-        .AddItem("HP", myMonster.Stats.Hp, Color.Green)
-        .WithMaxValue(myMonster.BaseStats.Hp);
+    PlayerState me = state[whoami];
+    PlayerState other = state[not(whoami)];
 
         // Add some columns
-        table.AddColumn("");
-        table.AddColumn("");
+    table.AddColumn("Enemy");
+    table.AddColumn("Yours");
 
-        // Add some rows
-        table.AddRow(String.Format("Enemy {0}", otherMonster.CardId), "");
-        table.AddRow(new Panel(opponentHp), new Panel(""));
-        table.AddRow("","");
-        table.AddRow("", String.Format("Your {0}", myMonster.CardId));
-        table.AddRow(new Panel(""), new Panel(ownHp));
+    var db = new ToshimonDb("./toshimon.csv");
 
-        table.Border(TableBorder.Rounded);
-        table.HideHeaders();
-        table.Expand();
-
-        // Render the table to the console
-        AnsiConsole.Write(table);
+    for( int i = 0; i < 5; i++) {
+        table.AddRow(
+            monsterSummary(other.Monsters[i], other.ActiveMonsterIndex == i, db),
+            monsterSummary(me.Monsters[i], me.ActiveMonsterIndex == i, db)
+        );
     }
 
-    private static int not(int i) {
-        return i switch {
-            0 => 1,
-            1 => 0,
-            _ => throw new IndexOutOfRangeException(),
-        };
-    }
+    table.Border(TableBorder.Rounded);
+    table.Expand();
 
-    public static MonsterCard GetActiveMonster(PlayerState p) {
-        return p.Monsters[p.ActiveMonsterIndex];
-    }
+    // Render the table to the console
+    AnsiConsole.Write(table);
+}
+
+private static Table monsterSummary(MonsterCard m, bool active, ToshimonDb db) {
+    var t = new Table();
+    t.AddColumn(String.Format("{1} {0}", active ? "(active)" : "",  db.findByCardId(m.CardId).Name));
+    t.AddRow(new BarChart()
+        .AddItem("HP", m.Stats.Hp, Color.Green)
+        .WithMaxValue(m.BaseStats.Hp));
+    return t;
+}
+
+private static int not(int i) {
+    return i switch {
+        0 => 1,
+        1 => 0,
+        _ => throw new IndexOutOfRangeException(),
+    };
+}
+
+public static MonsterCard GetActiveMonster(PlayerState p) {
+    return p.Monsters[p.ActiveMonsterIndex];
+}
 }

@@ -11,38 +11,51 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
 {
     public sealed class Settings : CommandSettings
     {
-        [CommandOption("-i|--input")]
+        [CommandOption("-c|--channelPath")]
         public string? InputPath { get; init; }
 
-        [CommandOption("-o|--output")]
-        public string? OutputPath { get; init; }
+        [CommandOption("-k|--keystore")]
+        public string? KeyStore { get; init; }
+
+        [CommandOption("-p|--password")]
+        public string? KeyStorePassword { get; init; }
     }
 
     public override int Execute(CommandContext context, Settings settings)
     {
         AnsiConsole.Write(new Rule("Respond to a state update"));
 
+        string keystorePath = settings.KeyStore ?? Environment.GetEnvironmentVariable("KEYSTORE");
+        string keystorePassword = settings.KeyStorePassword ?? Environment.GetEnvironmentVariable("KEYSTORE_PASSWORD");
+
         // load the keyfile specified in KEYSTORE the env vars
         EthECKey key = Utils.loadKey(
-            Environment.GetEnvironmentVariable("KEYSTORE"),
-            Environment.GetEnvironmentVariable("KEYSTORE_PASSWORD")
-        );
+            keystorePath,
+            keystorePassword
+            );
+
+        var channelDir = Path.GetFullPath(settings.InputPath);
 
         // load the fixedPart/channel spec
-        byte[] encodedFixedPart = File.ReadAllBytes(Environment.GetEnvironmentVariable("CHANNEL_DEF"));
-        var channelDef = FixedPart.AbiDecode(encodedFixedPart);        
+        byte[] encodedFixedPart = File.ReadAllBytes(Path.Combine(channelDir, "channelSpec"));
+        var fixedPart = FixedPart.AbiDecode(encodedFixedPart);        
 
-        Utils.renderChannelDef(channelDef);
+        Utils.renderChannelDef(fixedPart);
 
         // figure which player index we are
-        int whoami = channelDef.Participants.FindIndex(x => x == key.GetPublicAddress());
+        int whoami = fixedPart.Participants.FindIndex(x => x == key.GetPublicAddress());
         if (whoami < 0) {
             AnsiConsole.WriteLine("The keypair loaded is not a participant in this channel. Did you load the wrong key? Exiting..");
             return 0;
         }
 
+        // assume we are playing off the highest existing state message
+        var highestFile = Directory.EnumerateFiles(channelDir, "*.state")
+                                .OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f)))
+                                .Last();
+
         // load the state update
-        byte[] encodedSignedState = File.ReadAllBytes(settings.InputPath);
+        byte[] encodedSignedState = File.ReadAllBytes(Path.Combine(channelDir, highestFile));
         var signedStateUpdate = SignedStateUpdate.AbiDecode(encodedSignedState);
 
         var variablePart = signedStateUpdate.VariablePart;
@@ -55,16 +68,19 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
             return 0;           
         }
 
+        var newStateOutputPath = Path.Combine(channelDir, String.Format("{0}.state", thisTurnNum));
+
         // extract the game state and render
-        var gameState = GameState.AbiDecode(variablePart.AppData);
+        var appData = AppData.AbiDecode(variablePart.AppData);
+        var gameState = GameState.AbiDecode(appData.GameState);
         Utils.renderState(gameState, whoami);
 
         if (thisTurnNum == 1) {
             // If this is in the pre-fund phase then just increment the TurnNum, sign the update and return
             AnsiConsole.WriteLine("Channel is in the pre-fund phase. This message must be signed and sent before the opponent can deposit funds");            
-            if(AnsiConsole.Confirm("Would you like to sign this update and confirm initialization of the channel?")) {
-                thisTurnNum += 1;
-                // sign and write to disk
+            if(AnsiConsole.Confirm("Would you like to sign this update and confirm participation in the channel?")) {
+                var nextVariablePart = variablePart with { TurnNum = thisTurnNum };
+                Utils.signAndWriteUpdate(fixedPart, nextVariablePart, key, newStateOutputPath);
             }
             return 0;
         } else if (thisTurnNum >= 2 && thisTurnNum <= 3) {
@@ -72,30 +88,48 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
             // Can add an automatic check down the track
             AnsiConsole.WriteLine("Channel is in the post-fund phase. Only sign this message if you have observed that the channel is fully funded and the chain is finalized.");            
             if(AnsiConsole.Confirm("Would you like to sign this update and confirm initialization of the channel?")) {
-                thisTurnNum += 1;
-                // sign and write to disk
+                var nextVariablePart = variablePart with { TurnNum = thisTurnNum };
+                Utils.signAndWriteUpdate(fixedPart, nextVariablePart, key, newStateOutputPath);
             }
         } else {
             // the actual gameplay phase
-            GameAction action;
+            Reveal reveal = getReveal();
             switch (thisTurnNum % 4) {
-                case 0: // Player A commit phase
-                    action = promptForAction();
-                    break;
+                case 0: // Player A commit phase            
+                    AnsiConsole.WriteLine("Commit phase for Player A.");            
+                    appData.PreCommitA = reveal.CommitHash;
+                break;
                 case 1: // Player B commit phase
-                    action = promptForAction();
-                    break;
+                    AnsiConsole.WriteLine("Commit phase for Player B.");            
+                    appData.PreCommitB = reveal.CommitHash;
+                break;
                 case 2: // Player A reveal phase
-                    break;
-                case 3: // Player B reveal phase
-                    break;
+                    AnsiConsole.WriteLine("Reveal phase for Player A. You must select the exact same move as in the commit phase");  
+                    appData.RevealA = reveal; 
+                break;
+                case 3: // Player B reveal and game state update phase
+                    AnsiConsole.WriteLine("Reveal phase for Player B. You must select the exact same move as in the commit phase");            
+                    appData.RevealB = reveal;
+                    // appData.GameState = // State transition!!
+                break;
             }
+
+            var nextVariablePart = variablePart with { TurnNum = thisTurnNum, AppData = appData.AbiEncode() };
+            Utils.signAndWriteUpdate(fixedPart, nextVariablePart, key, newStateOutputPath);
         }
         
-
         return 0;
     }
 
+
+    public static Reveal getReveal() {
+        GameAction action = promptForAction();
+        BigInteger randomSeed = (BigInteger) new Random().Next();
+        return new Reveal() {
+            Move = (byte) action,
+            Seed = randomSeed,
+        };
+    }
 
     // prompt the user and get a Toshimon move
     public static GameAction promptForAction() {

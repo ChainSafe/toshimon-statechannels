@@ -9,7 +9,7 @@ using Nethereum.ABI.FunctionEncoding.Attributes;
  */
 public record MonsterCard {
 
-    [Parameter("uint8", "cardId", 1)]
+    [Parameter("uint256", "cardId", 1)]
     public uint CardId { get; set; }
     
     [Parameter("uint8", "mainType", 1)]

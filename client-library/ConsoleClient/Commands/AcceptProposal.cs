@@ -11,14 +11,11 @@ public sealed class AcceptProposalCommand : Command<AcceptProposalCommand.Settin
 {
     public sealed class Settings : CommandSettings
     {
-        [CommandOption("-i|--input")]
-        public string? InputPath { get; init; }
+        [CommandOption("-p|--proposal")]
+        public string? ProposalPath { get; init; }
 
         [CommandOption("-o|--output")]
         public string? OutputPath { get; init; }
-
-        [CommandOption("-d|--def-output")]
-        public string? DefinitionOutputPath { get; init; }
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -26,7 +23,7 @@ public sealed class AcceptProposalCommand : Command<AcceptProposalCommand.Settin
         AnsiConsole.Write(new Rule("Respond to game proposal"));
         
         // load the game proposal
-        byte[] encodedProposal = File.ReadAllBytes(settings.InputPath);
+        byte[] encodedProposal = File.ReadAllBytes(settings.ProposalPath);
         GameProposal proposal = GameProposal.AbiDecode(encodedProposal);
 
         // display it so the player can see if they want to respond
@@ -57,7 +54,9 @@ public sealed class AcceptProposalCommand : Command<AcceptProposalCommand.Settin
             ChallengeDuration = proposal.ChallengeDuration,
         };
 
-        GameState appData = new GameState(playerState, proposal.PlayerState);
+        // create a new game state from the proposal and wrap in a rolling random app data
+        GameState gameState = new GameState(playerState, proposal.PlayerState);
+        AppData appData = new AppData(gameState.AbiEncode());
 
         var variablePart = new VariablePart() {
             AppData = appData.AbiEncode(),
@@ -66,26 +65,17 @@ public sealed class AcceptProposalCommand : Command<AcceptProposalCommand.Settin
             IsFinal = false,
         };
 
-        // sign this state update with this players key
-        var signature = new StateUpdate(fixedPart, variablePart).Sign(key);    
+        var channelDir = Path.Combine(Path.GetFullPath(settings.OutputPath ?? "."), Convert.ToBase64String(fixedPart.ChannelId));
+        Directory.CreateDirectory(channelDir);
 
-        // combine into an acceptance message
-        var stateUpdate = new SignedStateUpdate() {
-            VariablePart = variablePart,
-            Signature = signature,
-        };
 
-        // write to std out or a file if output path provided
-        using (Stream s = settings.OutputPath is null ? Console.OpenStandardOutput() : File.Create(settings.OutputPath) ) {
-            byte[] stateUpdateBytes = stateUpdate.AbiEncode();
-            s.Write(stateUpdateBytes, 0, stateUpdateBytes.Length);
-        }
-
-        // write to std out or a file if output path provided
-        using (Stream s = settings.DefinitionOutputPath is null ? Console.OpenStandardOutput() : File.Create(settings.DefinitionOutputPath) ) {
+        // Write channel definition to output directory
+        using (Stream s = File.Create(Path.Combine(channelDir, "channelSpec")) ) {
             byte[] fixedPartBytes = fixedPart.AbiEncode();
             s.Write(fixedPartBytes, 0, fixedPartBytes.Length);
         }
+
+        Utils.signAndWriteUpdate(fixedPart, variablePart, key, Path.Combine(channelDir, "0.state"));
 
         AnsiConsole.Write(new Panel("Successfully created the initial channel state. If the other party responds with the next update then the channel can be funded and a game can commence."));
 

@@ -70,7 +70,7 @@ public record MonsterRecord
             stats,
             stats,
             new string[]{ "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000" } // Moves also not yet supported
-        );
+        ) { CardId = EthCardIndex };
     }
 
 }
