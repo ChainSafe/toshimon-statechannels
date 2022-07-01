@@ -55,8 +55,14 @@ public record MonsterRecord
     [CsvColumn(Name = "speed", FieldIndex = 16)]
     public uint Speed { get; set; }
 
-    [CsvColumn(Name = "knownMoves", FieldIndex = 17)]
-    public string KnownMoves { get; set; }
+    [CsvColumn(Name = "move1", FieldIndex = 17)]
+    public string Move1 { get; set; }
+
+    [CsvColumn(Name = "move2", FieldIndex = 18)]
+    public string Move2 { get; set; }
+
+    [CsvColumn(Name = "move3", FieldIndex = 19)]
+    public string Move3 { get; set; }
 
     public MonsterCard toMonsterCard() {
         Stats stats = new Stats {

@@ -20,6 +20,20 @@ public static class Utils {
         typeTable.AddRow(((ToshimonType) mon.Type1).ToString(), ((ToshimonType) mon.Type2).ToString());
         AnsiConsole.Write(typeTable);
 
+        var movesTable = new Table();
+        movesTable.AddColumn("Move");
+        movesTable.AddColumn("SP");
+        movesTable.AddColumn("Description");
+
+        var db = new MovesDb("./ToshimonDatabase/moves.csv");
+
+        foreach(var guid in new string[]{mon.Move1, mon.Move2, mon.Move3}) {
+            MoveRecord move = db.findByGuid(guid);
+            movesTable.AddRow(move.Name, move.Sp.ToString(), move.Description ?? "");
+        }
+
+        AnsiConsole.Write(movesTable);
+
         var statTable = new Table();
         statTable.AddColumn("Stat");
         statTable.AddColumn("Value");
@@ -43,7 +57,7 @@ public static class Utils {
       List<MonsterCard> monsters = new List<MonsterCard>();
 
         // TODO make this file path an env var or something
-      var db = new ToshimonDb("./toshimon.csv");
+      var db = new ToshimonDb("./ToshimonDatabase/toshimon.csv");
 
       for (int i = 0; i < 5; i++) {
         MonsterRecord monster;
@@ -153,7 +167,7 @@ public static void renderState(GameState state, int whoami) {
     table.AddColumn("Enemy");
     table.AddColumn("Yours");
 
-    var db = new ToshimonDb("./toshimon.csv");
+    var db = new ToshimonDb("./ToshimonDatabase/toshimon.csv");
 
     for( int i = 0; i < 5; i++) {
         table.AddRow(
