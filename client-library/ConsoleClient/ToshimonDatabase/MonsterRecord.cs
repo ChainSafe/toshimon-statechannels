@@ -13,46 +13,49 @@ public record MonsterRecord
     [CsvColumn(Name = "toshidexNumber", FieldIndex = 2)]
     public uint ToshidexNumber { get; set; }
 
-    [CsvColumn(Name = "rarity", FieldIndex = 3)]
+    [CsvColumn(Name = "guid", FieldIndex = 3)]
+    public string Guid { get; set; }
+
+    [CsvColumn(Name = "rarity", FieldIndex = 4)]
     public uint Rarity { get; set; }
 
-    [CsvColumn(Name = "evolves", FieldIndex = 4)]
+    [CsvColumn(Name = "evolves", FieldIndex = 5)]
     public uint Evolves { get; set; }
 
-    [CsvColumn(Name = "evolutionStage", FieldIndex = 5)]
+    [CsvColumn(Name = "evolutionStage", FieldIndex = 6)]
     public uint EvolutionStage { get; set; }
 
-    [CsvColumn(Name = "description", CanBeNull = true, FieldIndex = 6)]
+    [CsvColumn(Name = "description", CanBeNull = true, FieldIndex = 7)]
     public string? Description { get; set; }
 
-    [CsvColumn(Name = "ethCardIndex", FieldIndex = 7)]
+    [CsvColumn(Name = "ethCardIndex", FieldIndex = 8)]
     public uint EthCardIndex { get; set; }
 
-    [CsvColumn(Name = "type1", FieldIndex = 8)]
+    [CsvColumn(Name = "type1", FieldIndex = 9)]
     public uint Type1 { get; set; }
 
-    [CsvColumn(Name = "type2", FieldIndex = 9)]
+    [CsvColumn(Name = "type2", FieldIndex = 10)]
     public uint Type2 { get; set; }
 
-    [CsvColumn(Name = "maxHP", FieldIndex = 10)]
+    [CsvColumn(Name = "maxHP", FieldIndex = 11)]
     public uint MaxHP { get; set; }
 
-    [CsvColumn(Name = "attack", FieldIndex = 11)]
+    [CsvColumn(Name = "attack", FieldIndex = 12)]
     public uint Attack { get; set; }
 
-    [CsvColumn(Name = "defense", FieldIndex = 12)]
+    [CsvColumn(Name = "defense", FieldIndex = 13)]
     public uint Defense { get; set; }
 
-    [CsvColumn(Name = "spAttack", FieldIndex = 13)]
+    [CsvColumn(Name = "spAttack", FieldIndex = 14)]
     public uint SpAttack { get; set; }
 
-    [CsvColumn(Name = "spDefense", FieldIndex = 14)]
+    [CsvColumn(Name = "spDefense", FieldIndex = 15)]
     public uint SpDefense { get; set; }
 
-    [CsvColumn(Name = "speed", FieldIndex = 15)]
+    [CsvColumn(Name = "speed", FieldIndex = 16)]
     public uint Speed { get; set; }
 
-    [CsvColumn(Name = "knownMoves", FieldIndex = 16)]
+    [CsvColumn(Name = "knownMoves", FieldIndex = 17)]
     public string KnownMoves { get; set; }
 
     public MonsterCard toMonsterCard() {
