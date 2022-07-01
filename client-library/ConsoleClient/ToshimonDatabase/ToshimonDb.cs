@@ -13,7 +13,7 @@ public class ToshimonDb {
 			};
 			CsvContext cc = new CsvContext();
 			monsters =
-	    		cc.Read<MonsterRecord>(filePath, inputFileDescription);
+	    		cc.Read<MonsterRecord>(filePath, inputFileDescription) ?? new List<MonsterRecord>();
 		} 
 		catch(AggregatedException ae)
 	    {
@@ -31,12 +31,12 @@ public class ToshimonDb {
 
 	}
 
-	public MonsterRecord findByToshidexNumber(int toshidexNumber) {
-		return monsters.FirstOrDefault(x => x.ToshidexNumber == toshidexNumber);
+	public MonsterRecord? findByToshidexNumber(int toshidexNumber) {
+		return monsters.First(x => x.ToshidexNumber == toshidexNumber);
 	}
 
-	public MonsterRecord findByCardId(uint cardId) {
-		return monsters.FirstOrDefault(x => x.EthCardIndex == cardId);
+	public MonsterRecord? findByCardId(uint cardId) {
+		return monsters.First(x => x.EthCardIndex == cardId);
 	}
 
 }

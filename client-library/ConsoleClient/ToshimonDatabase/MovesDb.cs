@@ -14,7 +14,7 @@ public class MovesDb {
 			};
 			CsvContext cc = new CsvContext();
 			moves =
-	    		cc.Read<MoveRecord>(filePath, inputFileDescription);
+	    		cc.Read<MoveRecord>(filePath, inputFileDescription) ?? new List<MoveRecord>();
 		} 
 		catch(AggregatedException ae)
 	    {
@@ -32,8 +32,12 @@ public class MovesDb {
 
 	}
 
-	public MoveRecord findByGuid(string guid) {
-	    return moves.FirstOrDefault(x => x.Guid == guid);
+	public MoveRecord? findByGuid(string guid) {
+	    return moves.First(x => x.Guid == guid);
+	}
+
+	public MoveRecord? findByContractAddress(string addr) {
+	    return moves.First(x => x.ContractAddress == addr);
 	}
 
 }

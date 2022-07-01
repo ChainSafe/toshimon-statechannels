@@ -11,13 +11,13 @@ public record MoveRecord
     public uint MoveNumber { get; set; }
 
     [CsvColumn(Name = "contractAddress", FieldIndex = 2)]
-    public string ContractAddress { get; set; }
+    public string ContractAddress { get; set; } = "";
 
     [CsvColumn(Name = "guid", FieldIndex = 3)]
-    public string Guid { get; set; }
+    public string Guid { get; set; } = "";
 
     [CsvColumn(Name = "name", FieldIndex = 4)]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [CsvColumn(Name = "description", CanBeNull = true, FieldIndex = 7)]
     public string? Description { get; set; }

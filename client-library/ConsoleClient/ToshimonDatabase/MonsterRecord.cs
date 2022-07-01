@@ -8,13 +8,13 @@ using Protocol;
 public record MonsterRecord
 {
     [CsvColumn(Name = "name", FieldIndex = 1)]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [CsvColumn(Name = "toshidexNumber", FieldIndex = 2)]
     public uint ToshidexNumber { get; set; }
 
     [CsvColumn(Name = "guid", FieldIndex = 3)]
-    public string Guid { get; set; }
+    public string Guid { get; set; } = "";
 
     [CsvColumn(Name = "rarity", FieldIndex = 4)]
     public uint Rarity { get; set; }
@@ -56,16 +56,16 @@ public record MonsterRecord
     public uint Speed { get; set; }
 
     [CsvColumn(Name = "move1", FieldIndex = 17)]
-    public string Move1 { get; set; }
+    public string? Move1 { get; set; }
 
     [CsvColumn(Name = "move2", FieldIndex = 18)]
-    public string Move2 { get; set; }
+    public string? Move2 { get; set; }
 
     [CsvColumn(Name = "move3", FieldIndex = 19)]
-    public string Move3 { get; set; }
+    public string? Move3 { get; set; }
 
-    public string[] MoveGuids() {
-        return new string[]{Move1, Move2, Move3};
+    public string?[] MoveGuids() {
+        return new string?[]{Move1, Move2, Move3};
     }
 
     public MonsterCard toMonsterCard() {
