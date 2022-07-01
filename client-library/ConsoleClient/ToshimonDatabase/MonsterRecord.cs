@@ -64,7 +64,20 @@ public record MonsterRecord
     [CsvColumn(Name = "move3", FieldIndex = 19)]
     public string Move3 { get; set; }
 
+    public string[] MoveGuids() {
+        return new string[]{Move1, Move2, Move3};
+    }
+
     public MonsterCard toMonsterCard() {
+        var db = new MovesDb("./ToshimonDatabase/moves.csv");
+        var moves = MoveGuids().Select(guid => db.findByGuid(guid));
+
+        List<uint> pp = moves.Select(m => m.Sp).ToList();
+        pp.Add(0); // for the TMM move
+
+        List<string> addresses = moves.Select(m => m.ContractAddress).ToList();
+        addresses.Add("0x0000000000000000000000000000000000000000");
+
         Stats stats = new Stats {
             Hp = MaxHP,
             Attack = Attack,
@@ -73,12 +86,12 @@ public record MonsterRecord
             SpDefense = SpDefense,
             Speed = Speed,
             // Move PP not supported yet
-            PP = new List<uint>(new uint[4]{ 0, 0, 0, 0 }),
+            PP = pp,
         };
         return new MonsterCard(
             stats,
             stats,
-            new string[]{ "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000" } // Moves also not yet supported
+            addresses
         ) { CardId = EthCardIndex };
     }
 

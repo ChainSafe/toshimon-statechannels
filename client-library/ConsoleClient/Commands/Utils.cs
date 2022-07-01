@@ -27,7 +27,7 @@ public static class Utils {
 
         var db = new MovesDb("./ToshimonDatabase/moves.csv");
 
-        foreach(var guid in new string[]{mon.Move1, mon.Move2, mon.Move3}) {
+        foreach(var guid in mon.MoveGuids()) {
             MoveRecord move = db.findByGuid(guid);
             movesTable.AddRow(move.Name, move.Sp.ToString(), move.Description ?? "");
         }
