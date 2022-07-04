@@ -42,20 +42,6 @@ namespace Protocol.ToshimonStateTransition.Service
             ContractHandler = web3.Eth.GetContractHandler(contractAddress);
         }
 
-        public Task<bool> DummyQueryAsync(DummyFunction dummyFunction, BlockParameter blockParameter = null)
-        {
-            return ContractHandler.QueryAsync<DummyFunction, bool>(dummyFunction, blockParameter);
-        }
-
-        
-        public Task<bool> DummyQueryAsync(AppData gameState, BlockParameter blockParameter = null)
-        {
-            var dummyFunction = new DummyFunction();
-                dummyFunction.GameState = gameState;
-            
-            return ContractHandler.QueryAsync<DummyFunction, bool>(dummyFunction, blockParameter);
-        }
-
         public Task<AdvanceStateOutputDTO> AdvanceStateQueryAsync(AdvanceStateFunction advanceStateFunction, BlockParameter blockParameter = null)
         {
             return ContractHandler.QueryDeserializingToObjectAsync<AdvanceStateFunction, AdvanceStateOutputDTO>(advanceStateFunction, blockParameter);
@@ -71,6 +57,23 @@ namespace Protocol.ToshimonStateTransition.Service
                 advanceStateFunction.RandomSeed = randomSeed;
             
             return ContractHandler.QueryDeserializingToObjectAsync<AdvanceStateFunction, AdvanceStateOutputDTO>(advanceStateFunction, blockParameter);
+        }
+
+        public Task<AdvanceStateTypedOutputDTO> AdvanceStateTypedQueryAsync(AdvanceStateTypedFunction advanceStateTypedFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryDeserializingToObjectAsync<AdvanceStateTypedFunction, AdvanceStateTypedOutputDTO>(advanceStateTypedFunction, blockParameter);
+        }
+
+        public Task<AdvanceStateTypedOutputDTO> AdvanceStateTypedQueryAsync(GameState gameState, List<SingleAssetExit> outcome, byte moveA, byte moveB, byte[] randomSeed, BlockParameter blockParameter = null)
+        {
+            var advanceStateTypedFunction = new AdvanceStateTypedFunction();
+                advanceStateTypedFunction.GameState = gameState;
+                advanceStateTypedFunction.Outcome = outcome;
+                advanceStateTypedFunction.MoveA = moveA;
+                advanceStateTypedFunction.MoveB = moveB;
+                advanceStateTypedFunction.RandomSeed = randomSeed;
+            
+            return ContractHandler.QueryDeserializingToObjectAsync<AdvanceStateTypedFunction, AdvanceStateTypedOutputDTO>(advanceStateTypedFunction, blockParameter);
         }
 
         public Task<UpdateOutcomeFavourPlayerOutputDTO> UpdateOutcomeFavourPlayerQueryAsync(UpdateOutcomeFavourPlayerFunction updateOutcomeFavourPlayerFunction, BlockParameter blockParameter = null)

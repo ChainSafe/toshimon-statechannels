@@ -11,7 +11,7 @@
             "DTONamespace":null,
             "ServiceNamespace":null,
             "CodeGenLanguage":"CSharp",
-            "BaseOutputPath":"Autogen-dev"
+            "BaseOutputPath":"Autogen"
         },
         {
             "ContractName":"Adjudicator",
@@ -24,7 +24,7 @@
             "DTONamespace":null,
             "ServiceNamespace":null,
             "CodeGenLanguage":"CSharp",
-            "BaseOutputPath":"Autogen-dev"
+            "BaseOutputPath":"Autogen"
         }
     ]
 }

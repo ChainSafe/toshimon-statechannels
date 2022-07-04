@@ -28,15 +28,6 @@ namespace Protocol.ToshimonStateTransition.ContractDefinition
 
     }
 
-    public partial class DummyFunction : DummyFunctionBase { }
-
-    [Function("_dummy", "bool")]
-    public class DummyFunctionBase : FunctionMessage
-    {
-        [Parameter("tuple", "gameState", 1)]
-        public virtual AppData GameState { get; set; }
-    }
-
     public partial class AdvanceStateFunction : AdvanceStateFunctionBase { }
 
     [Function("advanceState", typeof(AdvanceStateOutputDTO))]
@@ -44,6 +35,23 @@ namespace Protocol.ToshimonStateTransition.ContractDefinition
     {
         [Parameter("bytes", "_gameState_", 1)]
         public virtual byte[] GameState_ { get; set; }
+        [Parameter("tuple[]", "outcome", 2)]
+        public virtual List<SingleAssetExit> Outcome { get; set; }
+        [Parameter("uint8", "moveA", 3)]
+        public virtual byte MoveA { get; set; }
+        [Parameter("uint8", "moveB", 4)]
+        public virtual byte MoveB { get; set; }
+        [Parameter("bytes32", "randomSeed", 5)]
+        public virtual byte[] RandomSeed { get; set; }
+    }
+
+    public partial class AdvanceStateTypedFunction : AdvanceStateTypedFunctionBase { }
+
+    [Function("advanceStateTyped", typeof(AdvanceStateTypedOutputDTO))]
+    public class AdvanceStateTypedFunctionBase : FunctionMessage
+    {
+        [Parameter("tuple", "gameState", 1)]
+        public virtual GameState GameState { get; set; }
         [Parameter("tuple[]", "outcome", 2)]
         public virtual List<SingleAssetExit> Outcome { get; set; }
         [Parameter("uint8", "moveA", 3)]
@@ -85,6 +93,19 @@ namespace Protocol.ToshimonStateTransition.ContractDefinition
     {
         [Parameter("bytes", "", 1)]
         public virtual byte[] ReturnValue1 { get; set; }
+        [Parameter("tuple[]", "", 2)]
+        public virtual List<SingleAssetExit> ReturnValue2 { get; set; }
+        [Parameter("bool", "", 3)]
+        public virtual bool ReturnValue3 { get; set; }
+    }
+
+    public partial class AdvanceStateTypedOutputDTO : AdvanceStateTypedOutputDTOBase { }
+
+    [FunctionOutput]
+    public class AdvanceStateTypedOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("tuple", "", 1)]
+        public virtual GameState ReturnValue1 { get; set; }
         [Parameter("tuple[]", "", 2)]
         public virtual List<SingleAssetExit> ReturnValue2 { get; set; }
         [Parameter("bool", "", 3)]

@@ -42,19 +42,26 @@ public class EvmStateTransition : IStateTransition {
  		) {	
 		var service = new ToshimonStateTransitionService(Web3, ContractAddress);
 		// serialize params and call function
-		var result = service.AdvanceStateQueryAsync(
-			gameState.AbiEncode(),
+		var result = service.AdvanceStateTypedQueryAsync(
+			gameState,
 			new List<SingleAssetExit>(outcome),
 			(byte) actions[0],
 			(byte) actions[1],
 			Enumerable.Repeat((byte) 0, 32).ToArray()
 		).Result; // block for results on async function. Can modify to be async if desired
+
 		// deserialize and return result
 		return (
-			GameState.AbiDecode(result.ReturnValue1),
+			result.ReturnValue1,
 			result.ReturnValue2.ToArray(),
 			result.ReturnValue3
 		);
+
+		// var result = service.DummyQueryAsync(
+		// 	gameState
+		// ).Result; // block for
+
+		// return (gameState, outcome, true);
 	}
 }
 
