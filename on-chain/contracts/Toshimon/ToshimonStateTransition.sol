@@ -13,7 +13,13 @@ import '../CommitReveal/CommitRevealApp.sol';
 import { ToshimonState as TM } from './ToshimonState.sol';
 import './interfaces/IMove.sol';
 
+
 contract ToshimonStateTransition is CommitRevealApp {
+
+
+    function _dummy(TM.GameState calldata gs) public pure returns (bool) {
+        return (true);
+    }
 
     function advanceState(
         bytes memory _gameState_,
@@ -22,34 +28,37 @@ contract ToshimonStateTransition is CommitRevealApp {
         uint8 moveB,
         bytes32 randomSeed
     ) override public pure returns (bytes memory, Outcome.SingleAssetExit[] memory, bool) {
-        TM.GameState memory gameState = _gameState(_gameState_);
+        
+        TM.GameState memory gameState = abi.decode(_gameState_, (TM.GameState));
+
+        return (_gameState_, outcome, true);
 
         // if either player is unconcious then no more moves can be made
         // and the game is over. No further state updates possible.
-        if (_is_unconcious(gameState.players[0]) || _is_unconcious(gameState.players[1])) {
-            return (_gameState_, outcome, true);
-        }
+        // if (_is_unconcious(gameState.players[0]) || _is_unconcious(gameState.players[1])) {
+        //     return (_gameState_, outcome, true);
+        // }
         
         // first up resolve any switch monster actions
         // These occur first and order between players doesn't matter
-        if ( _isSwapAction(moveA) ) {
-            gameState.players[0].activeMonsterIndex = moveA - 4;
-        }
-        if ( _isSwapAction(moveB) ) {
-            gameState.players[1].activeMonsterIndex = moveB - 4;
-        }
+        // if ( _isSwapAction(moveA) ) {
+        //     gameState.players[0].activeMonsterIndex = moveA - 4;
+        // }
+        // if ( _isSwapAction(moveB) ) {
+        //     gameState.players[1].activeMonsterIndex = moveB - 4;
+        // }
 
-        // next up resolve attacks. Speed should be used to resolve
-        // if both players are attackign but here A always goes first
-        // for demo purposes
-        if ( _isMoveAction(moveA) ) {
-            gameState = _makeMove(gameState, moveA,  0, randomSeed);
-        }
-        if ( _isMoveAction(moveB) ) {
-            gameState = _makeMove(gameState, moveB,  1, randomSeed);
-        }
+        // // next up resolve attacks. Speed should be used to resolve
+        // // if both players are attackign but here A always goes first
+        // // for demo purposes
+        // if ( _isMoveAction(moveA) ) {
+        //     gameState = _makeMove(gameState, moveA,  0, randomSeed);
+        // }
+        // if ( _isMoveAction(moveB) ) {
+        //     gameState = _makeMove(gameState, moveB,  1, randomSeed);
+        // }
 
-        return (abi.encode(gameState), outcome, false);
+        // return (abi.encode(gameState), outcome, false);
 
     }
 
@@ -117,10 +126,6 @@ contract ToshimonStateTransition is CommitRevealApp {
 
     function _getActiveMonster(TM.PlayerState memory playerState) pure internal returns (TM.MonsterCard memory) {
         return (playerState.monsters[playerState.activeMonsterIndex]);
-    }
-
-    function _gameState(bytes memory _gameState_) pure internal returns (TM.GameState memory) {
-        return abi.decode(_gameState_, (TM.GameState));
     }
 
 }

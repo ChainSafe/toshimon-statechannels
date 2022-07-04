@@ -10,43 +10,43 @@ using Nethereum.ABI.FunctionEncoding.Attributes;
 public record MonsterCard {
 
     [Parameter("uint256", "cardId", 1)]
-    public uint CardId { get; set; }
+    public BigInteger CardId { get; set; }
     
-    [Parameter("uint8", "mainType", 1)]
-    public ToshimonType Type { get; set; }
+    [Parameter("uint8", "mainType", 2)]
+    public ToshimonType Type { get; set; } // ??
 
-    [Parameter("uint8", "secondaryType", 2)]
-    public ToshimonType SecondaryType { get; set; }
+    [Parameter("uint8", "secondaryType", 3)]
+    public ToshimonType SecondaryType { get; set; } //??
     
-    [Parameter("tuple", "baseStats", 2)]
+    [Parameter("tuple", "baseStats", 4)]
     public Stats BaseStats { get; set; }
     
-    [Parameter("tuple", "stats", 3)]
+    [Parameter("tuple", "stats", 5)]
     public Stats Stats { get; set; }
     
-    [Parameter("address[4]", "moves", 4)]
+    [Parameter("address[4]", "moves", 6)]
     public List<string> Moves { get; set; }
 
     // inflicted status conditions
-    [Parameter("address", "statusCondition", 5)]
+    [Parameter("address", "statusCondition", 7)]
     public string StatusCondition { get; set; }
 
-    [Parameter("uint8", "statusConditionCounter", 6)]
-    public uint StatusConditionCounter { get; set; }
+    [Parameter("uint8", "statusConditionCounter", 8)]
+    public byte StatusConditionCounter { get; set; }
 
     // Special status conditions. These can be in play at the same time (e.g. flying while poisoned)
-    [Parameter("address", "specialStatusCondition", 7)]
+    [Parameter("address", "specialStatusCondition", 9)]
     public string SpecialStatusCondition { get; set; }
 
-    [Parameter("uint8", "specialStatusConditionCounter", 8)]
-    public uint SpecialStatusConditionCounter { get; set; }
+    [Parameter("uint8", "specialStatusConditionCounter", 10)]
+    public byte SpecialStatusConditionCounter { get; set; }
 
     // Multi-turn move index and counter (could be combined to compress state)
-    [Parameter("uint8", "activeMoveIndex", 9)]
-    public uint ActiveMoveIndex { get; set; }
+    [Parameter("uint8", "activeMoveIndex", 11)]
+    public byte ActiveMoveIndex { get; set; }
 
-    [Parameter("uint8", "activeMoveCounter", 10)]
-    public uint ActiveMoveCounter { get; set; } 
+    [Parameter("uint8", "activeMoveCounter", 12)]
+    public byte ActiveMoveCounter { get; set; } 
 
     public MonsterCard() { }
 

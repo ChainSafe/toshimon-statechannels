@@ -10,24 +10,24 @@ using Nethereum.ABI.FunctionEncoding.Attributes;
  * or the current stats which can be buffed/debuffed
  */
 public record Stats {
-    [Parameter("uint8", "hp", 3)]
-    public uint Hp { get; set; }
+    [Parameter("uint8", "hp", 1)]
+    public byte Hp { get; set; }
 
-    [Parameter("uint8", "attack", 4)]
-    public uint Attack { get; set; }
+    [Parameter("uint8", "attack", 2)]
+    public byte Attack { get; set; }
 
-    [Parameter("uint8", "defense", 5)]
-    public uint Defense { get; set; }
+    [Parameter("uint8", "defense", 3)]
+    public byte Defense { get; set; }
 
-    [Parameter("uint8", "spAttack", 6)]
-    public uint SpAttack { get; set; }
+    [Parameter("uint8", "spAttack", 4)]
+    public byte SpAttack { get; set; }
     
-    [Parameter("uint8", "spDefense", 7)]
-    public uint SpDefense { get; set; }
+    [Parameter("uint8", "spDefense", 5)]
+    public byte SpDefense { get; set; }
     
-    [Parameter("uint8", "speed", 8)]
-    public uint Speed { get; set; }
+    [Parameter("uint8", "speed", 6)]
+    public byte Speed { get; set; }
 
-    [Parameter("uint8[4]", "moves", 10)]
+    [Parameter("uint8[4]", "pp", 7)]
     public List<uint> PP { get; set; }
 }

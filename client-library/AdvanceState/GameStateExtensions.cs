@@ -61,8 +61,8 @@ public static class MonsterCardExtension {
 		return self.Stats.Speed > opponent.Stats.Speed;
 	}
 
-	public static MonsterCard TakeDamage(this MonsterCard self, uint damage) {
-		Stats stats = self.Stats with { Hp = SafeMath.subtract(self.Stats.Hp, damage) };
+	public static MonsterCard TakeDamage(this MonsterCard self, byte damage) {
+		Stats stats = self.Stats with { Hp = (byte)SafeMath.subtract(self.Stats.Hp, damage) };
 		return self with { Stats = stats };
 	}
 
@@ -70,8 +70,8 @@ public static class MonsterCardExtension {
 	 * Recovers Hp but cannot go above the maximum Hp in the Base stats
 	 * @param uint amount to increase the Hp by
 	 */
-	public static MonsterCard HealHp(this MonsterCard self, uint amount) {
-		Stats stats = self.Stats with { Hp = Math.Min(self.Stats.Hp + amount, self.BaseStats.Hp) };
+	public static MonsterCard HealHp(this MonsterCard self, byte amount) {
+		Stats stats = self.Stats with { Hp = (byte)Math.Min(self.Stats.Hp + amount, self.BaseStats.Hp) };
 		return self with { Stats = stats };
 	}	
 

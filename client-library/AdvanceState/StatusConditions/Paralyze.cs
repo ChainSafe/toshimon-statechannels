@@ -13,7 +13,7 @@ public class Paralyze : StatusCondition {
 	public GameState onStart(GameState state, int mover, int monsterIndex, uint randomSeed) {
 		MonsterCard monster = state[mover].Monsters[monsterIndex];
 		monster.StatusCondition = Id;
-		monster.StatusConditionCounter = DetRandom.uniform(3, 6, randomSeed, 456546456);
+		monster.StatusConditionCounter = (byte) DetRandom.uniform(3, 6, randomSeed, 456546456);
 		return state.SetPlayer(state[mover].SetMonster(monster, monsterIndex), mover);
 	}
 

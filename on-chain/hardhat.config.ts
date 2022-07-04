@@ -1,6 +1,8 @@
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import "hardhat-gas-reporter";
+import 'hardhat-deploy';
+
 require('@symblox/hardhat-abi-gen');
 
 require("dotenv").config();
@@ -47,5 +49,8 @@ export default {
     flat: true,
     only: [':Adjudicator$', ':ToshimonState$', ':ToshimonStateTransition$', ':CommitRevealApp$'],
     spacing: 2
+  },
+  namedAccounts: {
+    deployer: 0
   }
 };

@@ -47,7 +47,7 @@ public class EvmStateTransition : IStateTransition {
 			new List<SingleAssetExit>(outcome),
 			(byte) actions[0],
 			(byte) actions[1],
-			BitConverter.GetBytes(randomSeed)
+			Enumerable.Repeat((byte) 0, 32).ToArray()
 		).Result; // block for results on async function. Can modify to be async if desired
 		// deserialize and return result
 		return (
@@ -80,7 +80,7 @@ public class EvmStateTransition : IStateTransition {
 			MonsterCard monster = player.GetActiveMonster();
 
 			if ( isSwapAction(actions[i]) ) {
-				player = player with { ActiveMonsterIndex = (int) actions[i] - 4 };
+				player = player with { ActiveMonsterIndex = (byte) (actions[i] - 4) };
 			} else if ( isItemAction(actions[i]) ) {
 				int itemIndex = (int) actions[i] - 9;
 				Item item = Lookup.Items[player.Items[itemIndex].Definition];

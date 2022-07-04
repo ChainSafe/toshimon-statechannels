@@ -12,25 +12,25 @@ using Nethereum.ABI.FunctionEncoding.Attributes;
 public record GameState
 {
 
-    [Parameter("tuple", "playerA", 1)]
-    public PlayerState PlayerA { get; set; }
+    [Parameter("tuple[2]", "players", 1)]
+    public List<PlayerState> Players { get; set; }
 
-    [Parameter("tuple", "playerB", 2)]
-    public PlayerState PlayerB { get; set; }
-
+    public PlayerState PlayerA { get => Players[0]; set => Players[0] = value; }
+    public PlayerState PlayerB { get => Players[1]; set => Players[1] = value; }
 
     //////////////////////////////////////////////////
 
     public GameState() { }
 
     public GameState(PlayerState playerA, PlayerState playerB) {
-        PlayerA = playerA;
-        PlayerB = playerB;
+        Players = new List<PlayerState>();
+        Players.Add(playerA);
+        Players.Add(playerB);
     }
 
     // indexing helper
     public PlayerState this[int index] {
-        get => index == 0 ? PlayerA : PlayerB;
+        get => Players[index];
     }
 
     public byte[] AbiEncode() {

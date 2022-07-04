@@ -15,7 +15,7 @@ public record PlayerState {
     public List<ItemCard> Items { get; set; }
 
     [Parameter("uint8", "activeMonsterIndex", 3)]
-    public int ActiveMonsterIndex { get; set; }
+    public byte ActiveMonsterIndex { get; set; }
 
     public PlayerState() {}
 

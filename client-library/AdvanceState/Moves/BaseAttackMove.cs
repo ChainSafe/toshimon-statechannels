@@ -31,7 +31,7 @@ public abstract class BaseAttackMove : BaseMove {
 		uint baseDamage = movePower * attacker.Stats.Attack / defender.Stats.Defense + 2;
 		uint damage = applyModifier(baseDamage, defender, randomSeed);
 
-		defender = defender.TakeDamage(damage);
+		defender = defender.TakeDamage((byte)damage);
 
 		// update the monsters
 		state = state.SetPlayer(state[mover].SetActiveMonster(attacker), mover);

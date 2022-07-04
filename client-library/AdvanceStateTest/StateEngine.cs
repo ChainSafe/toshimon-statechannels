@@ -16,12 +16,12 @@ public struct StateSnapshot {
 
 // Useful class to keep track of the historical game states and helpful tools to make new ones
 // It stores snapshots of before and after state transitions at each stage
-public class StateEngine<ST> where ST: IStateTransition, new() {
+public class StateEngine {
 	public List<StateSnapshot> States { get; } = new List<StateSnapshot>();
-	ST stateTransition;
+	IStateTransition stateTransition;
 
-	public StateEngine() {
-		this.stateTransition = new ST();
+	public StateEngine(IStateTransition st) {
+		this.stateTransition = st;
 	}
 
 	public void Init(GameState initialState) {

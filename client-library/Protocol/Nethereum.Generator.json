@@ -1,19 +1,6 @@
 {
     "ABIConfigurations": [
         {
-            "ContractName":"ToshimonState",
-            "ABI":null,
-            "ABIFile":"../../on-chain/abi/ToshimonState.json",
-            "ByteCode":null,
-            "BinFile":null,
-            "BaseNamespace":"Protocol",
-            "CQSNamespace":null,
-            "DTONamespace":null,
-            "ServiceNamespace":null,
-            "CodeGenLanguage":"CSharp",
-            "BaseOutputPath":"Autogen"
-        },
-        {
             "ContractName":"ToshimonStateTransition",
             "ABI":null,
             "ABIFile":"../../on-chain/abi/ToshimonStateTransition.json",
@@ -24,7 +11,7 @@
             "DTONamespace":null,
             "ServiceNamespace":null,
             "CodeGenLanguage":"CSharp",
-            "BaseOutputPath":"Autogen"
+            "BaseOutputPath":"Autogen-dev"
         },
         {
             "ContractName":"Adjudicator",
@@ -37,20 +24,7 @@
             "DTONamespace":null,
             "ServiceNamespace":null,
             "CodeGenLanguage":"CSharp",
-            "BaseOutputPath":"Autogen"
-        },
-        {
-            "ContractName":"CommitRevealApp",
-            "ABI":null,
-            "ABIFile":"../../on-chain/abi/CommitRevealApp.json",
-            "ByteCode":null,
-            "BinFile":null,
-            "BaseNamespace":"Protocol",
-            "CQSNamespace":null,
-            "DTONamespace":null,
-            "ServiceNamespace":null,
-            "CodeGenLanguage":"CSharp",
-            "BaseOutputPath":"Autogen"
+            "BaseOutputPath":"Autogen-dev"
         }
     ]
 }
