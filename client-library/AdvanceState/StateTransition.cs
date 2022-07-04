@@ -1,6 +1,7 @@
 ﻿namespace toshimon_state_machine;
 
 using Protocol;
+using Protocol.ToshimonStateTransition.Service;
 
 /**
  * This is the primary way a game client will integrate with the rules. 
@@ -22,6 +23,40 @@ using Protocol;
  		uint randomSeed
  		);
  }
+
+public class EvmStateTransition : IStateTransition {
+	
+	protected Nethereum.Web3.Web3 Web3 { get; }
+	protected string ContractAddress { get; }
+
+	public EvmStateTransition(Nethereum.Web3.Web3 web3, string contractAddress) {
+		Web3 = web3;
+		ContractAddress = contractAddress;
+	}
+
+	public (GameState, SingleAssetExit[], bool) advanceState(
+ 		GameState gameState,
+ 		SingleAssetExit[] outcome,
+ 		GameAction[] actions,
+ 		uint randomSeed
+ 		) {	
+		var service = new ToshimonStateTransitionService(Web3, ContractAddress);
+		// serialize params and call function
+		var result = service.AdvanceStateQueryAsync(
+			gameState.AbiEncode(),
+			new List<SingleAssetExit>(outcome),
+			(byte) actions[0],
+			(byte) actions[1],
+			BitConverter.GetBytes(randomSeed)
+		).Result; // block for results on async function. Can modify to be async if desired
+		// deserialize and return result
+		return (
+			GameState.AbiDecode(result.ReturnValue1),
+			result.ReturnValue2.ToArray(),
+			result.ReturnValue3
+		);
+	}
+}
 
  public class LocalStateTransition : IStateTransition {
 

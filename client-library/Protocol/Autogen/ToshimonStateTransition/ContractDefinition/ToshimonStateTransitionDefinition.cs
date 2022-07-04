@@ -78,15 +78,6 @@ namespace Protocol.ToshimonStateTransition.ContractDefinition
         public virtual BigInteger NParticipants { get; set; }
     }
 
-    public partial class DummyOutputDTO : DummyOutputDTOBase { }
-
-    [FunctionOutput]
-    public class DummyOutputDTOBase : IFunctionOutputDTO 
-    {
-        [Parameter("bool", "", 1)]
-        public virtual bool ReturnValue1 { get; set; }
-    }
-
     public partial class AdvanceStateOutputDTO : AdvanceStateOutputDTOBase { }
 
     [FunctionOutput]
