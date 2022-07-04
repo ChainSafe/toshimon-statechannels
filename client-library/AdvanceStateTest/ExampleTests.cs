@@ -64,29 +64,26 @@ public class ExampleTests
         Assert.True(eng.Last().Player(B).after.ActiveMonsterIndex == 0);
     }
 
-    // [Fact]
-    // public void CanUsePotion() {
-    //     // initial state
-    //     GameState gs0 = TestHelpers.build1v1 (
-    //         TestHelpers.testMonster1(),
-    //         TestHelpers.testMonster1()
-    //     );
-    //     // give A a potion in slot 0
-    //     ItemCard potionCard = new ItemCard() { Definition = Restore.Id, Used = false };
-    //     gs0 = gs0.SetPlayer(gs0[A].AddItem(potionCard), A);
-    //     eng.Init(gs0);
-
-    //     // both players attack
-    //     eng.next(GameAction.Noop, GameAction.Move1, seed);
-    //     Assert.True(eng.Last().Player(A).Monster(0).HasTakenDamage(10));
-
-    //     // Player A used the potion. That should heal them to full health then they take 10 damage again
-    //     eng.next(GameAction.Item1, GameAction.Noop, seed);
-    //     // damave to A monster should be 10 from full HP
-    //     Console.WriteLine(eng.ToString());
-    //     Console.WriteLine(eng.Last().after[0].Monsters[0]);
-    //     Assert.True(gs0[0].diff(eng.Last().after[0]).Monster(0).HasTakenDamage(0));
-
+    [Fact]
+    public void CanUsePotion() {
+        // initial state
+        GameState gs0 = TestHelpers.build1v1 (
+            TestHelpers.testMonster1(),
+            TestHelpers.testMonster1()
+        );
+        // give A a potion in slot 0
+        ItemCard potionCard = new ItemCard() { Definition = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", Used = false };
+        gs0 = gs0.SetPlayer(gs0[A].AddItem(potionCard), A);
         
-    // }
+        // reduce A active monster HP to 10
+        var playerA = gs0.PlayerA.SetActiveMonster(gs0.PlayerA.GetActiveMonster() with { Stats = gs0.PlayerA.GetActiveMonster().Stats with { Hp = 10 } } );
+        gs0.PlayerA = playerA;
+        eng.Init(gs0);
+
+        // Player A used a restore potion. That should heal them to 10+30 = 40
+        eng.next(GameAction.Item1, GameAction.Noop, seed);
+
+        Assert.True(eng.Last().after.PlayerA.GetActiveMonster().Stats.Hp == 40);
+        
+    }
 }

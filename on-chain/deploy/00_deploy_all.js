@@ -16,7 +16,12 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     log: true,
   });
 
-  // finally deploy all the move contracts
+  // finally deploy all the move, item and status condition contracts
+  await deploy('Restore', {
+      from: deployer,
+      args: [],
+      log: true,
+    });
 };
 
 module.exports.tags = ['Toshimon'];
