@@ -22,7 +22,7 @@ library ToshimonState {
 	}
 
 	struct MonsterCard {
-		uint256 id;
+		uint256 cardId;
 		uint8 mainType;
 		uint8 secondaryType;
 		Stats baseStats;
@@ -47,8 +47,8 @@ library ToshimonState {
 	}
 
 	struct ItemCard {
+		uint256 cardId;
 		address defintion;
 		bool used;
 	}
-
 }

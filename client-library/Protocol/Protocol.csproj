@@ -4,9 +4,12 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Set to true to regenerate Autogen file. This may break things! -->
+    <NethereumGenerateCode>false</NethereumGenerateCode>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Nethereum.Autogen.ContractApi" Version="4.2.0" />
     <PackageReference Include="Nethereum.Web3" Version="4.6.1" />
   </ItemGroup>
 

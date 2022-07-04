@@ -1,7 +1,7 @@
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import "hardhat-gas-reporter";
-import "hardhat-abi-exporter";
+require('@symblox/hardhat-abi-gen');
 
 require("dotenv").config();
 
@@ -42,12 +42,10 @@ export default {
     coinmarketcap: "ebaf9c41-43a2-4afa-9fe3-16e7d9484e5b",
   },
   abiExporter: {
-    path: './abis',
-    runOnCompile: true,
+    path: './abi',
     clear: true,
     flat: true,
-    // only: [':ERC20$'],
-    spacing: 2,
-    pretty: true,
+    only: [':Adjudicator$', ':ToshimonState$', ':ToshimonStateTransition$', ':CommitRevealApp$'],
+    spacing: 2
   }
 };

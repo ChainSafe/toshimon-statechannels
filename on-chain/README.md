@@ -14,8 +14,14 @@ To build and test the contracts:
 
 Install the depedencies and test
 ```shell
-npm install
-npm run test
+yarn install
+yarn test
+```
+
+## Building Contracts and ABIs
+
+```shell
+yarn hardhat compile
 ```
 
 ## Contributors

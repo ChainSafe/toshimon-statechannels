@@ -5,6 +5,10 @@ coverage.json
 typechain
 abis
 
-#Hardhat files
+# Hardhat files
 cache
 artifacts
+
+# Generated ABIs
+on-chain/abi/*.json
+on-chain/abi/*.js
