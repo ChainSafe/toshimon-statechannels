@@ -48,7 +48,7 @@ library ToshimonState {
 
 	struct ItemCard {
 		uint256 cardId;
-		address defintion;
+		address definition;
 		bool used;
 	}
 }

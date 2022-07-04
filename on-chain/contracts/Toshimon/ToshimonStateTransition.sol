@@ -12,6 +12,7 @@
  import '../CommitReveal/CommitRevealApp.sol';
  import { ToshimonState as TM } from './ToshimonState.sol';
  import './interfaces/IMove.sol';
+ import './interfaces/IItem.sol';
 
 
  contract ToshimonStateTransition is CommitRevealApp {
@@ -37,30 +38,39 @@
         ) public pure returns (TM.GameState memory, Outcome.SingleAssetExit[] memory, bool) {
 
 
-        // // if either player is unconcious then no more moves can be made
-        // // and the game is over. No further state updates possible.
-        // if (_is_unconcious(gameState.players[0]) || _is_unconcious(gameState.players[1])) {
-        //     return (gameState, outcome, true);
-        // }
+        // if either player is unconcious then no more moves can be made
+        // and the game is over. No further state updates possible.
+        if (_is_unconcious(gameState.players[A]) || _is_unconcious(gameState.players[B])) {
+            return (gameState, outcome, true);
+        }
         
         // first up resolve any switch monster actions
         // These occur first and order between players doesn't matter
         if ( _isSwapAction(moveA) ) {
-            gameState.players[0].activeMonsterIndex = moveA - 4;
+            gameState.players[A].activeMonsterIndex = moveA - 4;
         }
         if ( _isSwapAction(moveB) ) {
-            gameState.players[1].activeMonsterIndex = moveB - 4;
+            gameState.players[A].activeMonsterIndex = moveB - 4;
         }
 
-        // // next up resolve attacks. Speed should be used to resolve
-        // // if both players are attackign but here A always goes first
-        // // for demo purposes
-        // if ( _isMoveAction(moveA) ) {
-        //     gameState = _makeMove(gameState, moveA,  0, randomSeed);
-        // }
-        // if ( _isMoveAction(moveB) ) {
-        //     gameState = _makeMove(gameState, moveB,  1, randomSeed);
-        // }
+        // next up resolve items. These can only be applied to the active monster
+        // and they are resolved before attacks so again order doesn't matter here
+        if ( _isItemAction(moveA) ) {
+            gameState = _useItem(gameState, moveA - 9, A, randomSeed);
+        }
+        if ( _isItemAction(moveB) ) {
+            gameState = _useItem(gameState, moveA - 9, B, randomSeed);
+        }        
+
+        // next up resolve attacks. Speed should be used to resolve
+        // if both players are attackign but here A always goes first
+        // for demo purposes
+        if ( _isMoveAction(moveA) ) {
+            gameState = _makeMove(gameState, moveA,  A, randomSeed);
+        }
+        if ( _isMoveAction(moveB) ) {
+            gameState = _makeMove(gameState, moveB,  B, randomSeed);
+        }
 
         return (gameState, outcome, true);
 
@@ -88,13 +98,17 @@
 
     // A player is unconcious if all their monsters have HP == 0
     function _is_unconcious(TM.PlayerState memory playerState) pure internal returns (bool) {
-        bool alive = false;
+        bool unconcious = true;
         for (uint8 i = 0; i < playerState.monsters.length; i++) {
             if (playerState.monsters[i].stats.hp > 0) {
-                alive = true;
+                unconcious = false;
             }
         }
-        return (alive);
+        return (unconcious);
+    }
+
+    function _isItemAction(uint8 move) pure internal returns (bool) {
+        return (move >=9 && move <=13);
     }
 
     function _isSwapAction(uint8 move) pure internal returns (bool) {
@@ -121,8 +135,20 @@
         attacker.stats.pp[moveIndex] -= 1;
 
         // apply move
-        // This can fail, calling code must catch errors
         gameState = IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, randomSeed);
+
+        return gameState;
+
+    }
+
+    function _useItem(TM.GameState memory gameState, uint8 itemIndex, uint8 mover, bytes32 randomSeed) pure internal returns (TM.GameState memory) {
+        TM.PlayerState memory user = gameState.players[mover];
+
+        // mark the item as used
+        user.items[itemIndex].used = true;
+
+        // apply the item
+        gameState = IItem(user.items[itemIndex].definition).applyItem(gameState, mover, user.activeMonsterIndex, randomSeed);
 
         return gameState;
 
