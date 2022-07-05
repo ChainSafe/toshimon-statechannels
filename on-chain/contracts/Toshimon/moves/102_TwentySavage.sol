@@ -3,11 +3,21 @@
 pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
 
+ import "@openzeppelin/contracts/math/Math.sol";
+
 import { ToshimonState as TM } from '../ToshimonState.sol';
+import { ToshimonUtils as Utils } from '../ToshimonUtils.sol';
 import { IMove } from '../interfaces/IMove.sol';
 
-contract Tackle is IMove {
+/**
+ * Always does exactly 20 HP of damage to the opponent
+ */
+contract TwentySavage is IMove {
+
+	uint8 constant damage = 20;
+
 	function applyMove(TM.GameState memory state, uint8 mover, bytes32 randomSeed) override external pure returns (TM.GameState memory) {
+		Utils.applyDamage(Utils.getActiveMonster(state.players[~mover]), damage);
 		return state;
 	}
 }

@@ -13,9 +13,16 @@
  import { ToshimonState as TM } from './ToshimonState.sol';
  import './interfaces/IMove.sol';
  import './interfaces/IItem.sol';
-
+import './ToshimonRegistry.sol';
 
  contract ToshimonStateTransition is CommitRevealApp {
+    
+    // Registry holding all the moves/items/conditions to deletate calls to
+    ToshimonRegistry public registry;
+
+    constructor(address registryAddress) {
+        registry = ToshimonRegistry(registryAddress);
+    }
 
     function advanceState(
         bytes memory _gameState_,

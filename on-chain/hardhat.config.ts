@@ -52,10 +52,5 @@ export default {
   },
   namedAccounts: {
     deployer: 0
-  },
-  networks: {
-    hardhat: {
-      blockGasLimit: 100_000_000_000
-    }
   }
 };

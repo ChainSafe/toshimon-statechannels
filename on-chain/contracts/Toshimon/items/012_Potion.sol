@@ -8,7 +8,7 @@ pragma experimental ABIEncoderV2;
 import { ToshimonState as TM } from '../ToshimonState.sol';
 import { IItem } from '../interfaces/IItem.sol';
 
-contract Restore is IItem {
+contract Potion is IItem {
 	function applyItem(TM.GameState memory state, uint8 mover, uint8 monster, bytes32 randomSeed) external override pure returns (TM.GameState memory) {
 		// add 30 HP to the receiver up to their max HP
 		uint8 currentHp = state.players[mover].monsters[monster].stats.hp;
