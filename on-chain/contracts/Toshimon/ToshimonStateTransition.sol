@@ -16,7 +16,7 @@
 import './ToshimonRegistry.sol';
 
  contract ToshimonStateTransition is CommitRevealApp {
-    
+
     // Registry holding all the moves/items/conditions to deletate calls to
     ToshimonRegistry public registry;
 

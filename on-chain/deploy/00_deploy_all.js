@@ -75,13 +75,13 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   const itemFiles = getMatchingArtifacts("../contracts/Toshimon/items/*.sol");
   for (let i = 0; i < itemFiles.length; i++) {
     const [index, name] = itemFiles[i];
-    deployAndAddToRegistry(index, name, 'addItem')
+    await deployAndAddToRegistry(index, name, 'addItem');
   }
 
   const moveFiles = getMatchingArtifacts("../contracts/Toshimon/moves/*.sol");
   for (let i = 0; i < moveFiles.length; i++) {
     const [index, name] = moveFiles[i];
-    deployAndAddToRegistry(index, name, 'addMove')
+    await deployAndAddToRegistry(index, name, 'addMove');
   }
 
 };
