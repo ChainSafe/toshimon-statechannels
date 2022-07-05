@@ -1,4 +1,16 @@
-// Deploy all the contract required for a Toshimon instance
+// SPDX-License-Identifier: MIT
+
+
+/**
+ * Deploy all the contracts required for a Toshimon game deployment
+ * This includes:
+ *   - The Adjudicator
+ *   - The ToshimonStateTransition ForceMoveApp
+ *   - Every move, item and status condition contract in the respective directories (e.g contracts/Toshimon/moves/*.sol)
+ *   - A Registry contract which records the locations of all the moves etc.
+ * All of the deployed moves, items and conditions are also registered in the registry automatically on deployment.
+ */
+
 var glob = require("glob");
 const path = require('path');
 

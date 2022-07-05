@@ -10,6 +10,10 @@ A monorepo for the Toshimon battle game implemented in state channels. This is s
 
 The client library is a collection of C# class libs designed to help with the implementation of the peer-to-peer aspect of the protocol as well as the on-chain interactions.
 
+## License
+
+- This is a private prototype and not currently under a public license
+
 ## Contributors
 
 - [Willem Olding (ChainSafe)](github.com/willemolding/)
