@@ -15,4 +15,8 @@ contract NoOp is IMove {
 	function applyMove(TM.GameState memory state, uint8 mover, bytes32 randomSeed) override external pure returns (TM.GameState memory) {
 		return state;
 	}
+
+	function speed(TM.Stats memory attackerStats, bytes32 randomSeed) override external pure returns (uint8) {
+		return attackerStats.speed;
+	}
 }

@@ -20,4 +20,8 @@ contract TwentySavage is IMove {
 		Utils.applyDamage(Utils.getActiveMonster(state.players[~mover]), damage);
 		return state;
 	}
+
+	function speed(TM.Stats memory attackerStats, bytes32 randomSeed) override external pure returns (uint8) {
+		return attackerStats.speed;
+	}
 }
