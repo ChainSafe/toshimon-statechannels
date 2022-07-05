@@ -12,7 +12,7 @@ import { IMove } from '../interfaces/IMove.sol';
  * Does nothing at all
  */
 contract NoOp is IMove {
-	function applyMove(TM.GameState memory state, uint8 mover, bytes32 randomSeed) override external pure returns (TM.GameState memory) {
+	function applyMove(TM.GameState memory state, uint8 mover, uint8 repeatsRemaining, bytes32 randomSeed) override external pure returns (TM.GameState memory) {
 		return state;
 	}
 

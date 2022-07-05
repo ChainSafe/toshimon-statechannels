@@ -142,7 +142,7 @@ import './ToshimonRegistry.sol';
         attacker.stats.pp[moveIndex] -= 1;
 
         // apply move
-        gameState = IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, randomSeed);
+        gameState = IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, 0, randomSeed);
 
         return gameState;
 

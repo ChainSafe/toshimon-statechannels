@@ -16,7 +16,7 @@ contract TwentySavage is IMove {
 
 	uint8 constant damage = 20;
 
-	function applyMove(TM.GameState memory state, uint8 mover, bytes32 randomSeed) override external pure returns (TM.GameState memory) {
+	function applyMove(TM.GameState memory state, uint8 mover, uint8 repeatsRemaining, bytes32 randomSeed) override external pure returns (TM.GameState memory) {
 		Utils.applyDamage(Utils.getActiveMonster(state.players[~mover]), damage);
 		return state;
 	}
