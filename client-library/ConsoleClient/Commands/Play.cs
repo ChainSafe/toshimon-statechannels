@@ -154,6 +154,10 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
         return Reveal.AbiDecode(revealBytes);
     }
 
+    /**
+     * Actually make a call to an EVM RPC node in order to make the state transition.
+     * This ensures that the new state will be identical to that calculated by the adjudicator
+     */
     private static (GameState, SingleAssetExit[], bool) advanceState(
         GameState gameState,
         SingleAssetExit[] outcome,
@@ -164,16 +168,15 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
         var contractAddress = Environment.GetEnvironmentVariable("TOSHIMON_CONTRACT_ADDR");
 
         var service = new ToshimonStateTransitionService(web3, contractAddress);
-        // serialize params and call function
+        
         var result = service.AdvanceStateTypedQueryAsync(
             gameState,
             new List<SingleAssetExit>(outcome),
             (byte) actions[0],
             (byte) actions[1],
             Enumerable.Repeat((byte) 0, 32).ToArray()
-        ).Result; // block for results on async function. Can modify to be async if desired
+        ).Result; // .Result blocks on async function. Can modify to be async if desired
 
-        // deserialize and return result
         return (
             result.ReturnValue1,
             result.ReturnValue2.ToArray(),
