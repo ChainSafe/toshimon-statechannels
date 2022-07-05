@@ -1,4 +1,5 @@
 using LINQtoCSV;
+using System.Numerics;
 
 public class ToshimonDb {
 
@@ -35,7 +36,7 @@ public class ToshimonDb {
 		return monsters.First(x => x.ToshidexNumber == toshidexNumber);
 	}
 
-	public MonsterRecord? findByCardId(uint cardId) {
+	public MonsterRecord? findByCardId(BigInteger cardId) {
 		return monsters.First(x => x.EthCardIndex == cardId);
 	}
 

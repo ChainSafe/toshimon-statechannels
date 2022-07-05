@@ -14,38 +14,38 @@ public class ExampleTests
         // var st = new LocalStateTransition();
         // 
         var web3 = new Nethereum.Web3.Web3("http://127.0.0.1:8545");
-        var contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+        var contractAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
         var st = new EvmStateTransition(web3, contractAddress);
 
         this.eng = new StateEngine(st);
     }
 
-    // [Fact]
-    // public void SimpleAttackWorks()
-    // {
-    //     // initial state
-    //     GameState gs0 = TestHelpers.build1v1 (
-    //         TestHelpers.testMonster1(),
-    //         TestHelpers.testMonster1()
-    //     );
-    //     eng.Init(gs0);
-    //     eng.next(GameAction.Move1, GameAction.Move1, seed);
-    //     Assert.True(eng.isConsistent());
+    [Fact]
+    public void SimpleAttackWorks()
+    {
+        // initial state
+        GameState gs0 = TestHelpers.build1v1 (
+            TestHelpers.testMonster1(),
+            TestHelpers.testMonster1()
+        );
+        eng.Init(gs0);
+        eng.next(GameAction.Move1, GameAction.Move1, seed);
+        Assert.True(eng.isConsistent());
 
-    //     // player A takes 10 damage
-    //     Assert.True(eng.Last().Player(A).Monster(0).HasTakenDamage(10));
+        // player A takes 10 damage
+        Assert.True(eng.Last().Player(A).Monster(0).HasTakenDamage(10));
 
-    //     // player B takes 10 damage
-    //     Assert.True(eng.Last().Player(B).Monster(0).HasTakenDamage(10));
+        // player B takes 10 damage
+        Assert.True(eng.Last().Player(B).Monster(0).HasTakenDamage(10));
 
-    //     // Player A PP for move 0 decreases by 1
-    //     Assert.True(eng.Last().Player(A).Monster(0).HasDecreasedPP(0, 1));
+        // Player A PP for move 0 decreases by 1
+        Assert.True(eng.Last().Player(A).Monster(0).HasDecreasedPP(0, 1));
 
-    //     // Player B PP for move 0 decreases by 1
-    //     Assert.True(eng.Last().Player(B).Monster(0).HasDecreasedPP(0, 1));
+        // Player B PP for move 0 decreases by 1
+        Assert.True(eng.Last().Player(B).Monster(0).HasDecreasedPP(0, 1));
 
-    //     Console.WriteLine(eng.Last().after.AbiEncode());
-    // }
+        Console.WriteLine(eng.Last().after.AbiEncode());
+    }
 
     [Fact]
     public void CanSwitchActiveMonster() {

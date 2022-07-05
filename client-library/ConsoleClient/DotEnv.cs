@@ -1,3 +1,7 @@
+/**
+ * Used to populate the environment variables from a .env file on startup
+ */
+
 using System;
 using System.IO;
 

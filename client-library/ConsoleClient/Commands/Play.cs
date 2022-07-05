@@ -2,10 +2,12 @@ using System.Numerics;
 using System.Collections;
 using Spectre.Console.Cli;
 using Spectre.Console;
-using Protocol;
 using Nethereum.Util;
 using Nethereum.Signer;
-using toshimon_state_machine;
+
+using Protocol;
+using Protocol.ToshimonStateTransition.Service;
+
 
 // [Description("Respond to a game proposal by constructing a message which initializes a new state channel")]
 public sealed class PlayCommand : Command<PlayCommand.Settings>
@@ -118,7 +120,7 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
                     appData.RevealB = loadReveal(channelDir, "B.reveal");
                     AnsiConsole.WriteLine("Loaded commit from file. No further action required.");  
                     // state transition!!
-                    (GameState newState, _, _) = new LocalStateTransition().advanceState(gameState, variablePart.Outcome.ToArray(), new GameAction[]{GameAction.Swap2, GameAction.Swap3}, 0);
+                    (GameState newState, _, _) = advanceState(gameState, variablePart.Outcome.ToArray(), new byte[]{ appData.RevealA.Move, appData.RevealB.Move }, 0);
                     appData.GameState = newState.AbiEncode();
                 break;
             }
@@ -131,7 +133,7 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
     }
 
 
-    public static Reveal getReveal() {
+    private static Reveal getReveal() {
         GameAction action = promptForAction();
         BigInteger randomSeed = (BigInteger) new Random().Next();
         return new Reveal() {
@@ -140,20 +142,48 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
         };
     }
 
-    public static void storeReveal(Reveal reveal, string channelDir, string filename) {
+    private static void storeReveal(Reveal reveal, string channelDir, string filename) {
         using (Stream s = File.Create(Path.Combine(channelDir, filename)) ) {
             byte[] bytes = reveal.AbiEncode();
             s.Write(bytes, 0, bytes.Length);
         }
     }
 
-    public static Reveal loadReveal(string channelDir, string filename) {
+    private static Reveal loadReveal(string channelDir, string filename) {
         byte[] revealBytes = File.ReadAllBytes(Path.Combine(channelDir, filename));
         return Reveal.AbiDecode(revealBytes);
     }
 
+    private static (GameState, SingleAssetExit[], bool) advanceState(
+        GameState gameState,
+        SingleAssetExit[] outcome,
+        byte[] actions,
+        uint randomSeed) {
+
+        var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
+        var contractAddress = Environment.GetEnvironmentVariable("TOSHIMON_CONTRACT_ADDR");
+
+        var service = new ToshimonStateTransitionService(web3, contractAddress);
+        // serialize params and call function
+        var result = service.AdvanceStateTypedQueryAsync(
+            gameState,
+            new List<SingleAssetExit>(outcome),
+            (byte) actions[0],
+            (byte) actions[1],
+            Enumerable.Repeat((byte) 0, 32).ToArray()
+        ).Result; // block for results on async function. Can modify to be async if desired
+
+        // deserialize and return result
+        return (
+            result.ReturnValue1,
+            result.ReturnValue2.ToArray(),
+            result.ReturnValue3
+        );
+    }
+
+
     // prompt the user and get a Toshimon move
-    public static GameAction promptForAction() {
+    private static GameAction promptForAction() {
         var rule = new Rule("Select an action");
         rule.LeftAligned();
         AnsiConsole.Write(rule);

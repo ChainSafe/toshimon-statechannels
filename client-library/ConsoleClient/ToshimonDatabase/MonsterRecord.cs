@@ -79,13 +79,12 @@ public record MonsterRecord
         addresses.Add("0x0000000000000000000000000000000000000000");
 
         Stats stats = new Stats {
-            Hp = MaxHP,
-            Attack = Attack,
-            Defense = Attack,
-            SpAttack = SpAttack,
-            SpDefense = SpDefense,
-            Speed = Speed,
-            // Move PP not supported yet
+            Hp = (byte) MaxHP,
+            Attack =  (byte) Attack,
+            Defense =  (byte) Attack,
+            SpAttack =  (byte) SpAttack,
+            SpDefense =  (byte) SpDefense,
+            Speed =  (byte) Speed,
             PP = pp,
         };
         return new MonsterCard(
