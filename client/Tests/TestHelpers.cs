@@ -5,7 +5,8 @@ using System.Collections.Immutable;
 public static class TestHelpers {
 
 	// an example monster card used throughout tests
-	public static MonsterCard testMonster1() {
+    // It only has a single move and this is in every move slot 
+	public static MonsterCard testMonster1(string moveAddress) {
         Stats stats = new Stats {
             Hp = 70,
             Attack = 70,
@@ -19,7 +20,7 @@ public static class TestHelpers {
         return new MonsterCard(
             stats,
             stats,
-            new string[]{ "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000" }
+            new string[]{ moveAddress, moveAddress, moveAddress, moveAddress }
         );
     }
 

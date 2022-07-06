@@ -137,7 +137,6 @@
 
     function _makeMove(TM.GameState memory gameState, uint8 moveIndex, uint8 mover, bytes32 randomSeed) pure internal returns (TM.GameState memory) {
         TM.MonsterCard memory attacker = _getActiveMonster(gameState.players[mover]);
-        TM.MonsterCard memory defender = _getActiveMonster(gameState.players[~mover]);
 
         // bail if attacker is unconcious or no PP available
         if (attacker.stats.hp == 0) {
@@ -152,12 +151,18 @@
 
         // check for active status conditions. Apply the effects and see if they allow the attack
         // TODO
-
-        // apply move
-        gameState = IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, attacker.activeMoveIndex, randomSeed);
-
-        return gameState;
-
+        
+        // Try and make the move
+        // There is a possibility this is a malformed state and the move contract does not exist
+        // This must not error!! If it errors then the state channel is locked.
+        // Just silently fail to make the move and return the unchanged state
+        // 
+        return IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, attacker.activeMoveIndex, randomSeed);
+        // try IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, attacker.activeMoveIndex, randomSeed) returns (TM.GameState memory newState) {
+        //     return newState;
+        // } catch {
+        //     return gameState;
+        // }
     }
 
     function _useItem(TM.GameState memory gameState, uint8 itemIndex, uint8 mover, bytes32 randomSeed) pure internal returns (TM.GameState memory) {

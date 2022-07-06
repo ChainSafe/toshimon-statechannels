@@ -2,6 +2,7 @@ namespace test;
 
 using System.Collections;
 using Protocol.ToshimonStateTransition.Service;
+using Protocol.ToshimonStateTransition.ContractDefinition;
 
 /**
  * This is the primary way a game client will integrate with the rules. 
@@ -44,13 +45,19 @@ public class EvmStateTransition : IStateTransition {
  		) {	
 		var service = new ToshimonStateTransitionService(Web3, ContractAddress);
 		// serialize params and call function
-		var result = service.AdvanceStateTypedQueryAsync(
-			gameState,
-			new List<SingleAssetExit>(outcome),
-			(byte) actions[0],
-			(byte) actions[1],
-			Enumerable.Repeat((byte) 0, 32).ToArray()
-		).Result; // block for results on async function. Can modify to be async if desired
+
+		var advanceStateFunction = new AdvanceStateTypedFunction();
+            advanceStateFunction.GameState = gameState;
+            advanceStateFunction.Outcome = outcome.ToList();
+            advanceStateFunction.MoveA = (byte) actions[0];
+            advanceStateFunction.MoveB = (byte) actions[1];
+            advanceStateFunction.RandomSeed = Enumerable.Repeat((byte) 0, 32).ToArray();
+
+        // gas estimation doesn't work for advanceState due to the outside contract calls
+        // Just make this something large..
+        advanceStateFunction.Gas = 100000000;
+
+		var result = service.AdvanceStateTypedQueryAsync(advanceStateFunction).Result; // block for results on async function. Can modify to be async if desired
 
 		// deserialize and return result
 		return (

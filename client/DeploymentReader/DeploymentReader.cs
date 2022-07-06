@@ -3,7 +3,7 @@
 using System.Text.Json;
 using System.Collections.Generic;
 
-public class ToshimonDeployment {
+public record ToshimonDeployment {
 	public string StateTransitionContractAddress { get; }
 	public string AdjudicatorContractAddress { get; }
 	public Dictionary<uint, NamedDeployment> Moves { get; }
