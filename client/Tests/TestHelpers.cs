@@ -19,7 +19,7 @@ public static class TestHelpers {
         return new MonsterCard(
             stats,
             stats,
-            new string[]{ DoTen.Id, Lookup.Null, Lookup.Null, Lookup.Null }
+            new string[]{ "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000" }
         );
     }
 

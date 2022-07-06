@@ -13,16 +13,8 @@
  import { ToshimonState as TM } from './ToshimonState.sol';
  import './interfaces/IMove.sol';
  import './interfaces/IItem.sol';
-import './ToshimonRegistry.sol';
 
  contract ToshimonStateTransition is CommitRevealApp {
-
-    // Registry holding all the moves/items/conditions to deletate calls to
-    ToshimonRegistry public registry;
-
-    constructor(address registryAddress) {
-        registry = ToshimonRegistry(registryAddress);
-    }
 
     function advanceState(
         bytes memory _gameState_,
@@ -44,13 +36,17 @@ import './ToshimonRegistry.sol';
         bytes32 randomSeed
         ) public pure returns (TM.GameState memory, Outcome.SingleAssetExit[] memory, bool) {
 
-
         // if either player is unconcious then no more moves can be made
         // and the game is over. No further state updates possible.
         if (_is_unconcious(gameState.players[A]) || _is_unconcious(gameState.players[B])) {
             return (gameState, outcome, true);
         }
         
+        // if either player has an active multi-turn move then the move passed to this function
+        // should be disregarded and the multi-turn move applied instead
+        moveA = _swapMoveIfMultiTurnMoveActive(gameState.players[A], moveA);
+        moveB = _swapMoveIfMultiTurnMoveActive(gameState.players[B], moveB);
+
         // first up resolve any switch monster actions
         // These occur first and order between players doesn't matter
         if ( _isSwapAction(moveA) ) {
@@ -78,6 +74,10 @@ import './ToshimonRegistry.sol';
         if ( _isMoveAction(moveB) ) {
             gameState = _makeMove(gameState, moveB,  B, randomSeed);
         }
+
+        // apply the status condition `onAfterTurn` callback on all monsters, not just the
+        // active ones
+        // TODO
 
         return (gameState, outcome, true);
 
@@ -126,6 +126,15 @@ import './ToshimonRegistry.sol';
         return (move < 4);
     }
 
+    function _swapMoveIfMultiTurnMoveActive(TM.PlayerState memory playerState, uint8 move) pure internal returns (uint8) {
+        TM.MonsterCard memory activeMonster = _getActiveMonster(playerState);
+        if (activeMonster.activeMoveCounter > 0) {
+            return (activeMonster.activeMoveIndex);
+        } else {
+            return (move);
+        }
+    }
+
     function _makeMove(TM.GameState memory gameState, uint8 moveIndex, uint8 mover, bytes32 randomSeed) pure internal returns (TM.GameState memory) {
         TM.MonsterCard memory attacker = _getActiveMonster(gameState.players[mover]);
         TM.MonsterCard memory defender = _getActiveMonster(gameState.players[~mover]);
@@ -141,8 +150,11 @@ import './ToshimonRegistry.sol';
         // reduce the PP of the attacker on that move
         attacker.stats.pp[moveIndex] -= 1;
 
+        // check for active status conditions. Apply the effects and see if they allow the attack
+        // TODO
+
         // apply move
-        gameState = IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, 0, randomSeed);
+        gameState = IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, attacker.activeMoveIndex, randomSeed);
 
         return gameState;
 

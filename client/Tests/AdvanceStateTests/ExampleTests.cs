@@ -10,11 +10,10 @@ public class ExampleTests
 
     // setup - called before each test
     public ExampleTests() {
-        // create the state engine
-        // var st = new LocalStateTransition();
-        // 
-        var web3 = new Nethereum.Web3.Web3("http://127.0.0.1:8545");
-        var contractAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
+        // set up the state engine
+        var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
+        var contractAddress = Environment.GetEnvironmentVariable("TOSHIMON_CONTRACT_ADDR");
+
         var st = new EvmStateTransition(web3, contractAddress);
 
         this.eng = new StateEngine(st);

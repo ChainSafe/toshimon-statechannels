@@ -7,15 +7,15 @@
  *   - The Adjudicator
  *   - The ToshimonStateTransition ForceMoveApp
  *   - Every move, item and status condition contract in the respective directories (e.g contracts/Toshimon/moves/*.sol)
- *   - A Registry contract which records the locations of all the moves etc.
- * All of the deployed moves, items and conditions are also registered in the registry automatically on deployment.
+ *   
+ * All of the deployed moves, items and conditions are also recorded in a json file each which maps their Id to the contract address
  */
 
 var glob = require("glob");
 const path = require('path');
 
 module.exports = async ({getNamedAccounts, deployments}) => {
-  const {deploy, execute, log} = deployments;
+  const {deploy, execute, log, saveDotFile} = deployments;
   const {deployer} = await getNamedAccounts();
 
   // deploy the library contract ToshimonUtils
@@ -33,15 +33,9 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     log: true,
   });
 
-  const registry = await deploy('ToshimonRegistry', {
-    from: deployer,
-    args: [],
-    log: true,
-  });
-
   await deploy('ToshimonStateTransition', {
     from: deployer,
-    args: [registry.address],
+    args: [],
     log: true,
   });
 
@@ -60,8 +54,8 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     });
   }
 
-  async function deployAndAddToRegistry(index, contractName, registryFn) {
-    let r = await deploy(contractName, {
+  async function deployLibraryUser(index, contractName) {
+    return deploy(contractName, {
       from: deployer,
       args: [],
       log: true,
@@ -69,15 +63,6 @@ module.exports = async ({getNamedAccounts, deployments}) => {
         ToshimonUtils: utils.address
       }
     });
-    // add it to the registry
-    await execute(
-      'ToshimonRegistry', {
-        from: deployer
-      },
-      registryFn,
-      index,
-      r.address
-    );
   }
 
   // finally deploy all the move, item and status condition contracts
@@ -85,16 +70,31 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   // registry index. e.g. <XXX>_<ContractName>.sol where XXX is a three digit index with leading zeroes (eg. 003 or 124)
   
   const itemFiles = getMatchingArtifacts("../contracts/Toshimon/items/*.sol");
+  let items = [];
   for (let i = 0; i < itemFiles.length; i++) {
     const [index, name] = itemFiles[i];
-    await deployAndAddToRegistry(index, name, 'addItem');
+    const c = await deployLibraryUser(index, name);
+    items.push({ id: index, name, address: c.address })
   }
+  await saveDotFile('.items.json', JSON.stringify(items));
 
   const moveFiles = getMatchingArtifacts("../contracts/Toshimon/moves/*.sol");
+  let moves = [];
   for (let i = 0; i < moveFiles.length; i++) {
     const [index, name] = moveFiles[i];
-    await deployAndAddToRegistry(index, name, 'addMove');
+    const c = await deployLibraryUser(index, name);
+    moves.push({ id: index, name, address: c.address })
   }
+  await saveDotFile('.moves.json', JSON.stringify(moves));
+
+  const statusConditionFiles = getMatchingArtifacts("../contracts/Toshimon/statusConditions/*.sol");
+  let statusConditions = [];
+  for (let i = 0; i < statusConditionFiles.length; i++) {
+    const [index, name] = statusConditionFiles[i];
+    const c = await deployLibraryUser(index, name);
+    statusConditions.push({ id: index, name, address: c.address })
+  }
+  await saveDotFile('.statusConditions.json', JSON.stringify(statusConditions));
 
 };
 

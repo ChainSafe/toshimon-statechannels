@@ -27,5 +27,15 @@ library ToshimonUtils {
 		}
 		return (receiver);
 	}
+	
+	/**
+	 * Select an integer uniformly between min (inclusive) and max (exclusive)
+	 * It is important to use a different nonce and mover index if reusing the same randomSeed or else 
+	 * outcomes will be identical for each player or at different calls within the function
+	 */
+	function uniformRandom(uint256 min, uint256 max, bytes32 randomSeed, uint8 mover, string memory nonce) public pure returns (uint256) {
+		uint256 val = uint256(keccak256(abi.encodePacked(randomSeed, mover, nonce)));
+		return min + val % (max - min);
+	}
 
 }

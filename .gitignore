@@ -11,4 +11,4 @@ artifacts
 # Generated ABIs
 on-chain/abi/*.json
 on-chain/abi/*.js
-on-chain/deployments
+on-chain/deployments/localhost

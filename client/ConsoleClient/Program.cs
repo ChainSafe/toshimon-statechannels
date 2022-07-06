@@ -6,8 +6,8 @@ public static class Program
     {
         // grab env vars from .env
         var root = Directory.GetCurrentDirectory();
-        var dotenv = Path.Combine(root, ".env");
-        DotEnv.Load(dotenv);
+        var envFile = Path.Combine(root, ".env");
+        DotEnv.Load(envFile);
 
 		var app = new CommandApp();
         app.Configure(config =>
