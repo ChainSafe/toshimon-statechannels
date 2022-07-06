@@ -11,7 +11,7 @@ import { IStatusCondition } from '../interfaces/IStatusCondition.sol';
 /**
  * Does nothing at all
  */
-contract NoOp is IStatusCondition {
+contract NoOpCondition is IStatusCondition {
 	function onStart(TM.GameState memory state, uint8 mover, uint8 monster, bytes32 randomSeed) override external pure returns (TM.GameState memory) {
 		return (state);
 	}

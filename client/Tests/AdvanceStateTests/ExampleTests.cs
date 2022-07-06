@@ -10,12 +10,14 @@ public class ExampleTests
 
     // setup - called before each test
     public ExampleTests() {
+
+        var deployment = new ToshimonDeployment(Environment.GetEnvironmentVariable("DEPLOYMENT"));
+
         // set up the state engine
         var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
-        var contractAddress = Environment.GetEnvironmentVariable("TOSHIMON_CONTRACT_ADDR");
+        var contractAddress = Environment.GetEnvironmentVariable(deployment.StateTransitionContractAddress);
 
         var st = new EvmStateTransition(web3, contractAddress);
-
         this.eng = new StateEngine(st);
     }
 
