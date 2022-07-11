@@ -8,23 +8,17 @@ import "@openzeppelin/contracts/math/Math.sol";
 import { ToshimonState as TM } from '../ToshimonState.sol';
 import { ToshimonUtils as Utils } from '../ToshimonUtils.sol';
 import { IMove } from '../interfaces/IMove.sol';
-import { IStatusCondition } from '../interfaces/IStatusCondition.sol';
+import { PoisonLib } from '../statusConditions/001_Poison.sol';
 
 /**
  * Drains HP from opponent each turn (inflicts the poison status condition in PoC)
  */
 contract MoldSpore is IMove {
-
-	address constant poisonStatusAddress = 0x0000000000000000000000000000000000000018;
-
 	function applyMove(TM.GameState memory state, uint8 mover, uint8 repeatsRemaining, bytes32 randomSeed) override external pure returns (TM.GameState memory) {
 		uint8 receiver = Utils.not(mover);
-
-		state.players[receiver].monsters[state.players[receiver].activeMonsterIndex].statusCondition = poisonStatusAddress;
-
-		return IStatusCondition(poisonStatusAddress).onStart(
+		return PoisonLib.onStart(
 			state,
-			mover,
+			receiver,
 			state.players[receiver].activeMonsterIndex,
 			randomSeed
 		);

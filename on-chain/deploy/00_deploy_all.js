@@ -54,13 +54,14 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     });
   }
 
-  async function deployLibraryUser(index, contractName) {
+  async function deployLibraryUser(contractName, libs) {
     return deploy(contractName, {
       from: deployer,
       args: [],
       log: true,
       libraries: {
-        ToshimonUtils: utils.address
+        ToshimonUtils: utils.address,
+        ...libs
       }
     });
   }
@@ -69,11 +70,29 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   // and add these to the registry. This uses the filename prefix as the 
   // registry index. e.g. <XXX>_<ContractName>.sol where XXX is a three digit index with leading zeroes (eg. 003 or 124)
   
+
+  // status conditions are both libraries and contracts
+  // For this reason both need to be deployed and all the library addresses collated for linking
+  var libs = {};
+  const statusConditionFiles = getMatchingArtifacts("../contracts/Toshimon/statusConditions/*.sol");
+  let statusConditions = [];
+  for (let i = 0; i < statusConditionFiles.length; i++) {
+    const [index, name] = statusConditionFiles[i];
+
+    const lib = await deployLibraryUser(name+"Lib")
+
+    libs[name+"Lib"] = lib.address;
+
+    const c = await deployLibraryUser(name, libs);
+    statusConditions.push({ id: index, name, address: c.address })
+  }
+  await saveDotFile('.statusConditions.json', JSON.stringify(statusConditions));
+
   const itemFiles = getMatchingArtifacts("../contracts/Toshimon/items/*.sol");
   let items = [];
   for (let i = 0; i < itemFiles.length; i++) {
     const [index, name] = itemFiles[i];
-    const c = await deployLibraryUser(index, name);
+    const c = await deployLibraryUser(name, libs);
     items.push({ id: index, name, address: c.address })
   }
   await saveDotFile('.items.json', JSON.stringify(items));
@@ -82,19 +101,10 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   let moves = [];
   for (let i = 0; i < moveFiles.length; i++) {
     const [index, name] = moveFiles[i];
-    const c = await deployLibraryUser(index, name);
+    const c = await deployLibraryUser(name, libs);
     moves.push({ id: index, name, address: c.address })
   }
   await saveDotFile('.moves.json', JSON.stringify(moves));
-
-  const statusConditionFiles = getMatchingArtifacts("../contracts/Toshimon/statusConditions/*.sol");
-  let statusConditions = [];
-  for (let i = 0; i < statusConditionFiles.length; i++) {
-    const [index, name] = statusConditionFiles[i];
-    const c = await deployLibraryUser(index, name);
-    statusConditions.push({ id: index, name, address: c.address })
-  }
-  await saveDotFile('.statusConditions.json', JSON.stringify(statusConditions));
 
 };
 
