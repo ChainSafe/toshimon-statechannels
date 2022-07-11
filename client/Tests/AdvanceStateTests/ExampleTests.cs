@@ -3,7 +3,7 @@ namespace test;
 public class ExampleTests
 {
     private StateEngine eng;
-    private ToshimonDeployment deployment;
+    private ToshimonDeployment.ToshimonDeployment deployment;
     private uint seed = 0;
 
     private const int A = 0;
@@ -12,7 +12,7 @@ public class ExampleTests
     // setup - called before each test
     public ExampleTests() {
 
-        this.deployment = new ToshimonDeployment(Environment.GetEnvironmentVariable("DEPLOYMENT"));
+        this.deployment = new ToshimonDeployment.ToshimonDeployment(Environment.GetEnvironmentVariable("DEPLOYMENT"));
 
         // set up the state engine
         var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
@@ -32,8 +32,6 @@ public class ExampleTests
         eng.Init(gs0);
         eng.next(GameAction.Move1, GameAction.Move1, seed);
 
-        Console.WriteLine("{0}", eng.Last().Player(A).after.Monsters[0]);
-
         // player A takes 20 damage
         Assert.True(eng.Last().Player(A).Monster(0).HasTakenDamage(20));
 
@@ -45,7 +43,42 @@ public class ExampleTests
 
         // Player B PP for move 0 decreases by 1
         Assert.True(eng.Last().Player(B).Monster(0).HasDecreasedPP(0, 1));
+    }
 
+    [Fact]
+    public void MoldSporeAttack()
+    {
+        // initial state
+        GameState gs0 = TestHelpers.build1v1 (
+            TestHelpers.testMonster1(deployment.Moves[141].Address),
+            TestHelpers.testMonster1(deployment.Moves[000].Address)
+        );
+        eng.Init(gs0);
+        eng.next(GameAction.Move1, GameAction.Move1, seed);
+
+        // player B has the poison status
+        Assert.Equal(deployment.StatusConditions[001].Address ,eng.Last().Player(B).Monster(0).after.StatusCondition);
+        // this value is deterministic random and will change if the seed changes
+        Assert.Equal(1, eng.Last().Player(B).Monster(0).after.StatusConditionCounter);
+    }
+
+    [Fact]
+    public void PoisonStatus()
+    {
+        // initial state
+        GameState gs0 = TestHelpers.build1v1 (
+            TestHelpers.testMonster1(deployment.Moves[141].Address),
+            TestHelpers.testMonster1(deployment.Moves[000].Address)
+        );
+        // assign the poison status
+        gs0.PlayerA.Monsters[0].StatusCondition = deployment.StatusConditions[001].Address;
+        gs0.PlayerA.Monsters[0].StatusConditionCounter = 3;
+
+        eng.Init(gs0);
+        eng.next(GameAction.Noop, GameAction.Noop, seed);
+
+        // A should have taken 1/16th max HP damage
+        Assert.True(eng.Last().Player(A).Monster(0).HasTakenDamage((uint) gs0.PlayerA.Monsters[0].BaseStats.Hp / 16));
 
     }
 
