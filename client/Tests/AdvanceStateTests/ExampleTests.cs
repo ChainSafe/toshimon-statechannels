@@ -63,6 +63,22 @@ public class ExampleTests
     }
 
     [Fact]
+    public void LeafBlowerAttack()
+    {
+        // initial state
+        GameState gs0 = TestHelpers.build1v1 (
+            TestHelpers.testMonster1(deployment.Moves[147].Address),
+            TestHelpers.testMonster1(deployment.Moves[000].Address)
+        );
+        eng.Init(gs0);
+        eng.next(GameAction.Move1, GameAction.Move1, seed);
+
+        // player B takes some damage determined by type matchup, move power and random variation
+        // this will change if the damage calculation changes
+        Assert.Equal(28, eng.Last().Player(B).Monster(0).after.Stats.Hp);
+    }
+
+    [Fact]
     public void PoisonStatus()
     {
         // initial state
@@ -79,6 +95,8 @@ public class ExampleTests
 
         // A should have taken 1/16th max HP damage
         Assert.True(eng.Last().Player(A).Monster(0).HasTakenDamage((uint) gs0.PlayerA.Monsters[0].BaseStats.Hp / 16));
+        // counter decremented
+        Assert.Equal(2, eng.Last().Player(A).Monster(0).after.StatusConditionCounter);
 
     }
 

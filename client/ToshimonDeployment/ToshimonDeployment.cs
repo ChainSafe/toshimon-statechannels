@@ -38,6 +38,10 @@ public record ToshimonDeployment {
 		return Moves.Values.SingleOrDefault(x => x.Address == address);
 	}
 
+	public NamedDeployment? getStatusConditionByAddress(string address) {
+		return StatusConditions.Values.SingleOrDefault(x => x.Address == address);
+	}
+
 	public string? getMoveAddressById(uint id) {
 		return Moves[id].Address;
 	}

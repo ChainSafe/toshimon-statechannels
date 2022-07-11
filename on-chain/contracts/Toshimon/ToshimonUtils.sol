@@ -59,4 +59,54 @@ library ToshimonUtils {
 		return min + val % (max - min);
 	}
 
+	// Get the total damage for this matchup
+	// TODO: Need to be very careful of overflow and underflow!!
+	function attackDamage(uint8 movePower, TM.Stats memory attackerStats, uint8 moveType, TM.Stats memory defenderStats, uint8 defenderMainType, uint8 defenderSecondaryType, uint8 mover, bytes32 randomSeed) public pure returns (uint8) {
+		// base damage is ratio of attackers attack to defenders defense multiplied by move power
+		uint256 baseDamage = uint(movePower) * attackerStats.attack / defenderStats.defense;
+		// apply modifiers
+		// - type effectiviness factor
+		baseDamage = baseDamage * typeEffectivenessFactor(moveType, defenderMainType, defenderSecondaryType) / 4;
+		// - Crit modifier (5.5% chance of double damage)
+		baseDamage *= uniformRandom(0, 200, randomSeed, mover, "CRIT") < 11 ? 2 : 1;
+		// - random variation (multiplier randomly selected between 0.9 and 1.0) 
+		baseDamage = baseDamage * uniformRandom(900, 1000, randomSeed, mover, "RANDOMVARIATION") / 1000;
+		return uint8(baseDamage);
+		
+	}
+
+
+	// returns quadruple the type effectiveness factor for a match up
+	function typeEffectivenessFactor(uint8 attackType, uint8 defenderMainType, uint8 defenderSecondaryType) public pure returns (uint8) {
+		return typeChart(attackType, defenderMainType) * typeChart(attackType, defenderSecondaryType);
+	}
+
+	// returns double the type chart factor for a type matchup
+	// It returns double so this can be represented as an integer (e.g. 0.5 = 1)
+	function typeChart(uint8 attackType, uint8 defendingType) public pure returns (uint8) {
+		uint8[14][14] memory CHART = 
+	      //       Flex   Fire  Wat Lig  Pla  Ice  Bru  Tox  Ear  Eth  Dig  Dark  Hea Crys   
+        /*Flex*/   [[ 2,   2,   2,   2,   2,   2,   1,   2,   2,   2,   1,   2,   2,   4],
+        /*Fire*/    [ 4,   1,   1,   1,   4,   4,   2,   2,   2,   4,   2,   2,   2,   1],
+        /*Water*/   [ 4,   4,   2,   2,   1,   1,   2,   2,   2,   2,   2,   2,   2,   2],
+        /*Light*/   [ 2,   0,   1,   4,   4,   2,   4,   2,   1,   2,   1,   4,   1,   4],
+        /*Plant*/   [ 2,   1,   4,   2,   1,   2,   2,   4,   4,   2,   2,   2,   2,   1],
+        /*Ice*/     [ 4,   1,   4,   2,   2,   2,   1,   4,   2,   2,   2,   2,   2,   2],
+        /*Brute*/   [ 1,   2,   2,   2,   2,   4,   1,   2,   2,   0,   2,   2,   4,   4],
+        /*Toxic*/   [ 2,   2,   4,   2,   4,   2,   2,   1,   4,   2,   2,   1,   1,   2],
+        /*Earth*/   [ 2,   4,   1,   4,   1,   2,   2,   4,   2,   2,   2,   2,   2,   1],
+        /*Ether*/   [ 4,   2,   2,   1,   2,   2,   2,   2,   2,   1,   4,   4,   2,   2],
+        /*Digital*/ [ 2,   2,   2,   2,   4,   4,   1,   2,   2,   1,   4,   2,   4,   0],
+        /*Dark*/    [ 4,   2,   2,   1,   1,   2,   4,   2,   2,   4,   4,   2,   0,   1],
+        /*Heart*/   [ 4,   2,   2,   1,   2,   2,   1,   2,   2,   2,   2,   4,   1,   4],
+        /*Crystal*/ [ 1,   4,   1,   2,   2,   2,   4,   1,   2,   4,   2,   1,   4,   1]];
+
+		if (attackType == 0 || defendingType == 0) {
+	        return 2;
+		} else {
+			return CHART[attackType - 1][defendingType - 1];
+	    }
+    }
+
 }
+

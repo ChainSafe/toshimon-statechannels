@@ -13,6 +13,7 @@
  import { ToshimonState as TM } from './ToshimonState.sol';
  import './interfaces/IMove.sol';
  import './interfaces/IItem.sol';
+ import './interfaces/IStatusCondition.sol';
 
  contract ToshimonStateTransition is CommitRevealApp {
 
@@ -77,7 +78,18 @@
 
         // apply the status condition `onAfterTurn` callback on all monsters, not just the
         // active ones
-        // TODO
+        for (uint8 i = 0; i < gameState.players[A].monsters.length; i++) {
+            TM.MonsterCard memory monster = gameState.players[A].monsters[i];
+            if (monster.statusCondition != address(0)) {
+                gameState = IStatusCondition(monster.statusCondition).onAfterTurn(gameState, A, i, randomSeed);
+            }
+        }
+        for (uint8 i = 0; i < gameState.players[B].monsters.length; i++) {
+            TM.MonsterCard memory monster = gameState.players[B].monsters[i];
+            if (monster.statusCondition != address(0)) {
+                gameState = IStatusCondition(monster.statusCondition).onAfterTurn(gameState, B, i, randomSeed);
+            }
+        }
 
         return (gameState, outcome, true);
 

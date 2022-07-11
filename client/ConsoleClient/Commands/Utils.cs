@@ -161,7 +161,7 @@ public static void renderChannelDef(FixedPart channelSpec) {
     AnsiConsole.Write(table);
 }
 
-public static void renderState(GameState state, int whoami) {
+public static void renderState(GameState state, int whoami, ToshimonDeployment.ToshimonDeployment deployment) {
         // Create a table
     var table = new Table();
 
@@ -176,8 +176,8 @@ public static void renderState(GameState state, int whoami) {
 
     for( int i = 0; i < 5; i++) {
         table.AddRow(
-            i < other.Monsters.Count ? monsterSummary(other.Monsters[i], other.ActiveMonsterIndex == i, db) : new Table(),
-            i < me.Monsters.Count ? monsterSummary(me.Monsters[i], me.ActiveMonsterIndex == i, db) : new Table()
+            i < other.Monsters.Count ? monsterSummary(other.Monsters[i], other.ActiveMonsterIndex == i, db, deployment) : new Table(),
+            i < me.Monsters.Count ? monsterSummary(me.Monsters[i], me.ActiveMonsterIndex == i, db, deployment) : new Table()
         );
     }
 
@@ -188,9 +188,10 @@ public static void renderState(GameState state, int whoami) {
     AnsiConsole.Write(table);
 }
 
-private static Table monsterSummary(MonsterCard m, bool active, ToshimonDb db) {
+private static Table monsterSummary(MonsterCard m, bool active, ToshimonDb db, ToshimonDeployment.ToshimonDeployment deployment) {
     var t = new Table();
-    t.AddColumn(String.Format("{1} {0}", active ? "(active)" : "",  db.findByCardId(m.CardId).Name));
+    string status = deployment.getStatusConditionByAddress(m.StatusCondition)?.Name ?? "";
+    t.AddColumn(String.Format("{0} {1} ({2})", db.findByCardId(m.CardId).Name, active ? "(active)" : "", status));
     t.AddRow(new BarChart()
         .AddItem("HP", m.Stats.Hp, Color.Green)
         .WithMaxValue(m.BaseStats.Hp));

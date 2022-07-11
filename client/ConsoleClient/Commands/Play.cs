@@ -82,7 +82,12 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
         // extract the game state and render
         var appData = AppData.AbiDecode(variablePart.AppData);
         var gameState = GameState.AbiDecode(appData.GameState);
-        Utils.renderState(gameState, whoami);
+        Utils.renderState(gameState, whoami, deployment);
+
+        if (variablePart.IsFinal) {
+            AnsiConsole.WriteLine("This game is concluded. No further moves can me made. Either player can now submit the final state on-chain to release assets locked in the channel."); 
+            return 0;
+        }
 
         if (thisTurnNum == 1) {
             // If this is in the pre-fund phase then just increment the TurnNum, sign the update and return
@@ -126,8 +131,9 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
                     appData.RevealB = loadReveal(channelDir, "B.reveal");
                     AnsiConsole.WriteLine("Loaded commit from file. No further action required.");  
                     // state transition!!
-                    (GameState newState, _, _) = advanceState(deployment, gameState, variablePart.Outcome.ToArray(), new byte[]{ appData.RevealA.Move, appData.RevealB.Move }, 0);
+                    (GameState newState, _, bool isFinal) = advanceState(deployment, gameState, variablePart.Outcome.ToArray(), new byte[]{ appData.RevealA.Move, appData.RevealB.Move }, 0);
                     appData.GameState = newState.AbiEncode();
+                    variablePart.IsFinal = isFinal;
                 break;
             }
 
