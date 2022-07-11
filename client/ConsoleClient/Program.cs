@@ -16,7 +16,9 @@ public static class Program
                 config.PropagateExceptions();
                 config.ValidateExamples();
             #endif
-            config.SetApplicationName("toshimon-console-client");
+            config.SetApplicationName("toshimon");
+            config.CaseSensitivity(CaseSensitivity.None);
+
             config.AddCommand<PlayCommand>("play");
             config.AddCommand<CreateProposalCommand>("propose");
             config.AddCommand<AcceptProposalCommand>("accept");

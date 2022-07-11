@@ -35,7 +35,7 @@ public record GameState
 
     public byte[] AbiEncode() {
         ABIEncode abiEncode = new ABIEncode();
-        return abiEncode.GetABIEncoded(this);
+        return abiEncode.GetABIParamsEncoded(this);
     }
 
     public static GameState AbiDecode(byte[] encoded) {

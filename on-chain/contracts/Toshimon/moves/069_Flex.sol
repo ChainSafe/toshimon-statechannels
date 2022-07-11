@@ -10,15 +10,15 @@ import { ToshimonUtils as Utils } from '../ToshimonUtils.sol';
 import { IMove } from '../interfaces/IMove.sol';
 
 /**
- * Always does exactly 20 HP of damage to the opponent
+ * Raises users defense by a fixed amount
  */
-contract TwentySavage is IMove {
+contract Flex is IMove {
 
-	uint8 constant damage = 20;
+	uint8 constant defenseGain = 10;
 
 	function applyMove(TM.GameState memory state, uint8 mover, uint8 repeatsRemaining, bytes32 randomSeed) override external pure returns (TM.GameState memory) {
-		uint8 receiver = Utils.not(mover);
-		state.players[receiver].monsters[state.players[receiver].activeMonsterIndex] = Utils.applyDamage(Utils.getActiveMonster(state.players[receiver]), damage);
+		uint8 defense = state.players[mover].monsters[state.players[mover].activeMonsterIndex].stats.defense;
+		state.players[mover].monsters[state.players[mover].activeMonsterIndex].stats.defense += Utils.limitAdd(defense, defenseGain, 100);
 		return state;
 	}
 

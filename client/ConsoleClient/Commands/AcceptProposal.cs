@@ -5,23 +5,28 @@ using Spectre.Console;
 using Protocol;
 using Nethereum.Util;
 using Nethereum.Signer;
+using ToshimonDeployment;
 
 // [Description("Respond to a game proposal by constructing a message which initializes a new state channel")]
 public sealed class AcceptProposalCommand : Command<AcceptProposalCommand.Settings>
 {
-    public sealed class Settings : CommandSettings
+    public sealed class Settings : SharedSettings
     {
         [CommandOption("-p|--proposal")]
         public string? ProposalPath { get; init; }
 
         [CommandOption("-o|--output")]
         public string? OutputPath { get; init; }
+
+        public Settings(string? deploymentPath, string? rpcUrl) : base(deploymentPath, rpcUrl) {}
     }
 
     public override int Execute(CommandContext context, Settings settings)
     {
         AnsiConsole.Write(new Rule("Respond to game proposal"));
         
+        ToshimonDeployment.ToshimonDeployment deployment = new ToshimonDeployment.ToshimonDeployment(settings.DeploymentPath);
+
         // load the game proposal
         byte[] encodedProposal = File.ReadAllBytes(settings.ProposalPath);
         GameProposal proposal = GameProposal.AbiDecode(encodedProposal);
@@ -41,7 +46,7 @@ public sealed class AcceptProposalCommand : Command<AcceptProposalCommand.Settin
 
         // initial game state
         // select toshimon
-        MonsterCard[] monsters = Utils.selectToshimonParty();
+        MonsterCard[] monsters = Utils.selectToshimonParty(deployment);
         PlayerState playerState = new PlayerState(monsters.ToArray(), new ItemCard[0]);
 
         // create the inital state channel tuples (FixedPart, VariablePart, Signature)

@@ -1,4 +1,4 @@
-﻿namespace DeploymentReader;
+﻿namespace ToshimonDeployment;
 
 using System.Text.Json;
 using System.Collections.Generic;
@@ -9,6 +9,7 @@ public record ToshimonDeployment {
 	public Dictionary<uint, NamedDeployment> Moves { get; }
 	public Dictionary<uint, NamedDeployment> Items { get; }
 	public Dictionary<uint, NamedDeployment> StatusConditions { get; }
+	public int ChainId { get; }
 
 	public record NamedDeployment {
 		public string Name { get; }
@@ -22,31 +23,23 @@ public record ToshimonDeployment {
 	}
 
 	public ToshimonDeployment(string deploymentRoot) {
+		ChainId = DeploymentReader.readChainId(Path.Combine(deploymentRoot, ".chainId"));
+
 		StateTransitionContractAddress = DeploymentReader.readRecord(Path.Combine(deploymentRoot, "ToshimonStateTransition.json")).address;
 		AdjudicatorContractAddress = DeploymentReader.readRecord(Path.Combine(deploymentRoot, "Adjudicator.json")).address;
 
 		Moves = DeploymentReader.readRecordList(Path.Combine(deploymentRoot, ".moves.json")).ToDictionary(x => x.id, x => new NamedDeployment(x.name, x.address));
 		Items = DeploymentReader.readRecordList(Path.Combine(deploymentRoot, ".items.json")).ToDictionary(x => x.id, x => new NamedDeployment(x.name, x.address));
 		StatusConditions = DeploymentReader.readRecordList(Path.Combine(deploymentRoot, ".statusConditions.json")).ToDictionary(x => x.id, x => new NamedDeployment(x.name, x.address));
+	
 	}
 
-}
-
-public record DeploymentRecord {
-	public uint id { get; set; }
-	public string name { get; set; }
-	public string address { get; set; }
-}
-
-public class DeploymentReader
-{
-	public static DeploymentRecord readRecord(string path) {
-		string jsonString = File.ReadAllText(path);
-		return JsonSerializer.Deserialize<DeploymentRecord>(jsonString)!;
+	public NamedDeployment? getMoveByAddress(string address) {
+		return Moves.Values.SingleOrDefault(x => x.Address == address);
 	}
 
-	public static List<DeploymentRecord> readRecordList(string path) {
-		string jsonString = File.ReadAllText(path);
-		return JsonSerializer.Deserialize<List<DeploymentRecord>>(jsonString)!;
+	public string? getMoveAddressById(uint id) {
+		return Moves[id].Address;
 	}
+
 }

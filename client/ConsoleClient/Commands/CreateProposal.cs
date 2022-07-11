@@ -5,45 +5,47 @@ using Spectre.Console;
 using Protocol;
 using Nethereum.Util;
 using Nethereum.Signer;
+using ToshimonDeployment;
 
 
 // [Description("Create a message which proposes a new game. Another player can respond to this proposal to start a new battle channel.")]
 public sealed class CreateProposalCommand : Command<CreateProposalCommand.Settings>
 {
-    public sealed class Settings : CommandSettings
+    public sealed class Settings : SharedSettings
     {
         [CommandOption("-o|--output")]
         public string? OutputPath { get; init; }
+
+        public Settings(string? deploymentPath, string? rpcUrl) : base(deploymentPath, rpcUrl) {}
     }
 
     public override int Execute(CommandContext context, Settings settings)
     {
         AnsiConsole.Write(new Rule("Create new game proposal"));
 
-        int chainId = AnsiConsole.Ask<int>("Chain ID (default Matic Mumbai)", 80001);
+        ToshimonDeployment.ToshimonDeployment deployment = new ToshimonDeployment.ToshimonDeployment(settings.DeploymentPath);
+        
         ulong channelNonce = AnsiConsole.Ask<ulong>("Channel Nonce (random value, do not reuse)", (ulong) new Random().Next());
-        string appDefinition = AnsiConsole.Ask<string>("Address of Toshimon rules definition contract", "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2");
         
         EthECKey key = Utils.createOrLoadKey();
 
-        string wagerAsset = AnsiConsole.Ask<string>("Address of Wager Asset (default native asset)", "0x0000000000000000000000000000000000000000");
         BigInteger wagerAmount = AnsiConsole.Ask<BigInteger>("How much to wager (in lowest denomination", 0);
         ulong challengeDuration = AnsiConsole.Ask<ulong>("Channel challenge duration seconds (default 1 day)", 86400);
 
         // initial game state
         // select toshimon
-        MonsterCard[] monsters = Utils.selectToshimonParty();
+        MonsterCard[] monsters = Utils.selectToshimonParty(deployment);
 
         PlayerState playerState = new PlayerState(monsters.ToArray(), new ItemCard[0]);
 
         GameProposal proposal = new GameProposal() {
-            ChainId = chainId,
+            ChainId = deployment.ChainId,
             ChannelNonce = channelNonce,
-            AppDefinition = appDefinition,
+            AppDefinition = deployment.StateTransitionContractAddress,
             SigningKey = key.GetPublicAddress(),
             RecoveryKey = key.GetPublicAddress(),
             Recipient = key.GetPublicAddress(),
-            WagerAssetAddress = wagerAsset,
+            WagerAssetAddress = "0x0000000000000000000000000000000000000000", // the native asset
             WagerAmount = wagerAmount,
             ChallengeDuration = challengeDuration,
             PlayerState = playerState,

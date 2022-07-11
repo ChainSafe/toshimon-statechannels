@@ -29,7 +29,7 @@ library ToshimonState {
 		Stats stats;
 		address[4] moves;
 		address statusCondition;
-		uint8 stausConditionCounter;
+		uint8 statusConditionCounter;
 		address specialStatusCondition;
 		uint8 specialStatusConditionCounter;
 		uint8 activeMoveIndex;

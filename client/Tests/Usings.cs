@@ -1,3 +1,3 @@
 global using Xunit;
 global using Protocol;
-global using DeploymentReader;
+global using ToshimonDeployment;

@@ -3,23 +3,31 @@
 pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
 
- import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/math/Math.sol";
 
 import { ToshimonState as TM } from '../ToshimonState.sol';
 import { ToshimonUtils as Utils } from '../ToshimonUtils.sol';
 import { IMove } from '../interfaces/IMove.sol';
+import { IStatusCondition } from '../interfaces/IStatusCondition.sol';
 
 /**
- * Always does exactly 20 HP of damage to the opponent
+ * Drains HP from opponent each turn (inflicts the poison status condition in PoC)
  */
-contract TwentySavage is IMove {
+contract MoldSpore is IMove {
 
-	uint8 constant damage = 20;
+	address constant poisonStatusAddress = 0x0000000000000000000000000000000000000018;
 
 	function applyMove(TM.GameState memory state, uint8 mover, uint8 repeatsRemaining, bytes32 randomSeed) override external pure returns (TM.GameState memory) {
 		uint8 receiver = Utils.not(mover);
-		state.players[receiver].monsters[state.players[receiver].activeMonsterIndex] = Utils.applyDamage(Utils.getActiveMonster(state.players[receiver]), damage);
-		return state;
+
+		state.players[receiver].monsters[state.players[receiver].activeMonsterIndex].statusCondition = poisonStatusAddress;
+
+		return IStatusCondition(poisonStatusAddress).onStart(
+			state,
+			mover,
+			state.players[receiver].activeMonsterIndex,
+			randomSeed
+		);
 	}
 
 	function speed(TM.Stats memory attackerStats, bytes32 randomSeed) override external pure returns (uint8) {

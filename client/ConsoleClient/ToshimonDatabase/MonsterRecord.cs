@@ -1,6 +1,7 @@
 using LINQtoCSV;
 using System;
 using Protocol;
+using ToshimonDeployment;
 
 /**
  * A representation of how the Toshimon data is stored in CSV format
@@ -68,15 +69,15 @@ public record MonsterRecord
         return new string?[]{Move1, Move2, Move3};
     }
 
-    public MonsterCard toMonsterCard() {
+    public MonsterCard toMonsterCard(ToshimonDeployment.ToshimonDeployment deployment) {
         var db = new MovesDb("./ToshimonDatabase/moves.csv");
         var moves = MoveGuids().Select(guid => db.findByGuid(guid));
 
         List<uint> pp = moves.Select(m => m.Sp).ToList();
         pp.Add(0); // for the TMM move
 
-        List<string> addresses = moves.Select(m => m.ContractAddress).ToList();
-        addresses.Add("0x0000000000000000000000000000000000000000");
+        List<string> addresses = moves.Select(m => deployment.getMoveAddressById(m.MoveNumber) ?? "0x0000000000000000000000000000000000000000").ToList();
+        addresses.Add("0x0000000000000000000000000000000000000000"); // for the TMM move
 
         Stats stats = new Stats {
             Hp = (byte) MaxHP,

@@ -10,15 +10,13 @@ import { ToshimonUtils as Utils } from '../ToshimonUtils.sol';
 import { IMove } from '../interfaces/IMove.sol';
 
 /**
- * Always does exactly 20 HP of damage to the opponent
+ * A leaf-type attack
  */
-contract TwentySavage is IMove {
+contract LeafBlower is IMove {
 
 	uint8 constant damage = 20;
 
 	function applyMove(TM.GameState memory state, uint8 mover, uint8 repeatsRemaining, bytes32 randomSeed) override external pure returns (TM.GameState memory) {
-		uint8 receiver = Utils.not(mover);
-		state.players[receiver].monsters[state.players[receiver].activeMonsterIndex] = Utils.applyDamage(Utils.getActiveMonster(state.players[receiver]), damage);
 		return state;
 	}
 

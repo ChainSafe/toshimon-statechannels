@@ -1,5 +1,7 @@
 using Spectre.Console;
 using Protocol;
+using ToshimonDeployment;
+
 using Nethereum.Signer;
 using System.Numerics;
 
@@ -51,23 +53,26 @@ public static class Utils {
         AnsiConsole.Write(statTable);
     }
 
-    public static MonsterCard[] selectToshimonParty() {
+    public static MonsterCard[] selectToshimonParty(ToshimonDeployment.ToshimonDeployment deployment) {
       AnsiConsole.Write(new Rule("Select Toshimon Party"));
 
       List<MonsterCard> monsters = new List<MonsterCard>();
 
-        // TODO make this file path an env var or something
+     // TODO make this file path an env var or something
       var db = new ToshimonDb("./ToshimonDatabase/toshimon.csv");
 
       for (int i = 0; i < 5; i++) {
         MonsterRecord monster;
-        do {
-            int toshimonNumber = AnsiConsole.Ask<int>(String.Format("Input Toshidex number for party member {0}:", i+1));
-            monster = db.findByToshidexNumber(toshimonNumber);
-            renderMonster(monster);
-        } while (!AnsiConsole.Confirm(String.Format("Use this Toshimon?")));
-        monsters.Add(monster.toMonsterCard());
-    }
+            do {
+                int toshimonNumber = AnsiConsole.Ask<int>(String.Format("Input Toshidex number for party member {0}:", i+1));
+                monster = db.findByToshidexNumber(toshimonNumber);
+                renderMonster(monster);
+            } while (!AnsiConsole.Confirm(String.Format("Use this Toshimon?")));
+            monsters.Add(monster.toMonsterCard(deployment));
+            if (!AnsiConsole.Confirm(String.Format("Add another Toshimon to the party?"))) {
+                break;
+            }
+        }
     return monsters.ToArray();
 }
 
@@ -171,8 +176,8 @@ public static void renderState(GameState state, int whoami) {
 
     for( int i = 0; i < 5; i++) {
         table.AddRow(
-            monsterSummary(other.Monsters[i], other.ActiveMonsterIndex == i, db),
-            monsterSummary(me.Monsters[i], me.ActiveMonsterIndex == i, db)
+            i < other.Monsters.Count ? monsterSummary(other.Monsters[i], other.ActiveMonsterIndex == i, db) : new Table(),
+            i < me.Monsters.Count ? monsterSummary(me.Monsters[i], me.ActiveMonsterIndex == i, db) : new Table()
         );
     }
 

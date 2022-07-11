@@ -7,37 +7,43 @@ using Nethereum.Signer;
 
 using Protocol;
 using Protocol.ToshimonStateTransition.Service;
-
+using ToshimonDeployment;
 
 // [Description("Respond to a game proposal by constructing a message which initializes a new state channel")]
 public sealed class PlayCommand : Command<PlayCommand.Settings>
 {
-    public sealed class Settings : CommandSettings
+    public sealed class Settings : SharedSettings
     {
         [CommandOption("-c|--channelPath")]
-        public string? InputPath { get; init; }
+        public string? ChannelPath { get; init; }
 
         [CommandOption("-k|--keystore")]
         public string? KeyStore { get; init; }
 
         [CommandOption("-p|--password")]
         public string? KeyStorePassword { get; init; }
+
+        public Settings(string? deploymentPath, string? rpcUrl, string? channelPath, string? keystore, string? keystorePassword) : base(deploymentPath, rpcUrl)
+        {
+            ChannelPath = channelPath ?? Environment.GetEnvironmentVariable("CHANNEL_PATH");
+            KeyStore = keystore ?? Environment.GetEnvironmentVariable("KEYSTORE");
+            KeyStorePassword = keystorePassword ?? Environment.GetEnvironmentVariable("KEYSTORE_PASSWORD");
+        }
     }
 
     public override int Execute(CommandContext context, Settings settings)
     {
         AnsiConsole.Write(new Rule("Respond to a state update"));
 
-        string keystorePath = settings.KeyStore ?? Environment.GetEnvironmentVariable("KEYSTORE");
-        string keystorePassword = settings.KeyStorePassword ?? Environment.GetEnvironmentVariable("KEYSTORE_PASSWORD");
+        ToshimonDeployment.ToshimonDeployment deployment = new ToshimonDeployment.ToshimonDeployment(settings.DeploymentPath);
 
         // load the keyfile
         EthECKey key = Utils.loadKey(
-            keystorePath,
-            keystorePassword
-            );
+            settings.KeyStore,
+            settings.KeyStorePassword
+        );
 
-        var channelDir = Path.GetFullPath(settings.InputPath);
+        var channelDir = Path.GetFullPath(settings.ChannelPath);
 
         // load the fixedPart/channel spec
         byte[] encodedFixedPart = File.ReadAllBytes(Path.Combine(channelDir, "channelSpec"));
@@ -100,13 +106,13 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
             switch (thisTurnNum % 4) {
                 case 0: // Player A commit phase            
                     AnsiConsole.WriteLine("Commit phase for Player A.");
-                    reveal = getReveal();
+                    reveal = getReveal(deployment, gameState[0]);
                     storeReveal(reveal, channelDir, "A.reveal");
                     appData.PreCommitA = reveal.CommitHash;
                 break;
                 case 1: // Player B commit phase
                     AnsiConsole.WriteLine("Commit phase for Player B.");     
-                    reveal = getReveal(); 
+                    reveal = getReveal(deployment, gameState[1]); 
                     storeReveal(reveal, channelDir, "B.reveal");      
                     appData.PreCommitB = reveal.CommitHash;
                 break;
@@ -120,7 +126,7 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
                     appData.RevealB = loadReveal(channelDir, "B.reveal");
                     AnsiConsole.WriteLine("Loaded commit from file. No further action required.");  
                     // state transition!!
-                    (GameState newState, _, _) = advanceState(gameState, variablePart.Outcome.ToArray(), new byte[]{ appData.RevealA.Move, appData.RevealB.Move }, 0);
+                    (GameState newState, _, _) = advanceState(deployment, gameState, variablePart.Outcome.ToArray(), new byte[]{ appData.RevealA.Move, appData.RevealB.Move }, 0);
                     appData.GameState = newState.AbiEncode();
                 break;
             }
@@ -133,8 +139,8 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
     }
 
 
-    private static Reveal getReveal() {
-        GameAction action = promptForAction();
+    private static Reveal getReveal(ToshimonDeployment.ToshimonDeployment deployment, PlayerState playerState) {
+        GameAction action = promptForAction(deployment, playerState);
         BigInteger randomSeed = (BigInteger) new Random().Next();
         return new Reveal() {
             Move = (byte) action,
@@ -159,15 +165,14 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
      * This ensures that the new state will be identical to that calculated by the adjudicator
      */
     private static (GameState, SingleAssetExit[], bool) advanceState(
+        ToshimonDeployment.ToshimonDeployment deployment,
         GameState gameState,
         SingleAssetExit[] outcome,
         byte[] actions,
         uint randomSeed) {
 
         var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
-        var contractAddress = Environment.GetEnvironmentVariable("TOSHIMON_CONTRACT_ADDR");
-
-        var service = new ToshimonStateTransitionService(web3, contractAddress);
+        var service = new ToshimonStateTransitionService(web3, deployment.StateTransitionContractAddress);
         
         var result = service.AdvanceStateTypedQueryAsync(
             gameState,
@@ -186,7 +191,7 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
 
 
     // prompt the user and get a Toshimon move
-    private static GameAction promptForAction() {
+    private static GameAction promptForAction(ToshimonDeployment.ToshimonDeployment deployment, PlayerState playerState) {
         var rule = new Rule("Select an action");
         rule.LeftAligned();
         AnsiConsole.Write(rule);
@@ -201,28 +206,31 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
 
         switch (topAction) {
             case "Attack":
-            return AnsiConsole.Prompt(
-                new SelectionPrompt<GameAction>()
-                .Title("Select Attack")
-                .AddChoices(new[] {
-                    GameAction.Move1, GameAction.Move2, GameAction.Move3, GameAction.MoveTMM,
-                    }));
+                var moveNames = playerState.Monsters[playerState.ActiveMonsterIndex].Moves.Select(addr => deployment.getMoveByAddress(addr)?.Name ?? "-").ToArray();
+                return AnsiConsole.Prompt(
+                    new SelectionPrompt<GameAction>()
+                    .Title("Select Attack")
+                    .AddChoices(new[] {
+                        GameAction.Move1, GameAction.Move2, GameAction.Move3, GameAction.MoveTMM,
+                    })
+                    .UseConverter(x => moveNames[(int) x])
+                );
             case "Switch":
-            return AnsiConsole.Prompt(
-                new SelectionPrompt<GameAction>()
-                .Title("Who would you like to swap?")
-                .AddChoices(new[] {
-                    GameAction.Swap1, GameAction.Swap2, GameAction.Swap3, GameAction.Swap4, GameAction.Swap5,
-                    }));    
+                return AnsiConsole.Prompt(
+                    new SelectionPrompt<GameAction>()
+                    .Title("Who would you like to swap?")
+                    .AddChoices(new[] {
+                        GameAction.Swap1, GameAction.Swap2, GameAction.Swap3, GameAction.Swap4, GameAction.Swap5,
+                        }));    
             case "Item":
-            return AnsiConsole.Prompt(
-                new SelectionPrompt<GameAction>()
-                .Title("Select Item")
-                .AddChoices(new[] {
-                    GameAction.Item1, GameAction.Item2, GameAction.Item3, GameAction.Item4, GameAction.Item5,
-                    }));            
+                return AnsiConsole.Prompt(
+                    new SelectionPrompt<GameAction>()
+                    .Title("Select Item")
+                    .AddChoices(new[] {
+                        GameAction.Item1, GameAction.Item2, GameAction.Item3, GameAction.Item4, GameAction.Item5,
+                        }));            
             default:
-            return GameAction.Noop;
+                return GameAction.Noop;
         }
     }
 }
