@@ -39,7 +39,7 @@
 
         // if either player is unconcious then no more moves can be made
         // and the game is over. No further state updates possible.
-        if (_is_unconcious(gameState.players[A]) || _is_unconcious(gameState.players[B])) {
+        if (_gameIsOver(gameState)) {
             return (gameState, outcome, true);
         }
         
@@ -91,7 +91,12 @@
             }
         }
 
-        return (gameState, outcome, false);
+        // game may have ended during this round. If so set the concluded flag to true
+        if (_gameIsOver(gameState)) {
+            return (gameState, outcome, true);
+        } else {
+            return (gameState, outcome, false);
+        }
 
     }
 
@@ -136,6 +141,10 @@
 
     function _isMoveAction(uint8 move) pure internal returns (bool) {
         return (move < 4);
+    }
+
+    function _gameIsOver(TM.GameState memory gameState) pure internal returns (bool) {
+        return _is_unconcious(gameState.players[A]) || _is_unconcious(gameState.players[B])
     }
 
     function _swapMoveIfMultiTurnMoveActive(TM.PlayerState memory playerState, uint8 move) pure internal returns (uint8) {
