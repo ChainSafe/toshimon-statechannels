@@ -8,7 +8,8 @@
 pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
 
-import '../StateChannel/interfaces/IForceMoveApp.sol';
+import '@statechannels/nitro-protocol/contracts/interfaces/IForceMoveApp.sol';
+import { ShortcuttingTurnTaking } from '@statechannels/nitro-protocol/contracts/libraries/signature-logic/ShortcuttingTurnTaking.sol';
 import {ExitFormat as Outcome} from '@statechannels/exit-format/contracts/ExitFormat.sol';
 
 abstract contract CommitRevealApp is IForceMoveApp {
@@ -37,8 +38,6 @@ abstract contract CommitRevealApp is IForceMoveApp {
 
         bytes gameState;
     }
-
-
 
     /**
      * @dev Takes a game state and outcome and mutates it using a move from each player
@@ -124,16 +123,35 @@ abstract contract CommitRevealApp is IForceMoveApp {
         return Phase(turnNum % 4);
     }
 
-    /**
-     * @dev Override of IForceMove validTransition for the randomness protocol
-     */
-    function validTransition(
-        VariablePart memory prev,
-        VariablePart memory next,
-        uint256 nParticipants
-    ) public pure override returns (bool) {
-        require(nParticipants == 2, "Only two participant commit/reveal games are supported");
 
+    /**
+     * @notice Encodes application-specific rules for a particular ForceMove-compliant state channel.
+     * @dev Encodes application-specific rules for a particular ForceMove-compliant state channel.
+     * @param fixedPart Fixed part of the state channel.
+     * @param signedVariableParts Array of variable parts to find the latest of.
+     * @return VariablePart Latest supported by application variable part from supplied array.
+     */    
+    function latestSupportedState(
+        FixedPart calldata fixedPart,
+        SignedVariablePart[] calldata signedVariableParts
+    ) external pure override returns (VariablePart memory) {
+        ShortcuttingTurnTaking.requireValidTurnTaking(fixedPart, signedVariableParts);
+        require(fixedPart.participants.length == 2, "Only two participant commit/reveal games are supported");
+
+        for (uint i = 1; i < signedVariableParts.length; i++) {
+            require(_validTransition(signedVariableParts[i].variablePart, signedVariableParts[i-1].variablePart));
+        }
+
+        return signedVariableParts[signedVariableParts.length - 1].variablePart;
+    }
+
+    /**
+     * @dev Checks for a valid transition between two states
+     */
+    function _validTransition(
+        VariablePart memory prev,
+        VariablePart memory next
+    ) internal pure returns (bool) {
         // we are in the commit/reveal cycle of gameplay
         Phase phase = _phase(next.turnNum);
 
