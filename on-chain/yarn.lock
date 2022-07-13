@@ -896,6 +896,14 @@
     lodash.pick "4.4.0"
     lodash.shuffle "^4.2.0"
 
+"@statechannels/nitro-protocol@https://gitpkg.now.sh/toshimon-io/go-nitro/nitro-protocol?ced040a55caf596eeb5d5fd10e58dc1a69d144f8":
+  version "2.0.0-alpha.0"
+  resolved "https://gitpkg.now.sh/toshimon-io/go-nitro/nitro-protocol?ced040a55caf596eeb5d5fd10e58dc1a69d144f8#2a933b7119ae5daae6068e26c2476b0517cec777"
+  dependencies:
+    "@openzeppelin/contracts" "^3.4.2"
+    "@statechannels/exit-format" "^0.0.6"
+    "@typechain/ethers-v5" "^9.0.0"
+
 "@symblox/hardhat-abi-gen@^0.2.0":
   version "0.2.0"
   resolved "https://registry.npmjs.org/@symblox/hardhat-abi-gen/-/hardhat-abi-gen-0.2.0.tgz"
@@ -934,6 +942,14 @@
   integrity sha512-0xdCkyGOzdqh4h5JSf+zoWx85IusEjDcPIwNEHP8mrWSnCae4rvrqB+/gtpdNfX7zjlFlZiMeePn2r63EI3Lrw==
   dependencies:
     ethers "^5.0.2"
+
+"@typechain/ethers-v5@^9.0.0":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@typechain/ethers-v5/-/ethers-v5-9.0.0.tgz#6aa93bea7425c0463bd8a61eea3643540ef851bd"
+  integrity sha512-bAanuPl1L2itaUdMvor/QvwnIH+TM/CmG00q17Ilv3ZZMeJ2j8HcarhgJUZ9pBY1teBb85P8cC03dz3mSSx+tQ==
+  dependencies:
+    lodash "^4.17.15"
+    ts-essentials "^7.0.1"
 
 "@types/abstract-leveldown@*":
   version "7.2.0"
@@ -2690,6 +2706,14 @@ content-type@~1.0.4:
   version "1.0.4"
   resolved "https://registry.npmjs.org/content-type/-/content-type-1.0.4.tgz"
   integrity sha512-hIP3EEPs8tB9AT1L+NUqtwOAps4mk2Zob89MWXMHjHWg9milF/j4osnnQLXBCBFBk/tvIG/tUc9mOUJiPBhPXA==
+
+"contracts@https://gitpkg.now.sh/statechannels/go-nitro/nitro-protocol?b3a43a74ea630b2ddec7afe116730accd4a601b3":
+  version "1.0.0"
+  resolved "https://gitpkg.now.sh/statechannels/go-nitro/nitro-protocol?b3a43a74ea630b2ddec7afe116730accd4a601b3#e891f4ccaf7bf74b9ebb52744d4319b6d9c26421"
+  dependencies:
+    "@openzeppelin/contracts" "^3.4.2"
+    "@statechannels/exit-format" "^0.0.6"
+    "@typechain/ethers-v5" "^9.0.0"
 
 convert-source-map@^1.5.1:
   version "1.7.0"
@@ -8293,6 +8317,11 @@ ts-essentials@^6.0.3:
   version "6.0.7"
   resolved "https://registry.npmjs.org/ts-essentials/-/ts-essentials-6.0.7.tgz"
   integrity sha512-2E4HIIj4tQJlIHuATRHayv0EfMGK3ris/GRk1E3CFnsZzeNV+hUmelbaTZHLtXaZppM5oLhHRtO04gINC4Jusw==
+
+ts-essentials@^7.0.1:
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/ts-essentials/-/ts-essentials-7.0.3.tgz#686fd155a02133eedcc5362dc8b5056cde3e5a38"
+  integrity sha512-8+gr5+lqO3G84KdiTSMRLtuyJ+nTBVRKuCrK4lidMPdVeEp0uqC875uE5NMcaA7YYMN7XsNiFQuMvasF8HT/xQ==
 
 ts-generator@^0.1.1:
   version "0.1.1"

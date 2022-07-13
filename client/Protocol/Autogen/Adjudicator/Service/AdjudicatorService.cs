@@ -52,25 +52,21 @@ namespace Protocol.Adjudicator.Service
              return ContractHandler.SendRequestAndWaitForReceiptAsync(challengeFunction, cancellationToken);
         }
 
-        public Task<string> ChallengeRequestAsync(FixedPart fixedPart, List<VariablePart> variableParts, List<Signature> sigs, List<byte> whoSignedWhat, Signature challengerSig)
+        public Task<string> ChallengeRequestAsync(FixedPart fixedPart, List<SignedVariablePart> signedVariableParts, Signature challengerSig)
         {
             var challengeFunction = new ChallengeFunction();
                 challengeFunction.FixedPart = fixedPart;
-                challengeFunction.VariableParts = variableParts;
-                challengeFunction.Sigs = sigs;
-                challengeFunction.WhoSignedWhat = whoSignedWhat;
+                challengeFunction.SignedVariableParts = signedVariableParts;
                 challengeFunction.ChallengerSig = challengerSig;
             
              return ContractHandler.SendRequestAsync(challengeFunction);
         }
 
-        public Task<TransactionReceipt> ChallengeRequestAndWaitForReceiptAsync(FixedPart fixedPart, List<VariablePart> variableParts, List<Signature> sigs, List<byte> whoSignedWhat, Signature challengerSig, CancellationTokenSource cancellationToken = null)
+        public Task<TransactionReceipt> ChallengeRequestAndWaitForReceiptAsync(FixedPart fixedPart, List<SignedVariablePart> signedVariableParts, Signature challengerSig, CancellationTokenSource cancellationToken = null)
         {
             var challengeFunction = new ChallengeFunction();
                 challengeFunction.FixedPart = fixedPart;
-                challengeFunction.VariableParts = variableParts;
-                challengeFunction.Sigs = sigs;
-                challengeFunction.WhoSignedWhat = whoSignedWhat;
+                challengeFunction.SignedVariableParts = signedVariableParts;
                 challengeFunction.ChallengerSig = challengerSig;
             
              return ContractHandler.SendRequestAndWaitForReceiptAsync(challengeFunction, cancellationToken);
@@ -86,26 +82,65 @@ namespace Protocol.Adjudicator.Service
              return ContractHandler.SendRequestAndWaitForReceiptAsync(checkpointFunction, cancellationToken);
         }
 
-        public Task<string> CheckpointRequestAsync(FixedPart fixedPart, List<VariablePart> variableParts, List<Signature> sigs, List<byte> whoSignedWhat)
+        public Task<string> CheckpointRequestAsync(FixedPart fixedPart, List<SignedVariablePart> signedVariableParts)
         {
             var checkpointFunction = new CheckpointFunction();
                 checkpointFunction.FixedPart = fixedPart;
-                checkpointFunction.VariableParts = variableParts;
-                checkpointFunction.Sigs = sigs;
-                checkpointFunction.WhoSignedWhat = whoSignedWhat;
+                checkpointFunction.SignedVariableParts = signedVariableParts;
             
              return ContractHandler.SendRequestAsync(checkpointFunction);
         }
 
-        public Task<TransactionReceipt> CheckpointRequestAndWaitForReceiptAsync(FixedPart fixedPart, List<VariablePart> variableParts, List<Signature> sigs, List<byte> whoSignedWhat, CancellationTokenSource cancellationToken = null)
+        public Task<TransactionReceipt> CheckpointRequestAndWaitForReceiptAsync(FixedPart fixedPart, List<SignedVariablePart> signedVariableParts, CancellationTokenSource cancellationToken = null)
         {
             var checkpointFunction = new CheckpointFunction();
                 checkpointFunction.FixedPart = fixedPart;
-                checkpointFunction.VariableParts = variableParts;
-                checkpointFunction.Sigs = sigs;
-                checkpointFunction.WhoSignedWhat = whoSignedWhat;
+                checkpointFunction.SignedVariableParts = signedVariableParts;
             
              return ContractHandler.SendRequestAndWaitForReceiptAsync(checkpointFunction, cancellationToken);
+        }
+
+        public Task<string> ClaimRequestAsync(ClaimFunction claimFunction)
+        {
+             return ContractHandler.SendRequestAsync(claimFunction);
+        }
+
+        public Task<TransactionReceipt> ClaimRequestAndWaitForReceiptAsync(ClaimFunction claimFunction, CancellationTokenSource cancellationToken = null)
+        {
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(claimFunction, cancellationToken);
+        }
+
+        public Task<string> ClaimRequestAsync(ClaimArgs claimArgs)
+        {
+            var claimFunction = new ClaimFunction();
+                claimFunction.ClaimArgs = claimArgs;
+            
+             return ContractHandler.SendRequestAsync(claimFunction);
+        }
+
+        public Task<TransactionReceipt> ClaimRequestAndWaitForReceiptAsync(ClaimArgs claimArgs, CancellationTokenSource cancellationToken = null)
+        {
+            var claimFunction = new ClaimFunction();
+                claimFunction.ClaimArgs = claimArgs;
+            
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(claimFunction, cancellationToken);
+        }
+
+        public Task<Compute_claim_effects_and_interactionsOutputDTO> Compute_claim_effects_and_interactionsQueryAsync(Compute_claim_effects_and_interactionsFunction compute_claim_effects_and_interactionsFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryDeserializingToObjectAsync<Compute_claim_effects_and_interactionsFunction, Compute_claim_effects_and_interactionsOutputDTO>(compute_claim_effects_and_interactionsFunction, blockParameter);
+        }
+
+        public Task<Compute_claim_effects_and_interactionsOutputDTO> Compute_claim_effects_and_interactionsQueryAsync(BigInteger initialHoldings, List<Allocation> sourceAllocations, List<Allocation> targetAllocations, BigInteger indexOfTargetInSource, List<BigInteger> targetAllocationIndicesToPayout, BlockParameter blockParameter = null)
+        {
+            var compute_claim_effects_and_interactionsFunction = new Compute_claim_effects_and_interactionsFunction();
+                compute_claim_effects_and_interactionsFunction.InitialHoldings = initialHoldings;
+                compute_claim_effects_and_interactionsFunction.SourceAllocations = sourceAllocations;
+                compute_claim_effects_and_interactionsFunction.TargetAllocations = targetAllocations;
+                compute_claim_effects_and_interactionsFunction.IndexOfTargetInSource = indexOfTargetInSource;
+                compute_claim_effects_and_interactionsFunction.TargetAllocationIndicesToPayout = targetAllocationIndicesToPayout;
+            
+            return ContractHandler.QueryDeserializingToObjectAsync<Compute_claim_effects_and_interactionsFunction, Compute_claim_effects_and_interactionsOutputDTO>(compute_claim_effects_and_interactionsFunction, blockParameter);
         }
 
         public Task<Compute_transfer_effects_and_interactionsOutputDTO> Compute_transfer_effects_and_interactionsQueryAsync(Compute_transfer_effects_and_interactionsFunction compute_transfer_effects_and_interactionsFunction, BlockParameter blockParameter = null)
@@ -133,26 +168,20 @@ namespace Protocol.Adjudicator.Service
              return ContractHandler.SendRequestAndWaitForReceiptAsync(concludeFunction, cancellationToken);
         }
 
-        public Task<string> ConcludeRequestAsync(FixedPart fixedPart, VariablePart latestVariablePart, byte numStates, List<byte> whoSignedWhat, List<Signature> sigs)
+        public Task<string> ConcludeRequestAsync(FixedPart fixedPart, List<SignedVariablePart> signedVariableParts)
         {
             var concludeFunction = new ConcludeFunction();
                 concludeFunction.FixedPart = fixedPart;
-                concludeFunction.LatestVariablePart = latestVariablePart;
-                concludeFunction.NumStates = numStates;
-                concludeFunction.WhoSignedWhat = whoSignedWhat;
-                concludeFunction.Sigs = sigs;
+                concludeFunction.SignedVariableParts = signedVariableParts;
             
              return ContractHandler.SendRequestAsync(concludeFunction);
         }
 
-        public Task<TransactionReceipt> ConcludeRequestAndWaitForReceiptAsync(FixedPart fixedPart, VariablePart latestVariablePart, byte numStates, List<byte> whoSignedWhat, List<Signature> sigs, CancellationTokenSource cancellationToken = null)
+        public Task<TransactionReceipt> ConcludeRequestAndWaitForReceiptAsync(FixedPart fixedPart, List<SignedVariablePart> signedVariableParts, CancellationTokenSource cancellationToken = null)
         {
             var concludeFunction = new ConcludeFunction();
                 concludeFunction.FixedPart = fixedPart;
-                concludeFunction.LatestVariablePart = latestVariablePart;
-                concludeFunction.NumStates = numStates;
-                concludeFunction.WhoSignedWhat = whoSignedWhat;
-                concludeFunction.Sigs = sigs;
+                concludeFunction.SignedVariableParts = signedVariableParts;
             
              return ContractHandler.SendRequestAndWaitForReceiptAsync(concludeFunction, cancellationToken);
         }
@@ -167,26 +196,20 @@ namespace Protocol.Adjudicator.Service
              return ContractHandler.SendRequestAndWaitForReceiptAsync(concludeAndTransferAllAssetsFunction, cancellationToken);
         }
 
-        public Task<string> ConcludeAndTransferAllAssetsRequestAsync(FixedPart fixedPart, VariablePart latestVariablePart, byte numStates, List<byte> whoSignedWhat, List<Signature> sigs)
+        public Task<string> ConcludeAndTransferAllAssetsRequestAsync(FixedPart fixedPart, List<SignedVariablePart> signedVariableParts)
         {
             var concludeAndTransferAllAssetsFunction = new ConcludeAndTransferAllAssetsFunction();
                 concludeAndTransferAllAssetsFunction.FixedPart = fixedPart;
-                concludeAndTransferAllAssetsFunction.LatestVariablePart = latestVariablePart;
-                concludeAndTransferAllAssetsFunction.NumStates = numStates;
-                concludeAndTransferAllAssetsFunction.WhoSignedWhat = whoSignedWhat;
-                concludeAndTransferAllAssetsFunction.Sigs = sigs;
+                concludeAndTransferAllAssetsFunction.SignedVariableParts = signedVariableParts;
             
              return ContractHandler.SendRequestAsync(concludeAndTransferAllAssetsFunction);
         }
 
-        public Task<TransactionReceipt> ConcludeAndTransferAllAssetsRequestAndWaitForReceiptAsync(FixedPart fixedPart, VariablePart latestVariablePart, byte numStates, List<byte> whoSignedWhat, List<Signature> sigs, CancellationTokenSource cancellationToken = null)
+        public Task<TransactionReceipt> ConcludeAndTransferAllAssetsRequestAndWaitForReceiptAsync(FixedPart fixedPart, List<SignedVariablePart> signedVariableParts, CancellationTokenSource cancellationToken = null)
         {
             var concludeAndTransferAllAssetsFunction = new ConcludeAndTransferAllAssetsFunction();
                 concludeAndTransferAllAssetsFunction.FixedPart = fixedPart;
-                concludeAndTransferAllAssetsFunction.LatestVariablePart = latestVariablePart;
-                concludeAndTransferAllAssetsFunction.NumStates = numStates;
-                concludeAndTransferAllAssetsFunction.WhoSignedWhat = whoSignedWhat;
-                concludeAndTransferAllAssetsFunction.Sigs = sigs;
+                concludeAndTransferAllAssetsFunction.SignedVariableParts = signedVariableParts;
             
              return ContractHandler.SendRequestAndWaitForReceiptAsync(concludeAndTransferAllAssetsFunction, cancellationToken);
         }
@@ -249,51 +272,18 @@ namespace Protocol.Adjudicator.Service
             return ContractHandler.QueryAsync<HoldingsFunction, BigInteger>(holdingsFunction, blockParameter);
         }
 
-        public Task<bool> RequireValidInputQueryAsync(RequireValidInputFunction requireValidInputFunction, BlockParameter blockParameter = null)
+        public Task<LatestSupportedStateOutputDTO> LatestSupportedStateQueryAsync(LatestSupportedStateFunction latestSupportedStateFunction, BlockParameter blockParameter = null)
         {
-            return ContractHandler.QueryAsync<RequireValidInputFunction, bool>(requireValidInputFunction, blockParameter);
+            return ContractHandler.QueryDeserializingToObjectAsync<LatestSupportedStateFunction, LatestSupportedStateOutputDTO>(latestSupportedStateFunction, blockParameter);
         }
 
-        
-        public Task<bool> RequireValidInputQueryAsync(BigInteger numParticipants, BigInteger numStates, BigInteger numSigs, BigInteger numWhoSignedWhats, BlockParameter blockParameter = null)
+        public Task<LatestSupportedStateOutputDTO> LatestSupportedStateQueryAsync(FixedPart fixedPart, List<SignedVariablePart> signedVariableParts, BlockParameter blockParameter = null)
         {
-            var requireValidInputFunction = new RequireValidInputFunction();
-                requireValidInputFunction.NumParticipants = numParticipants;
-                requireValidInputFunction.NumStates = numStates;
-                requireValidInputFunction.NumSigs = numSigs;
-                requireValidInputFunction.NumWhoSignedWhats = numWhoSignedWhats;
+            var latestSupportedStateFunction = new LatestSupportedStateFunction();
+                latestSupportedStateFunction.FixedPart = fixedPart;
+                latestSupportedStateFunction.SignedVariableParts = signedVariableParts;
             
-            return ContractHandler.QueryAsync<RequireValidInputFunction, bool>(requireValidInputFunction, blockParameter);
-        }
-
-        public Task<string> RespondRequestAsync(RespondFunction respondFunction)
-        {
-             return ContractHandler.SendRequestAsync(respondFunction);
-        }
-
-        public Task<TransactionReceipt> RespondRequestAndWaitForReceiptAsync(RespondFunction respondFunction, CancellationTokenSource cancellationToken = null)
-        {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(respondFunction, cancellationToken);
-        }
-
-        public Task<string> RespondRequestAsync(FixedPart fixedPart, List<VariablePart> variablePartAB, Signature sig)
-        {
-            var respondFunction = new RespondFunction();
-                respondFunction.FixedPart = fixedPart;
-                respondFunction.VariablePartAB = variablePartAB;
-                respondFunction.Sig = sig;
-            
-             return ContractHandler.SendRequestAsync(respondFunction);
-        }
-
-        public Task<TransactionReceipt> RespondRequestAndWaitForReceiptAsync(FixedPart fixedPart, List<VariablePart> variablePartAB, Signature sig, CancellationTokenSource cancellationToken = null)
-        {
-            var respondFunction = new RespondFunction();
-                respondFunction.FixedPart = fixedPart;
-                respondFunction.VariablePartAB = variablePartAB;
-                respondFunction.Sig = sig;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(respondFunction, cancellationToken);
+            return ContractHandler.QueryDeserializingToObjectAsync<LatestSupportedStateFunction, LatestSupportedStateOutputDTO>(latestSupportedStateFunction, blockParameter);
         }
 
         public Task<byte[]> StatusOfQueryAsync(StatusOfFunction statusOfFunction, BlockParameter blockParameter = null)
@@ -385,22 +375,6 @@ namespace Protocol.Adjudicator.Service
                 unpackStatusFunction.ChannelId = channelId;
             
             return ContractHandler.QueryDeserializingToObjectAsync<UnpackStatusFunction, UnpackStatusOutputDTO>(unpackStatusFunction, blockParameter);
-        }
-
-        public Task<bool> ValidTransitionQueryAsync(ValidTransitionFunction validTransitionFunction, BlockParameter blockParameter = null)
-        {
-            return ContractHandler.QueryAsync<ValidTransitionFunction, bool>(validTransitionFunction, blockParameter);
-        }
-
-        
-        public Task<bool> ValidTransitionQueryAsync(BigInteger nParticipants, List<VariablePart> ab, string appDefinition, BlockParameter blockParameter = null)
-        {
-            var validTransitionFunction = new ValidTransitionFunction();
-                validTransitionFunction.NParticipants = nParticipants;
-                validTransitionFunction.Ab = ab;
-                validTransitionFunction.AppDefinition = appDefinition;
-            
-            return ContractHandler.QueryAsync<ValidTransitionFunction, bool>(validTransitionFunction, blockParameter);
         }
     }
 }

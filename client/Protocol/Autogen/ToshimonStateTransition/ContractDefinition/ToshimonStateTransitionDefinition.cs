@@ -62,6 +62,17 @@ namespace Protocol.ToshimonStateTransition.ContractDefinition
         public virtual byte[] RandomSeed { get; set; }
     }
 
+    public partial class LatestSupportedStateFunction : LatestSupportedStateFunctionBase { }
+
+    [Function("latestSupportedState", typeof(LatestSupportedStateOutputDTO))]
+    public class LatestSupportedStateFunctionBase : FunctionMessage
+    {
+        [Parameter("tuple", "fixedPart", 1)]
+        public virtual FixedPart FixedPart { get; set; }
+        [Parameter("tuple[]", "signedVariableParts", 2)]
+        public virtual List<SignedVariablePart> SignedVariableParts { get; set; }
+    }
+
     public partial class UpdateOutcomeFavourPlayerFunction : UpdateOutcomeFavourPlayerFunctionBase { }
 
     [Function("updateOutcomeFavourPlayer", typeof(UpdateOutcomeFavourPlayerOutputDTO))]
@@ -71,19 +82,6 @@ namespace Protocol.ToshimonStateTransition.ContractDefinition
         public virtual List<SingleAssetExit> Outcome { get; set; }
         [Parameter("uint8", "playerIndex", 2)]
         public virtual byte PlayerIndex { get; set; }
-    }
-
-    public partial class ValidTransitionFunction : ValidTransitionFunctionBase { }
-
-    [Function("validTransition", "bool")]
-    public class ValidTransitionFunctionBase : FunctionMessage
-    {
-        [Parameter("tuple", "prev", 1)]
-        public virtual VariablePart Prev { get; set; }
-        [Parameter("tuple", "next", 2)]
-        public virtual VariablePart Next { get; set; }
-        [Parameter("uint256", "nParticipants", 3)]
-        public virtual BigInteger NParticipants { get; set; }
     }
 
     public partial class AdvanceStateOutputDTO : AdvanceStateOutputDTOBase { }
@@ -112,6 +110,15 @@ namespace Protocol.ToshimonStateTransition.ContractDefinition
         public virtual bool ReturnValue3 { get; set; }
     }
 
+    public partial class LatestSupportedStateOutputDTO : LatestSupportedStateOutputDTOBase { }
+
+    [FunctionOutput]
+    public class LatestSupportedStateOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("tuple", "", 1)]
+        public virtual VariablePart ReturnValue1 { get; set; }
+    }
+
     public partial class UpdateOutcomeFavourPlayerOutputDTO : UpdateOutcomeFavourPlayerOutputDTOBase { }
 
     [FunctionOutput]
@@ -119,14 +126,5 @@ namespace Protocol.ToshimonStateTransition.ContractDefinition
     {
         [Parameter("tuple[]", "", 1)]
         public virtual List<SingleAssetExit> ReturnValue1 { get; set; }
-    }
-
-    public partial class ValidTransitionOutputDTO : ValidTransitionOutputDTOBase { }
-
-    [FunctionOutput]
-    public class ValidTransitionOutputDTOBase : IFunctionOutputDTO 
-    {
-        [Parameter("bool", "", 1)]
-        public virtual bool ReturnValue1 { get; set; }
     }
 }

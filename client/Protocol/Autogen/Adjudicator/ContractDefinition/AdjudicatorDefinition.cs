@@ -35,13 +35,9 @@ namespace Protocol.Adjudicator.ContractDefinition
     {
         [Parameter("tuple", "fixedPart", 1)]
         public virtual FixedPart FixedPart { get; set; }
-        [Parameter("tuple[]", "variableParts", 2)]
-        public virtual List<VariablePart> VariableParts { get; set; }
-        [Parameter("tuple[]", "sigs", 3)]
-        public virtual List<Signature> Sigs { get; set; }
-        [Parameter("uint8[]", "whoSignedWhat", 4)]
-        public virtual List<byte> WhoSignedWhat { get; set; }
-        [Parameter("tuple", "challengerSig", 5)]
+        [Parameter("tuple[]", "signedVariableParts", 2)]
+        public virtual List<SignedVariablePart> SignedVariableParts { get; set; }
+        [Parameter("tuple", "challengerSig", 3)]
         public virtual Signature ChallengerSig { get; set; }
     }
 
@@ -52,12 +48,34 @@ namespace Protocol.Adjudicator.ContractDefinition
     {
         [Parameter("tuple", "fixedPart", 1)]
         public virtual FixedPart FixedPart { get; set; }
-        [Parameter("tuple[]", "variableParts", 2)]
-        public virtual List<VariablePart> VariableParts { get; set; }
-        [Parameter("tuple[]", "sigs", 3)]
-        public virtual List<Signature> Sigs { get; set; }
-        [Parameter("uint8[]", "whoSignedWhat", 4)]
-        public virtual List<byte> WhoSignedWhat { get; set; }
+        [Parameter("tuple[]", "signedVariableParts", 2)]
+        public virtual List<SignedVariablePart> SignedVariableParts { get; set; }
+    }
+
+    public partial class ClaimFunction : ClaimFunctionBase { }
+
+    [Function("claim")]
+    public class ClaimFunctionBase : FunctionMessage
+    {
+        [Parameter("tuple", "claimArgs", 1)]
+        public virtual ClaimArgs ClaimArgs { get; set; }
+    }
+
+    public partial class Compute_claim_effects_and_interactionsFunction : Compute_claim_effects_and_interactionsFunctionBase { }
+
+    [Function("compute_claim_effects_and_interactions", typeof(Compute_claim_effects_and_interactionsOutputDTO))]
+    public class Compute_claim_effects_and_interactionsFunctionBase : FunctionMessage
+    {
+        [Parameter("uint256", "initialHoldings", 1)]
+        public virtual BigInteger InitialHoldings { get; set; }
+        [Parameter("tuple[]", "sourceAllocations", 2)]
+        public virtual List<Allocation> SourceAllocations { get; set; }
+        [Parameter("tuple[]", "targetAllocations", 3)]
+        public virtual List<Allocation> TargetAllocations { get; set; }
+        [Parameter("uint256", "indexOfTargetInSource", 4)]
+        public virtual BigInteger IndexOfTargetInSource { get; set; }
+        [Parameter("uint256[]", "targetAllocationIndicesToPayout", 5)]
+        public virtual List<BigInteger> TargetAllocationIndicesToPayout { get; set; }
     }
 
     public partial class Compute_transfer_effects_and_interactionsFunction : Compute_transfer_effects_and_interactionsFunctionBase { }
@@ -80,14 +98,8 @@ namespace Protocol.Adjudicator.ContractDefinition
     {
         [Parameter("tuple", "fixedPart", 1)]
         public virtual FixedPart FixedPart { get; set; }
-        [Parameter("tuple", "latestVariablePart", 2)]
-        public virtual VariablePart LatestVariablePart { get; set; }
-        [Parameter("uint8", "numStates", 3)]
-        public virtual byte NumStates { get; set; }
-        [Parameter("uint8[]", "whoSignedWhat", 4)]
-        public virtual List<byte> WhoSignedWhat { get; set; }
-        [Parameter("tuple[]", "sigs", 5)]
-        public virtual List<Signature> Sigs { get; set; }
+        [Parameter("tuple[]", "signedVariableParts", 2)]
+        public virtual List<SignedVariablePart> SignedVariableParts { get; set; }
     }
 
     public partial class ConcludeAndTransferAllAssetsFunction : ConcludeAndTransferAllAssetsFunctionBase { }
@@ -97,14 +109,8 @@ namespace Protocol.Adjudicator.ContractDefinition
     {
         [Parameter("tuple", "fixedPart", 1)]
         public virtual FixedPart FixedPart { get; set; }
-        [Parameter("tuple", "latestVariablePart", 2)]
-        public virtual VariablePart LatestVariablePart { get; set; }
-        [Parameter("uint8", "numStates", 3)]
-        public virtual byte NumStates { get; set; }
-        [Parameter("uint8[]", "whoSignedWhat", 4)]
-        public virtual List<byte> WhoSignedWhat { get; set; }
-        [Parameter("tuple[]", "sigs", 5)]
-        public virtual List<Signature> Sigs { get; set; }
+        [Parameter("tuple[]", "signedVariableParts", 2)]
+        public virtual List<SignedVariablePart> SignedVariableParts { get; set; }
     }
 
     public partial class DepositFunction : DepositFunctionBase { }
@@ -141,32 +147,15 @@ namespace Protocol.Adjudicator.ContractDefinition
         public virtual byte[] ReturnValue2 { get; set; }
     }
 
-    public partial class RequireValidInputFunction : RequireValidInputFunctionBase { }
+    public partial class LatestSupportedStateFunction : LatestSupportedStateFunctionBase { }
 
-    [Function("requireValidInput", "bool")]
-    public class RequireValidInputFunctionBase : FunctionMessage
-    {
-        [Parameter("uint256", "numParticipants", 1)]
-        public virtual BigInteger NumParticipants { get; set; }
-        [Parameter("uint256", "numStates", 2)]
-        public virtual BigInteger NumStates { get; set; }
-        [Parameter("uint256", "numSigs", 3)]
-        public virtual BigInteger NumSigs { get; set; }
-        [Parameter("uint256", "numWhoSignedWhats", 4)]
-        public virtual BigInteger NumWhoSignedWhats { get; set; }
-    }
-
-    public partial class RespondFunction : RespondFunctionBase { }
-
-    [Function("respond")]
-    public class RespondFunctionBase : FunctionMessage
+    [Function("latestSupportedState", typeof(LatestSupportedStateOutputDTO))]
+    public class LatestSupportedStateFunctionBase : FunctionMessage
     {
         [Parameter("tuple", "fixedPart", 1)]
         public virtual FixedPart FixedPart { get; set; }
-        [Parameter("tuple[2]", "variablePartAB", 2)]
-        public virtual List<VariablePart> VariablePartAB { get; set; }
-        [Parameter("tuple", "sig", 3)]
-        public virtual Signature Sig { get; set; }
+        [Parameter("tuple[]", "signedVariableParts", 2)]
+        public virtual List<SignedVariablePart> SignedVariableParts { get; set; }
     }
 
     public partial class StatusOfFunction : StatusOfFunctionBase { }
@@ -217,19 +206,6 @@ namespace Protocol.Adjudicator.ContractDefinition
         public virtual byte[] ChannelId { get; set; }
     }
 
-    public partial class ValidTransitionFunction : ValidTransitionFunctionBase { }
-
-    [Function("validTransition", "bool")]
-    public class ValidTransitionFunctionBase : FunctionMessage
-    {
-        [Parameter("uint256", "nParticipants", 1)]
-        public virtual BigInteger NParticipants { get; set; }
-        [Parameter("tuple[2]", "ab", 2)]
-        public virtual List<VariablePart> Ab { get; set; }
-        [Parameter("address", "appDefinition", 3)]
-        public virtual string AppDefinition { get; set; }
-    }
-
     public partial class AllocationUpdatedEventDTO : AllocationUpdatedEventDTOBase { }
 
     [Event("AllocationUpdated")]
@@ -269,12 +245,8 @@ namespace Protocol.Adjudicator.ContractDefinition
         public virtual bool IsFinal { get; set; }
         [Parameter("tuple", "fixedPart", 5, false )]
         public virtual FixedPart FixedPart { get; set; }
-        [Parameter("tuple[]", "variableParts", 6, false )]
-        public virtual List<VariablePart> VariableParts { get; set; }
-        [Parameter("tuple[]", "sigs", 7, false )]
-        public virtual List<Signature> Sigs { get; set; }
-        [Parameter("uint8[]", "whoSignedWhat", 8, false )]
-        public virtual List<byte> WhoSignedWhat { get; set; }
+        [Parameter("tuple[]", "signedVariableParts", 6, false )]
+        public virtual List<SignedVariablePart> SignedVariableParts { get; set; }
     }
 
     public partial class ConcludedEventDTO : ConcludedEventDTOBase { }
@@ -306,6 +278,23 @@ namespace Protocol.Adjudicator.ContractDefinition
 
 
 
+
+
+
+    public partial class Compute_claim_effects_and_interactionsOutputDTO : Compute_claim_effects_and_interactionsOutputDTOBase { }
+
+    [FunctionOutput]
+    public class Compute_claim_effects_and_interactionsOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("tuple[]", "newSourceAllocations", 1)]
+        public virtual List<Allocation> NewSourceAllocations { get; set; }
+        [Parameter("tuple[]", "newTargetAllocations", 2)]
+        public virtual List<Allocation> NewTargetAllocations { get; set; }
+        [Parameter("tuple[]", "exitAllocations", 3)]
+        public virtual List<Allocation> ExitAllocations { get; set; }
+        [Parameter("uint256", "totalPayouts", 4)]
+        public virtual BigInteger TotalPayouts { get; set; }
+    }
 
     public partial class Compute_transfer_effects_and_interactionsOutputDTO : Compute_transfer_effects_and_interactionsOutputDTOBase { }
 
@@ -346,16 +335,14 @@ namespace Protocol.Adjudicator.ContractDefinition
         public virtual BigInteger ReturnValue1 { get; set; }
     }
 
-    public partial class RequireValidInputOutputDTO : RequireValidInputOutputDTOBase { }
+    public partial class LatestSupportedStateOutputDTO : LatestSupportedStateOutputDTOBase { }
 
     [FunctionOutput]
-    public class RequireValidInputOutputDTOBase : IFunctionOutputDTO 
+    public class LatestSupportedStateOutputDTOBase : IFunctionOutputDTO 
     {
-        [Parameter("bool", "", 1)]
-        public virtual bool ReturnValue1 { get; set; }
+        [Parameter("tuple", "", 1)]
+        public virtual VariablePart ReturnValue1 { get; set; }
     }
-
-
 
     public partial class StatusOfOutputDTO : StatusOfOutputDTOBase { }
 
@@ -381,14 +368,5 @@ namespace Protocol.Adjudicator.ContractDefinition
         public virtual ulong FinalizesAt { get; set; }
         [Parameter("uint160", "fingerprint", 3)]
         public virtual BigInteger Fingerprint { get; set; }
-    }
-
-    public partial class ValidTransitionOutputDTO : ValidTransitionOutputDTOBase { }
-
-    [FunctionOutput]
-    public class ValidTransitionOutputDTOBase : IFunctionOutputDTO 
-    {
-        [Parameter("bool", "", 1)]
-        public virtual bool ReturnValue1 { get; set; }
     }
 }

@@ -9,7 +9,7 @@ pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
 
 import '@statechannels/nitro-protocol/contracts/interfaces/IForceMoveApp.sol';
-import { ShortcuttingTurnTaking } from '@statechannels/nitro-protocol/contracts/libraries/signature-logic/ShortcuttingTurnTaking.sol';
+import { StrictTurnTaking } from '@statechannels/nitro-protocol/contracts/libraries/signature-logic/StrictTurnTaking.sol';
 import {ExitFormat as Outcome} from '@statechannels/exit-format/contracts/ExitFormat.sol';
 
 abstract contract CommitRevealApp is IForceMoveApp {
@@ -135,7 +135,7 @@ abstract contract CommitRevealApp is IForceMoveApp {
         FixedPart calldata fixedPart,
         SignedVariablePart[] calldata signedVariableParts
     ) external pure override returns (VariablePart memory) {
-        ShortcuttingTurnTaking.requireValidTurnTaking(fixedPart, signedVariableParts);
+        StrictTurnTaking.requireValidTurnTaking(fixedPart, signedVariableParts);
         require(fixedPart.participants.length == 2, "Only two participant commit/reveal games are supported");
 
         for (uint i = 1; i < signedVariableParts.length; i++) {
@@ -152,7 +152,19 @@ abstract contract CommitRevealApp is IForceMoveApp {
         VariablePart memory prev,
         VariablePart memory next
     ) internal pure returns (bool) {
-        // we are in the commit/reveal cycle of gameplay
+        
+        if (next.turnNum < 4) {
+            require(
+                Outcome.exitsEqual(prev.outcome, next.outcome),
+                'Outcome change forbidden in pre-find and post-fund stages'
+            );
+            require(keccak256(abi.encodePacked(prev.appData)) == 
+                    keccak256(abi.encodePacked(next.appData)),
+                'appData change forbidden in pre-find and post-fund stages'
+            );
+        }
+
+        // we are in the commit/reveal cycle of gameplay (any turnNum >= 4 when the channel isn't concluded)
         Phase phase = _phase(next.turnNum);
 
         AppData memory prevData = _appData(prev.appData);

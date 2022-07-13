@@ -76,6 +76,20 @@ namespace Protocol.ToshimonStateTransition.Service
             return ContractHandler.QueryDeserializingToObjectAsync<AdvanceStateTypedFunction, AdvanceStateTypedOutputDTO>(advanceStateTypedFunction, blockParameter);
         }
 
+        public Task<LatestSupportedStateOutputDTO> LatestSupportedStateQueryAsync(LatestSupportedStateFunction latestSupportedStateFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryDeserializingToObjectAsync<LatestSupportedStateFunction, LatestSupportedStateOutputDTO>(latestSupportedStateFunction, blockParameter);
+        }
+
+        public Task<LatestSupportedStateOutputDTO> LatestSupportedStateQueryAsync(FixedPart fixedPart, List<SignedVariablePart> signedVariableParts, BlockParameter blockParameter = null)
+        {
+            var latestSupportedStateFunction = new LatestSupportedStateFunction();
+                latestSupportedStateFunction.FixedPart = fixedPart;
+                latestSupportedStateFunction.SignedVariableParts = signedVariableParts;
+            
+            return ContractHandler.QueryDeserializingToObjectAsync<LatestSupportedStateFunction, LatestSupportedStateOutputDTO>(latestSupportedStateFunction, blockParameter);
+        }
+
         public Task<UpdateOutcomeFavourPlayerOutputDTO> UpdateOutcomeFavourPlayerQueryAsync(UpdateOutcomeFavourPlayerFunction updateOutcomeFavourPlayerFunction, BlockParameter blockParameter = null)
         {
             return ContractHandler.QueryDeserializingToObjectAsync<UpdateOutcomeFavourPlayerFunction, UpdateOutcomeFavourPlayerOutputDTO>(updateOutcomeFavourPlayerFunction, blockParameter);
@@ -88,22 +102,6 @@ namespace Protocol.ToshimonStateTransition.Service
                 updateOutcomeFavourPlayerFunction.PlayerIndex = playerIndex;
             
             return ContractHandler.QueryDeserializingToObjectAsync<UpdateOutcomeFavourPlayerFunction, UpdateOutcomeFavourPlayerOutputDTO>(updateOutcomeFavourPlayerFunction, blockParameter);
-        }
-
-        public Task<bool> ValidTransitionQueryAsync(ValidTransitionFunction validTransitionFunction, BlockParameter blockParameter = null)
-        {
-            return ContractHandler.QueryAsync<ValidTransitionFunction, bool>(validTransitionFunction, blockParameter);
-        }
-
-        
-        public Task<bool> ValidTransitionQueryAsync(VariablePart prev, VariablePart next, BigInteger nParticipants, BlockParameter blockParameter = null)
-        {
-            var validTransitionFunction = new ValidTransitionFunction();
-                validTransitionFunction.Prev = prev;
-                validTransitionFunction.Next = next;
-                validTransitionFunction.NParticipants = nParticipants;
-            
-            return ContractHandler.QueryAsync<ValidTransitionFunction, bool>(validTransitionFunction, blockParameter);
         }
     }
 }
