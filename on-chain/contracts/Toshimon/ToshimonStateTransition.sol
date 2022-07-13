@@ -91,7 +91,7 @@
             }
         }
 
-        return (gameState, outcome, true);
+        return (gameState, outcome, false);
 
     }
 
