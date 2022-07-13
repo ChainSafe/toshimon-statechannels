@@ -144,7 +144,7 @@
     }
 
     function _gameIsOver(TM.GameState memory gameState) pure internal returns (bool) {
-        return _is_unconcious(gameState.players[A]) || _is_unconcious(gameState.players[B])
+        return _is_unconcious(gameState.players[A]) || _is_unconcious(gameState.players[B]);
     }
 
     function _swapMoveIfMultiTurnMoveActive(TM.PlayerState memory playerState, uint8 move) pure internal returns (uint8) {
