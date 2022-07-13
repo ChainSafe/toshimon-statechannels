@@ -120,15 +120,13 @@ public static EthECKey loadKey(string path, string password) {
 }
 
 public static void signAndWriteUpdate(FixedPart fixedPart, VariablePart variablePart, EthECKey key, string path) {
-        // sign this state update with this players key
+    // sign this state update with this players key
     var signature = new StateUpdate(fixedPart, variablePart).Sign(key);    
 
-        // combine into an acceptance message
-    var stateUpdate = new SignedStateUpdate() {
-        VariablePart = variablePart,
-        Signature = signature,
-    };
-        // write to std out or a file if output path provided
+    // combine into an acceptance message
+    var stateUpdate = new SignedVariablePart(variablePart, signature);
+
+    // write to std out or a file if output path provided
     using (Stream s = File.Create(path) ) {
         byte[] stateUpdateBytes = stateUpdate.AbiEncode();
         s.Write(stateUpdateBytes, 0, stateUpdateBytes.Length);

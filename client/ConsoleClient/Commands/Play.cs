@@ -65,7 +65,7 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
 
         // load the state update
         byte[] encodedSignedState = File.ReadAllBytes(Path.Combine(channelDir, highestFile));
-        var signedStateUpdate = SignedStateUpdate.AbiDecode(encodedSignedState);
+        var signedStateUpdate = SignedVariablePart.AbiDecode(encodedSignedState);
 
         var variablePart = signedStateUpdate.VariablePart;
         ulong thisTurnNum = variablePart.TurnNum+1;
