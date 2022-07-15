@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Nethereum.ABI.FunctionEncoding.Attributes;
+using Nethereum.Signer;
 
 /**
  * Component of a channel state update that is contant between all updates.
@@ -23,4 +24,13 @@ public record VariablePart
 
     [Parameter("bool", "isFinal", 4)]
     public bool IsFinal { get; set; }
+
+    public SignedVariablePart Sign(FixedPart fixedPart, EthECKey signer) {
+        Signature sig = new StateUpdate(fixedPart, this).Sign(signer);
+        return new SignedVariablePart(this, sig);
+    }
+
+    public Signature GetChallengeSignature(FixedPart fixedPart, EthECKey signer) {
+        return new StateUpdate(fixedPart, this).GetChallengeSignature(signer);
+    }
 }

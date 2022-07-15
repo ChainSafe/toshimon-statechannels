@@ -35,11 +35,11 @@ public record FixedPart
         get {
             ABIEncode abiEncode = new ABIEncode();
             return abiEncode.GetSha3ABIEncoded(
-                ChainId,
-                Participants,
-                ChannelNonce,
-                AppDefinition,
-                ChallengeDuration
+                new ABIValue("uint256", ChainId),
+                new ABIValue("address[]", Participants),
+                new ABIValue("uint48", ChannelNonce),
+                new ABIValue("address", AppDefinition),
+                new ABIValue("uint48", ChallengeDuration)
             );
         } 
     }

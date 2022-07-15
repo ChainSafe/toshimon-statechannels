@@ -1,5 +1,6 @@
 namespace Protocol;
 
+using System.Text;
 using System.Numerics;
 using Nethereum.ABI;
 using Nethereum.Signer;
@@ -36,20 +37,39 @@ public record StateUpdate {
 		get {
 			ABIEncode abiEncode = new ABIEncode();
     		return abiEncode.GetSha3ABIEncoded(
-    			ChannelId, // this is a derived field on fixedPart. Essentially the hash of all fields
-        		AppData,
-        		Outcome,
-        		TurnNum,
-        		IsFinal
+    			new ABIValue("bytes32", ChannelId), // this is a derived field on fixedPart. Essentially the hash of all fields
+        		new ABIValue("bytes", AppData),
+        		new ABIValue("tuple[]", Outcome),
+        		new ABIValue("uint48", TurnNum),
+        		new ABIValue("bool", IsFinal)
         	);
 		}
 	}
 
 	public Signature Sign(EthECKey key) {
+		return prefixAndSign(this.StateHash, key);
+	}
+
+	// This signature must be submitted when posting a challenge on-chain that 
+	// backs this given state. It is the hash of the concatenated state hash and a postfix value
+	// which is 'forceMove'
+	public Signature GetChallengeSignature(EthECKey key) {
+		var abiEncode = new ABIEncode();
+
+		var postfix = Encoding.UTF8.GetBytes("forceMove");
+		var postFixHash = abiEncode.GetSha3ABIEncoded(this.StateHash, postfix);
+    	
+		return prefixAndSign(postFixHash, key);
+	}
+
+	private Signature prefixAndSign(byte[] payload, EthECKey key) {
 		EthereumMessageSigner signer = new EthereumMessageSigner();
-		// this takes care of adding the special message prefix '\u0019Ethereum Signed Message:\n' !! Do we need this??!!
-		// byte[] hash = signer.HashPrefixedMessage(this.StateHash);
-		EthECDSASignature sig = signer.SignAndCalculateV(this.StateHash, key);
+		var abiEncode = new ABIEncode();
+
+		var prefix = Encoding.UTF8.GetBytes("Ethereum Signed Message:\n32");
+    	var hash = abiEncode.GetSha3ABIEncodedPacked(prefix, payload);
+    	// Sign this
+		EthECDSASignature sig = signer.SignAndCalculateV(hash, key);
 		return new Signature() {
 			V = sig.V[0], // this indexing should always be right as v should always be exactly 1 byte
 			R = sig.R,
