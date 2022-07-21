@@ -7,6 +7,8 @@ using Nethereum.Hex.HexConvertors.Extensions;
 
 using Protocol.Adjudicator.Service;
 using Protocol.Adjudicator.ContractDefinition;
+using Protocol.TESTNitroUtils.Service;
+
 
 public class AdjudicatorTests
 {
@@ -50,11 +52,24 @@ public class AdjudicatorTests
     }
 
     [Fact]
-    public void ChallengeChannel() {
-
-        // Create a new channel fixed part
+    public void GeneratesCorrectChannelId() {
         var fixedPart = TestFixedPart();
-        
+
+        var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
+        var service = new TESTNitroUtilsService(web3, deployment.NitroTestContractAddress);
+
+        var result = service.GetChannelIdQueryAsync(
+            fixedPart
+        ).Result;
+
+        Assert.Equal(result, fixedPart.ChannelId);
+
+    }
+
+    [Fact]
+    public void GeneratesCorrectStateHash() {
+        var fixedPart = TestFixedPart();
+
         var variablePart0 = new VariablePart() {
             Outcome = new List<SingleAssetExit>(),
             AppData = new byte[]{},
@@ -64,36 +79,66 @@ public class AdjudicatorTests
 
         var signedVariablePart0 = variablePart0.Sign(fixedPart, aKey);
 
+        var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
+        var service = new TESTNitroUtilsService(web3, deployment.NitroTestContractAddress);
 
-        Console.WriteLine("ChannelId: 0x{0}", fixedPart.ChannelId.ToHex());
-
-        Console.WriteLine("StateHash: 0x{0}", new StateUpdate(fixedPart, variablePart0).StateHash.ToHex());
-
-        // var _result = aService.CheckpointRequestAsync(
-        //     fixedPart,
-        //     new List<SignedVariablePart>() { signedVariablePart0 }
-        // ).Result;
-
-        // var result = aService.ConcludeRequestAsync(
-        //     fixedPart,
-        //     new List<SignedVariablePart>() { signedVariablePart0 }
-        // ).Result;
-
-        // Challenge a channel with the zero state signed by A
-        var result = aService.ChallengeRequestAsync(
-            fixedPart,
-            new List<SignedVariablePart>() { signedVariablePart0 },
-            variablePart0.GetChallengeSignature(fixedPart, aKey)
+        var result = service.HashStateQueryAsync(
+            fixedPart.ChannelId,
+            variablePart0.AppData,
+            variablePart0.Outcome,
+            variablePart0.TurnNum,
+            variablePart0.IsFinal
         ).Result;
 
-        Console.WriteLine(result);
+        Assert.Equal(result, new StateUpdate(fixedPart, variablePart0).StateHash);
 
-        // check the status of the channel 
-        // If finalizesAt == 0 then it is open
-        // If finalizesAt <= block.timestamp if is finalized
-        // else it is in Challenge mode
-        // Need to unpack the response..
-        // service.StatusOfQueryAsync(channelId).Result;
     }
+
+    // [Fact]
+    // public void ChallengeChannel() {
+
+    //     // Create a new channel fixed part
+    //     var fixedPart = TestFixedPart();
+        
+    //     var variablePart0 = new VariablePart() {
+    //         Outcome = new List<SingleAssetExit>(),
+    //         AppData = new byte[]{},
+    //         TurnNum = 2,
+    //         IsFinal = false,
+    //     };
+
+    //     var signedVariablePart0 = variablePart0.Sign(fixedPart, aKey);
+
+
+    //     Console.WriteLine("ChannelId: 0x{0}", fixedPart.ChannelId.ToHex());
+
+    //     Console.WriteLine("StateHash: 0x{0}", new StateUpdate(fixedPart, variablePart0).StateHash.ToHex());
+
+    //     // var _result = aService.CheckpointRequestAsync(
+    //     //     fixedPart,
+    //     //     new List<SignedVariablePart>() { signedVariablePart0 }
+    //     // ).Result;
+
+    //     // var result = aService.ConcludeRequestAsync(
+    //     //     fixedPart,
+    //     //     new List<SignedVariablePart>() { signedVariablePart0 }
+    //     // ).Result;
+
+    //     // Challenge a channel with the zero state signed by A
+    //     var result = aService.ChallengeRequestAsync(
+    //         fixedPart,
+    //         new List<SignedVariablePart>() { signedVariablePart0 },
+    //         variablePart0.GetChallengeSignature(fixedPart, aKey)
+    //     ).Result;
+
+    //     Console.WriteLine(result);
+
+    //     // check the status of the channel 
+    //     // If finalizesAt == 0 then it is open
+    //     // If finalizesAt <= block.timestamp if is finalized
+    //     // else it is in Challenge mode
+    //     // Need to unpack the response..
+    //     // service.StatusOfQueryAsync(channelId).Result;
+    // }
 
 }

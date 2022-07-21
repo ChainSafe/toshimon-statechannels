@@ -45,22 +45,22 @@ public class ExampleTests
         Assert.True(eng.Last().Player(B).Monster(0).HasDecreasedPP(0, 1));
     }
 
-    [Fact]
-    public void MoldSporeAttack()
-    {
-        // initial state
-        GameState gs0 = TestHelpers.build1v1 (
-            TestHelpers.testMonster1(deployment.Moves[141].Address),
-            TestHelpers.testMonster1(deployment.Moves[000].Address)
-        );
-        eng.Init(gs0);
-        eng.next(GameAction.Move1, GameAction.Move1, seed);
+    // [Fact]
+    // public void MoldSporeAttack()
+    // {
+    //     // initial state
+    //     GameState gs0 = TestHelpers.build1v1 (
+    //         TestHelpers.testMonster1(deployment.Moves[141].Address),
+    //         TestHelpers.testMonster1(deployment.Moves[000].Address)
+    //     );
+    //     eng.Init(gs0);
+    //     eng.next(GameAction.Move1, GameAction.Move1, seed);
 
-        // player B has the poison status
-        Assert.Equal(deployment.StatusConditions[001].Address ,eng.Last().Player(B).Monster(0).after.StatusCondition);
-        // this value is deterministic random and will change if the seed changes
-        Assert.Equal(1, eng.Last().Player(B).Monster(0).after.StatusConditionCounter);
-    }
+    //     // player B has the poison status
+    //     Assert.Equal(deployment.StatusConditions[001].Address ,eng.Last().Player(B).Monster(0).after.StatusCondition);
+    //     // this value is deterministic random and will change if the seed changes
+    //     Assert.Equal(1, eng.Last().Player(B).Monster(0).after.StatusConditionCounter);
+    // }
 
     [Fact]
     public void LeafBlowerAttack()
