@@ -25,9 +25,12 @@ public record VariablePart
     [Parameter("bool", "isFinal", 4)]
     public bool IsFinal { get; set; }
 
-    public SignedVariablePart Sign(FixedPart fixedPart, EthECKey signer) {
-        Signature sig = new StateUpdate(fixedPart, this).Sign(signer);
-        return new SignedVariablePart(this, sig);
+    public Signature Sign(FixedPart fixedPart, uint signer, EthECKey key) {
+        return new StateUpdate(fixedPart, this).Sign(key);
+    }
+
+    public SignedVariablePart ToSigned(FixedPart fixedPart, uint signer, EthECKey key) {
+        return new SignedVariablePart(this, signer, this.Sign(fixedPart, signer, key));
     }
 
     public Signature GetChallengeSignature(FixedPart fixedPart, EthECKey signer) {

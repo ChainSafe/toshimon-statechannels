@@ -135,8 +135,9 @@ abstract contract CommitRevealApp is IForceMoveApp {
         FixedPart calldata fixedPart,
         SignedVariablePart[] calldata signedVariableParts
     ) external pure override returns (VariablePart memory) {
-        // StrictTurnTaking.requireValidTurnTaking(fixedPart, signedVariableParts);
         require(fixedPart.participants.length == 2, "Only two participant commit/reveal games are supported");
+        // commit-reveal apps require strict turn taking. Each state is only signed by the mover
+        StrictTurnTaking.requireValidTurnTaking(fixedPart, signedVariableParts);
 
         for (uint i = 1; i < signedVariableParts.length; i++) {
             require(_validTransition(signedVariableParts[i].variablePart, signedVariableParts[i-1].variablePart));
