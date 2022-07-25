@@ -57,7 +57,10 @@ public record StateUpdate {
 		var abiEncode = new ABIEncode();
 
 		var postfix = Encoding.UTF8.GetBytes("forceMove");
-		var postFixHash = abiEncode.GetSha3ABIEncoded(this.StateHash, postfix);
+		var postFixHash = abiEncode.GetSha3ABIEncoded(
+			new ABIValue("bytes32", this.StateHash),
+			new ABIValue("bytes", postfix)
+		);
     	
 		return prefixAndSign(postFixHash, key);
 	}
@@ -65,11 +68,7 @@ public record StateUpdate {
 	private Signature prefixAndSign(byte[] payload, EthECKey key) {
 		EthereumMessageSigner signer = new EthereumMessageSigner();
 		var abiEncode = new ABIEncode();
-
-		var prefix = Encoding.UTF8.GetBytes("Ethereum Signed Message:\n32");
-    	var hash = abiEncode.GetSha3ABIEncodedPacked(prefix, payload);
-    	// Sign this
-		EthECDSASignature sig = signer.SignAndCalculateV(hash, key);
+		EthECDSASignature sig = signer.SignAndCalculateV(signer.HashPrefixedMessage(payload), key);
 		return new Signature() {
 			V = sig.V[0], // this indexing should always be right as v should always be exactly 1 byte
 			R = sig.R,
