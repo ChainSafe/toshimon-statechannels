@@ -48,7 +48,7 @@ public class AdjudicatorTests
     public FixedPart TestFixedPart() {
         return new FixedPart() {
             ChainId = deployment.ChainId,
-            Participants = new List<string>(){aAccount.Address, bAccount.Address},
+            Participants = new List<string>(){ aKey.GetPublicAddress(), bKey.GetPublicAddress() },
             ChannelNonce = 123,
             AppDefinition = deployment.StateTransitionContractAddress,
             ChallengeDuration = 10,
@@ -121,41 +121,26 @@ public class AdjudicatorTests
 
         // Create a new channel fixed part
         var fixedPart = TestFixedPart();
-        
         var variablePart0 = TestVariablePart();
-
         var signedVariablePart0 = variablePart0.Sign(fixedPart, aKey);
 
-
-        Console.WriteLine("ChannelId: 0x{0}", fixedPart.ChannelId.ToHex());
-
-        Console.WriteLine("StateHash: 0x{0}", new StateUpdate(fixedPart, variablePart0).StateHash.ToHex());
-
-        // var _result = aService.CheckpointRequestAsync(
-        //     fixedPart,
-        //     new List<SignedVariablePart>() { signedVariablePart0 }
-        // ).Result;
-
-        // var result = aService.ConcludeRequestAsync(
-        //     fixedPart,
-        //     new List<SignedVariablePart>() { signedVariablePart0 }
-        // ).Result;
-
         // Challenge a channel with the zero state signed by A
-        var result = aService.ChallengeRequestAsync(
+        var _ = aService.ChallengeRequestAsync(
             fixedPart,
             new List<SignedVariablePart>() { signedVariablePart0 },
             variablePart0.GetChallengeSignature(fixedPart, aKey)
         ).Result;
 
-        Console.WriteLine(result);
-
         // check the status of the channel 
         // If finalizesAt == 0 then it is open
         // If finalizesAt <= block.timestamp if is finalized
         // else it is in Challenge mode
-        // Need to unpack the response..
-        // service.StatusOfQueryAsync(channelId).Result;
+        var result = aService.UnpackStatusQueryAsync(
+            fixedPart.ChannelId
+        ).Result;
+
+        // this signifigies the Challenged status
+        Assert.True(result.FinalizesAt > 0);
     }
 
 }
