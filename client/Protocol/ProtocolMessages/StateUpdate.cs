@@ -38,8 +38,8 @@ public record StateUpdate {
 			ABIEncode abiEncode = new ABIEncode();
     		return abiEncode.GetSha3ABIEncoded(
     			new ABIValue("bytes32", ChannelId), // this is a derived field on fixedPart. Essentially the hash of all fields
-        		new ABIValue("bytes", AppData),
-        		new ABIValue("tuple[]", Outcome),
+        		new ABIValue("bytes", AppData), // <- problem here if app data is a zero length array...
+        		new ABIValue("tuple[]", Outcome), // <- problem here
         		new ABIValue("uint48", TurnNum),
         		new ABIValue("bool", IsFinal)
         	);

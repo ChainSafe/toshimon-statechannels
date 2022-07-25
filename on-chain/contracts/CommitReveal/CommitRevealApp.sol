@@ -135,7 +135,7 @@ abstract contract CommitRevealApp is IForceMoveApp {
         FixedPart calldata fixedPart,
         SignedVariablePart[] calldata signedVariableParts
     ) external pure override returns (VariablePart memory) {
-        StrictTurnTaking.requireValidTurnTaking(fixedPart, signedVariableParts);
+        // StrictTurnTaking.requireValidTurnTaking(fixedPart, signedVariableParts);
         require(fixedPart.participants.length == 2, "Only two participant commit/reveal games are supported");
 
         for (uint i = 1; i < signedVariableParts.length; i++) {
@@ -162,6 +162,7 @@ abstract contract CommitRevealApp is IForceMoveApp {
                     keccak256(abi.encodePacked(next.appData)),
                 'appData change forbidden in pre-find and post-fund stages'
             );
+            return true;
         }
 
         // we are in the commit/reveal cycle of gameplay (any turnNum >= 4 when the channel isn't concluded)

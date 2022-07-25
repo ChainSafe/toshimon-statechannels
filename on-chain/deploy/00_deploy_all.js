@@ -39,6 +39,11 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     log: true,
   });
 
+  await deploy('TESTNitroUtils', {
+    from: deployer,
+    args: [],
+    log: true,
+  });
 
   // Helper functions
 

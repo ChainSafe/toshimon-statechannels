@@ -71,13 +71,13 @@ public class AdjudicatorTests
         var fixedPart = TestFixedPart();
 
         var variablePart0 = new VariablePart() {
-            Outcome = new List<SingleAssetExit>(),
-            AppData = new byte[]{},
-            TurnNum = 2,
+            Outcome = new List<SingleAssetExit>() { SingleAssetExit.NewSimpleNative("0x0000000000000000000000000000000000000000", 10) },
+            AppData = new byte[]{ 0x00 },
+            TurnNum = 0,
             IsFinal = false,
         };
 
-        var signedVariablePart0 = variablePart0.Sign(fixedPart, aKey);
+        Console.WriteLine(variablePart0);
 
         var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
         var service = new TESTNitroUtilsService(web3, deployment.NitroTestContractAddress);

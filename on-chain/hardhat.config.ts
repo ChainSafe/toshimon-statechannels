@@ -47,7 +47,7 @@ export default {
     path: './abi',
     clear: true,
     flat: true,
-    only: [':Adjudicator$', ':ToshimonState$', ':ToshimonStateTransition$', ':CommitRevealApp$'],
+    only: [':Adjudicator$', ':ToshimonState$', ':ToshimonStateTransition$', ':CommitRevealApp$', ':TESTNitroUtils$'],
     spacing: 2
   },
   namedAccounts: {

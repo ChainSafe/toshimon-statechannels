@@ -25,6 +25,19 @@
             "ServiceNamespace":null,
             "CodeGenLanguage":"CSharp",
             "BaseOutputPath":"Autogen"
+        },
+        {
+            "ContractName":"TESTNitroUtils",
+            "ABI":null,
+            "ABIFile":"../../on-chain/abi/TESTNitroUtils.json",
+            "ByteCode":null,
+            "BinFile":null,
+            "BaseNamespace":"Protocol",
+            "CQSNamespace":null,
+            "DTONamespace":null,
+            "ServiceNamespace":null,
+            "CodeGenLanguage":"CSharp",
+            "BaseOutputPath":"Autogen"
         }
     ]
 }
