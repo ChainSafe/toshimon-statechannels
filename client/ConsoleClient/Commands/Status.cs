@@ -37,26 +37,24 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
 
         Utils.renderChannelDef(fixedPart);
 
-        // assume we are playing off the highest existing state message
-        var highestFile = Directory.EnumerateFiles(channelDir, "*.state")
-                                .OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f)))
-                                .Last();
-
-        // load the state update
-        byte[] encodedSignedState = File.ReadAllBytes(Path.Combine(channelDir, highestFile));
-        var signedStateUpdate = SignedVariablePart.AbiDecode(encodedSignedState);
+        var signedStateUpdate = Utils.loadHighestStateInDirectory(channelDir);
 
         var variablePart = signedStateUpdate.VariablePart;
         ulong thisTurnNum = variablePart.TurnNum+1;
 
         // query the chain to see if any challenges are lodged
-        var (finalizedAt, turnNumRecord) = GetChannelStatus(deployment.AdjudicatorContractAddress, fixedPart.ChannelId);
+        GetAndRenderStatus(deployment.AdjudicatorContractAddress, fixedPart.ChannelId, variablePart);
 
-        renderChannelStatus(variablePart, finalizedAt, turnNumRecord);
         return 0;
     }
 
-    private (ulong, ulong) GetChannelStatus(string contractAddress, byte[] channelId) {
+    public static void GetAndRenderStatus(string contractAddress, byte[] channelId, VariablePart vp) {
+        // query the chain to see if any challenges are lodged
+        var (finalizedAt, turnNumRecord) = GetChannelStatus(contractAddress, channelId);
+        renderChannelStatus(vp, finalizedAt, turnNumRecord);
+    }
+
+    public static (ulong, ulong) GetChannelStatus(string contractAddress, byte[] channelId) {
         var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
         var service = new AdjudicatorService(web3, contractAddress);
         var result = service.UnpackStatusQueryAsync(
@@ -65,7 +63,7 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
         return (result.FinalizesAt, result.TurnNumRecord);
     }
 
-    private void renderChannelStatus(VariablePart vp, ulong finalizedAt, ulong turnNumRecord) {
+    public static void renderChannelStatus(VariablePart vp, ulong finalizedAt, ulong turnNumRecord) {
 
         // TODO add finalized status as well
         string status = finalizedAt > 0 ? "Challenge" : "Open";

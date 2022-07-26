@@ -24,6 +24,8 @@ public static class Program
             config.AddCommand<AcceptProposalCommand>("accept");
             config.AddCommand<StatusCommand>("status");
             config.AddCommand<ChallengeCommand>("challenge");
+            config.AddCommand<CheckpointCommand>("checkpoint");
+
         });		
 
 		return app.Run(args);
