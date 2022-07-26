@@ -27,6 +27,9 @@ public record SignedVariablePart
     [Parameter("uint256", "signedBy", 3)]
     public BigInteger SignedBy { get; set; }
 
+    // parameterless constructor is required to support deserialization from ABI encoding
+    public SignedVariablePart() {}
+
     // create a new SignedVariable part from a variable part, a state update signature and the index of the signer (0 or 1)
     public SignedVariablePart(VariablePart vp, uint signer, Signature sig) {
         VariablePart = vp;

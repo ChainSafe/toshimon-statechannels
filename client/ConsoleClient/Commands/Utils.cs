@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Nethereum.Web3;
 using Nethereum.KeyStore.Model;
 
+using Nethereum.Web3.Accounts;
+
 public static class Utils {
 	public static void renderMonster(MonsterRecord mon) {
 
@@ -82,34 +84,38 @@ public static EthECKey generateNewKey() {
 
 public static EthECKey createOrLoadKey() {
    if (AnsiConsole.Confirm("Generate new ephemeral keypair for this game?")) {
-    AnsiConsole.MarkupLine("Generating new keypair...");
-            // generate a new keypair
-    EthECKey ecKey = generateNewKey();
-            // save to file
-    var keyStoreService = new Nethereum.KeyStore.KeyStoreScryptService();
-    var scryptParams = new ScryptParams {Dklen = 32, N = 262144, R = 1, P = 8};			
+        AnsiConsole.MarkupLine("Generating new keypair...");
+                // generate a new keypair
+        EthECKey ecKey = generateNewKey();
+                // save to file
+        var keyStoreService = new Nethereum.KeyStore.KeyStoreScryptService();
+        var scryptParams = new ScryptParams {Dklen = 32, N = 262144, R = 1, P = 8};			
 
-    string path = AnsiConsole.Prompt(
-        new TextPrompt<string>("Enter path to save keystore file."));
+        string path = AnsiConsole.Prompt(
+            new TextPrompt<string>("Enter path to save keystore file."));
 
-    string password = AnsiConsole.Prompt(
-        new TextPrompt<string>("Enter keystore password?")
-        .Secret());
+        string password = AnsiConsole.Prompt(
+            new TextPrompt<string>("Enter keystore password?")
+            .Secret());
 
-    var keyStore = keyStoreService.EncryptAndGenerateKeyStore(password, ecKey.GetPrivateKeyAsBytes(), ecKey.GetPublicAddress(), scryptParams);
-    string json = keyStoreService.SerializeKeyStoreToJson(keyStore);
+        var keyStore = keyStoreService.EncryptAndGenerateKeyStore(password, ecKey.GetPrivateKeyAsBytes(), ecKey.GetPublicAddress(), scryptParams);
+        string json = keyStoreService.SerializeKeyStoreToJson(keyStore);
 
-    File.WriteAllText(path, json);  
+        File.WriteAllText(path, json);  
 
-    return ecKey;
-} else {
+        return ecKey;
+    } else {
+        return promptLoadKey();
+    }
+}
+
+public static EthECKey promptLoadKey() {
     string path = AnsiConsole.Ask<string>("Path to existing key store file");
     string password = AnsiConsole.Prompt(
         new TextPrompt<string>("Enter keystore password?")
         .Secret());
 
     return loadKey(path, password);
-}
 }
 
 public static EthECKey loadKey(string path, string password) {
@@ -119,12 +125,29 @@ public static EthECKey loadKey(string path, string password) {
     return new EthECKey(privateKey, true);
 }
 
+public static Account promptAccountFromPrivateKey() {
+    string pkey = AnsiConsole.Ask<string>("Input account private key.\nObviously this is insecure AF so never ever EVER use a real mainnet account.");
+    return new Account(pkey);
+}
+
+public static SignedVariablePart loadHighestStateInDirectory(string channelDir, int skip = 0) {
+    // assume we are playing off the highest existing state message
+    var highestFile = Directory.EnumerateFiles(channelDir, "*.state")
+                            .OrderBy(f => -int.Parse(Path.GetFileNameWithoutExtension(f)))
+                            .Skip(skip)
+                            .First();
+
+    // load the state update
+    byte[] encodedSignedState = File.ReadAllBytes(Path.Combine(channelDir, highestFile));
+    return SignedVariablePart.AbiDecode(encodedSignedState);
+}
+
 public static void signAndWriteUpdate(FixedPart fixedPart, VariablePart variablePart, EthECKey key, string path) {
     // sign this state update with this players key
     var signature = new StateUpdate(fixedPart, variablePart).Sign(key);    
 
     // combine into an acceptance message
-    var stateUpdate = new SignedVariablePart(variablePart, signature);
+    var stateUpdate = new SignedVariablePart(variablePart, (uint) variablePart.TurnNum % 2, signature);
 
     // write to std out or a file if output path provided
     using (Stream s = File.Create(path) ) {
@@ -153,9 +176,9 @@ public static void renderChannelDef(FixedPart channelSpec) {
     table.AddColumn("");
     table.AddRow("Channel Id", Convert.ToBase64String(channelSpec.ChannelId));
     table.AddRow("Chain Id", channelSpec.ChainId.ToString());
-    table.AddRow("ChannelNonce",channelSpec.ChannelNonce.ToString());
-    table.AddRow("AppDefinition",channelSpec.AppDefinition);
-    table.AddRow("ChallengeDuration",channelSpec.ChallengeDuration.ToString());
+    table.AddRow("ChannelNonce", channelSpec.ChannelNonce.ToString());
+    table.AddRow("AppDefinition", channelSpec.AppDefinition);
+    table.AddRow("ChallengeDuration", channelSpec.ChallengeDuration.ToString());
     AnsiConsole.Write(table);
 }
 

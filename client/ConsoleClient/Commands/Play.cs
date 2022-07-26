@@ -58,14 +58,7 @@ public sealed class PlayCommand : Command<PlayCommand.Settings>
             return 0;
         }
 
-        // assume we are playing off the highest existing state message
-        var highestFile = Directory.EnumerateFiles(channelDir, "*.state")
-                                .OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f)))
-                                .Last();
-
-        // load the state update
-        byte[] encodedSignedState = File.ReadAllBytes(Path.Combine(channelDir, highestFile));
-        var signedStateUpdate = SignedVariablePart.AbiDecode(encodedSignedState);
+        var signedStateUpdate = Utils.loadHighestStateInDirectory(channelDir);
 
         var variablePart = signedStateUpdate.VariablePart;
         ulong thisTurnNum = variablePart.TurnNum+1;

@@ -22,6 +22,8 @@ public static class Program
             config.AddCommand<PlayCommand>("play");
             config.AddCommand<CreateProposalCommand>("propose");
             config.AddCommand<AcceptProposalCommand>("accept");
+            config.AddCommand<StatusCommand>("status");
+            config.AddCommand<ChallengeCommand>("challenge");
         });		
 
 		return app.Run(args);
