@@ -68,6 +68,10 @@ public sealed class ChallengeCommand : Command<ChallengeCommand.Settings>
             return 0;           
         }
         
+        // // HACK!!
+        // // re-encode the GameState using the chain-side call
+        // lastSignedState.VariablePart.AppData = 
+
         // Create a supported state proof by combining this most recent state with the prior one signed
         // by the other player
         var supportProof = new List<SignedVariablePart>() { Utils.loadHighestStateInDirectory(channelDir, 1), lastSignedState };

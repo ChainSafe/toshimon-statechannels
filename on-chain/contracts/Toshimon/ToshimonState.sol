@@ -16,8 +16,8 @@ library ToshimonState {
 	}
 
 	struct PlayerState {
-		MonsterCard[] monsters;
-		ItemCard[] items;
+		MonsterCard[5] monsters;
+		ItemCard[5] items;
 		uint8 activeMonsterIndex;
 	}
 

@@ -12,6 +12,9 @@ using Nethereum.KeyStore.Model;
 
 using Nethereum.Web3.Accounts;
 
+using Protocol.ToshimonStateTransition.Service;
+using Protocol.ToshimonStateTransition.ContractDefinition;
+
 public static class Utils {
 	public static void renderMonster(MonsterRecord mon) {
 
@@ -128,6 +131,14 @@ public static EthECKey loadKey(string path, string password) {
 public static Account promptAccountFromPrivateKey() {
     string pkey = AnsiConsole.Ask<string>("Input account private key.\nObviously this is insecure AF so never ever EVER use a real mainnet account.");
     return new Account(pkey);
+}
+
+// As a bit of a hack to fix the issue with encoding locally
+// this uses a contract call to ABI encode the game state
+public static byte[] encodeGameState(ToshimonDeployment.ToshimonDeployment deployment, GameState gameState) {
+    var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
+    var service = new ToshimonStateTransitionService(web3, deployment.StateTransitionContractAddress);
+    return service.EncodeStateQueryAsync(gameState).Result;
 }
 
 public static SignedVariablePart loadHighestStateInDirectory(string channelDir, int skip = 0) {

@@ -1,6 +1,7 @@
 ﻿namespace Protocol;
 
 using System;
+using System.Linq;
 using System.Numerics;
 using Nethereum.ABI;
 using Nethereum.ABI.FunctionEncoding;
@@ -9,6 +10,7 @@ using Nethereum.ABI.FunctionEncoding.Attributes;
  * The top level game state data structure. Encodes all properties of a toshimon game
  * at one instant in time.
  */
+[Struct("GameState")]
 public record GameState
 {
 

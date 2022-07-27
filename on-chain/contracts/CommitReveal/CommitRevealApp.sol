@@ -12,6 +12,8 @@ import '@statechannels/nitro-protocol/contracts/interfaces/IForceMoveApp.sol';
 import { StrictTurnTaking } from '@statechannels/nitro-protocol/contracts/libraries/signature-logic/StrictTurnTaking.sol';
 import {ExitFormat as Outcome} from '@statechannels/exit-format/contracts/ExitFormat.sol';
 
+import "hardhat/console.sol";
+
 abstract contract CommitRevealApp is IForceMoveApp {
 
     // player indices
@@ -140,7 +142,7 @@ abstract contract CommitRevealApp is IForceMoveApp {
         StrictTurnTaking.requireValidTurnTaking(fixedPart, signedVariableParts);
 
         for (uint i = 1; i < signedVariableParts.length; i++) {
-            require(_validTransition(signedVariableParts[i].variablePart, signedVariableParts[i-1].variablePart));
+            require(_validTransition(signedVariableParts[i-1].variablePart, signedVariableParts[i].variablePart));
         }
 
         return signedVariableParts[signedVariableParts.length - 1].variablePart;
@@ -189,14 +191,14 @@ abstract contract CommitRevealApp is IForceMoveApp {
             // require(prevData.preCommitA == nextData.preCommitA, "Cannot mutate A's preCommit in [A reveal] move");
             require(prevData.preCommitB == nextData.preCommitB, "Cannot mutate B's preCommit in [A reveal] move");
             // reveal matches preCommit
-            require(prevData.preCommitA ==  keccak256(abi.encode(nextData.revealA)));
+            require(prevData.preCommitA ==  keccak256(abi.encode(nextData.revealA)), "Reveal does not match pre-commit for A reveal");
             // outcome
-            require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, A)));
+            require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, A)), "Outcome is not correctly set for A reveal");
         } else if (phase == Phase.B_REVEAL) {
             // reveal matches preCommit
-            require(prevData.preCommitB == keccak256(abi.encode(nextData.revealB)));
+            require(prevData.preCommitB == keccak256(abi.encode(nextData.revealB)), "Reveal does not match pre-commit for B reveal");
             // outcome
-            require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, B)));
+            require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, B)), "Outcome is not correctly set for B reveal");
             // game state update is made correctly with respect to the committed moves and random seeds
             bytes32 randomSeed = _mergeSeeds(nextData.revealA.seed, nextData.revealB.seed);
             (bytes memory newState,, bool isFinal) = advanceState(prevData.gameState, prev.outcome, nextData.revealA.move, nextData.revealB.move, randomSeed);

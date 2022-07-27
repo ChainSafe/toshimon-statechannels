@@ -62,6 +62,51 @@ namespace Protocol.ToshimonStateTransition.ContractDefinition
         public virtual byte[] RandomSeed { get; set; }
     }
 
+    public partial class EncodeItemCardFunction : EncodeItemCardFunctionBase { }
+
+    [Function("encodeItemCard", "bytes")]
+    public class EncodeItemCardFunctionBase : FunctionMessage
+    {
+        [Parameter("tuple", "payload", 1)]
+        public virtual ItemCard Payload { get; set; }
+    }
+
+    public partial class EncodeMonsterCardFunction : EncodeMonsterCardFunctionBase { }
+
+    [Function("encodeMonsterCard", "bytes")]
+    public class EncodeMonsterCardFunctionBase : FunctionMessage
+    {
+        [Parameter("tuple", "payload", 1)]
+        public virtual MonsterCard Payload { get; set; }
+    }
+
+    public partial class EncodePlayerStateFunction : EncodePlayerStateFunctionBase { }
+
+    [Function("encodePlayerState", "bytes")]
+    public class EncodePlayerStateFunctionBase : FunctionMessage
+    {
+        [Parameter("tuple", "payload", 1)]
+        public virtual PlayerState Payload { get; set; }
+    }
+
+    public partial class EncodeStateFunction : EncodeStateFunctionBase { }
+
+    [Function("encodeState", "bytes")]
+    public class EncodeStateFunctionBase : FunctionMessage
+    {
+        [Parameter("tuple", "payload", 1)]
+        public virtual GameState Payload { get; set; }
+    }
+
+    public partial class EncodeStatsFunction : EncodeStatsFunctionBase { }
+
+    [Function("encodeStats", "bytes")]
+    public class EncodeStatsFunctionBase : FunctionMessage
+    {
+        [Parameter("tuple", "payload", 1)]
+        public virtual Stats Payload { get; set; }
+    }
+
     public partial class LatestSupportedStateFunction : LatestSupportedStateFunctionBase { }
 
     [Function("latestSupportedState", typeof(LatestSupportedStateOutputDTO))]
@@ -108,6 +153,51 @@ namespace Protocol.ToshimonStateTransition.ContractDefinition
         public virtual List<SingleAssetExit> ReturnValue2 { get; set; }
         [Parameter("bool", "", 3)]
         public virtual bool ReturnValue3 { get; set; }
+    }
+
+    public partial class EncodeItemCardOutputDTO : EncodeItemCardOutputDTOBase { }
+
+    [FunctionOutput]
+    public class EncodeItemCardOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("bytes", "", 1)]
+        public virtual byte[] ReturnValue1 { get; set; }
+    }
+
+    public partial class EncodeMonsterCardOutputDTO : EncodeMonsterCardOutputDTOBase { }
+
+    [FunctionOutput]
+    public class EncodeMonsterCardOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("bytes", "", 1)]
+        public virtual byte[] ReturnValue1 { get; set; }
+    }
+
+    public partial class EncodePlayerStateOutputDTO : EncodePlayerStateOutputDTOBase { }
+
+    [FunctionOutput]
+    public class EncodePlayerStateOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("bytes", "", 1)]
+        public virtual byte[] ReturnValue1 { get; set; }
+    }
+
+    public partial class EncodeStateOutputDTO : EncodeStateOutputDTOBase { }
+
+    [FunctionOutput]
+    public class EncodeStateOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("bytes", "", 1)]
+        public virtual byte[] ReturnValue1 { get; set; }
+    }
+
+    public partial class EncodeStatsOutputDTO : EncodeStatsOutputDTOBase { }
+
+    [FunctionOutput]
+    public class EncodeStatsOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("bytes", "", 1)]
+        public virtual byte[] ReturnValue1 { get; set; }
     }
 
     public partial class LatestSupportedStateOutputDTO : LatestSupportedStateOutputDTOBase { }

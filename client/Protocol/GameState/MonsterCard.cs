@@ -2,11 +2,14 @@
 
 using System;
 using System.Numerics;
+using Nethereum.ABI;
+using Nethereum.ABI.FunctionEncoding;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 
 /**
  * State associated with a monster card that is part of a players hand in battle
  */
+[Struct("MonsterCard")]
 public record MonsterCard {
 
     [Parameter("uint256", "cardId", 1)]
@@ -64,4 +67,9 @@ public record MonsterCard {
     }
 
     public MonsterCard(Stats baseStats, Stats stats, string[] moves) : this(baseStats, stats, new List<string>(moves)) { }
+
+    public byte[] AbiEncode() {
+        ABIEncode abiEncode = new ABIEncode();
+        return abiEncode.GetABIParamsEncoded(this);
+    }
 }

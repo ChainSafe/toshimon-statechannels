@@ -2,6 +2,8 @@
 
 using System;
 using System.Numerics;
+using Nethereum.ABI;
+using Nethereum.ABI.FunctionEncoding;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 
 /**
@@ -9,6 +11,7 @@ using Nethereum.ABI.FunctionEncoding.Attributes;
  * These can either represent the base stats which are immutable during a game
  * or the current stats which can be buffed/debuffed
  */
+[Struct("Stats")]
 public record Stats {
     [Parameter("uint8", "hp", 1)]
     public byte Hp { get; set; }
@@ -30,4 +33,9 @@ public record Stats {
 
     [Parameter("uint8[4]", "pp", 7)]
     public List<uint> PP { get; set; }
+
+    public byte[] AbiEncode() {
+        ABIEncode abiEncode = new ABIEncode();
+        return abiEncode.GetABIParamsEncoded(this);
+    }
 }

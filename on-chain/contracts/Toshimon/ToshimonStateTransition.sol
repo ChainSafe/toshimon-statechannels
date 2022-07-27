@@ -17,6 +17,36 @@
 
  contract ToshimonStateTransition is CommitRevealApp {
 
+    function encodeState(
+        TM.GameState memory payload
+    ) public pure returns (bytes memory) {
+        return (abi.encode(payload));
+    }
+
+    function encodePlayerState(
+        TM.PlayerState memory payload
+    ) public pure returns (bytes memory) {
+        return (abi.encode(payload));
+    }
+
+    function encodeStats(
+        TM.Stats memory payload
+    ) public pure returns (bytes memory) {
+        return (abi.encode(payload));
+    }
+
+    function encodeItemCard(
+        TM.ItemCard memory payload
+    ) public pure returns (bytes memory) {
+        return (abi.encode(payload));
+    }
+
+    function encodeMonsterCard(
+        TM.MonsterCard memory payload
+    ) public pure returns (bytes memory) {
+        return (abi.encode(payload));
+    }
+
     function advanceState(
         bytes memory _gameState_,
         Outcome.SingleAssetExit[] memory outcome,
@@ -111,11 +141,11 @@
         Outcome.SingleAssetExit[] memory outcome,
         uint8 playerIndex
         ) override public pure returns (Outcome.SingleAssetExit[] memory) {
-        Outcome.SingleAssetExit memory wagerAssetExit = outcome[0];
-        uint256 total = wagerAssetExit.allocations[0].amount + wagerAssetExit.allocations[1].amount;
+        // Outcome.SingleAssetExit memory wagerAssetExit = outcome[0];
+        // uint256 total = wagerAssetExit.allocations[0].amount + wagerAssetExit.allocations[1].amount;
 
-        outcome[0].allocations[playerIndex].amount = total;
-        outcome[0].allocations[~playerIndex].amount = 0;
+        // outcome[0].allocations[playerIndex].amount = total;
+        // outcome[0].allocations[~playerIndex].amount = 0;
 
         return (outcome);
     }

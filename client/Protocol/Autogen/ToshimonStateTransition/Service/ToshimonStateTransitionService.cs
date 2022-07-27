@@ -76,6 +76,76 @@ namespace Protocol.ToshimonStateTransition.Service
             return ContractHandler.QueryDeserializingToObjectAsync<AdvanceStateTypedFunction, AdvanceStateTypedOutputDTO>(advanceStateTypedFunction, blockParameter);
         }
 
+        public Task<byte[]> EncodeItemCardQueryAsync(EncodeItemCardFunction encodeItemCardFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<EncodeItemCardFunction, byte[]>(encodeItemCardFunction, blockParameter);
+        }
+
+        
+        public Task<byte[]> EncodeItemCardQueryAsync(ItemCard payload, BlockParameter blockParameter = null)
+        {
+            var encodeItemCardFunction = new EncodeItemCardFunction();
+                encodeItemCardFunction.Payload = payload;
+            
+            return ContractHandler.QueryAsync<EncodeItemCardFunction, byte[]>(encodeItemCardFunction, blockParameter);
+        }
+
+        public Task<byte[]> EncodeMonsterCardQueryAsync(EncodeMonsterCardFunction encodeMonsterCardFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<EncodeMonsterCardFunction, byte[]>(encodeMonsterCardFunction, blockParameter);
+        }
+
+        
+        public Task<byte[]> EncodeMonsterCardQueryAsync(MonsterCard payload, BlockParameter blockParameter = null)
+        {
+            var encodeMonsterCardFunction = new EncodeMonsterCardFunction();
+                encodeMonsterCardFunction.Payload = payload;
+            
+            return ContractHandler.QueryAsync<EncodeMonsterCardFunction, byte[]>(encodeMonsterCardFunction, blockParameter);
+        }
+
+        public Task<byte[]> EncodePlayerStateQueryAsync(EncodePlayerStateFunction encodePlayerStateFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<EncodePlayerStateFunction, byte[]>(encodePlayerStateFunction, blockParameter);
+        }
+
+        
+        public Task<byte[]> EncodePlayerStateQueryAsync(PlayerState payload, BlockParameter blockParameter = null)
+        {
+            var encodePlayerStateFunction = new EncodePlayerStateFunction();
+                encodePlayerStateFunction.Payload = payload;
+            
+            return ContractHandler.QueryAsync<EncodePlayerStateFunction, byte[]>(encodePlayerStateFunction, blockParameter);
+        }
+
+        public Task<byte[]> EncodeStateQueryAsync(EncodeStateFunction encodeStateFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<EncodeStateFunction, byte[]>(encodeStateFunction, blockParameter);
+        }
+
+        
+        public Task<byte[]> EncodeStateQueryAsync(GameState payload, BlockParameter blockParameter = null)
+        {
+            var encodeStateFunction = new EncodeStateFunction();
+                encodeStateFunction.Payload = payload;
+            
+            return ContractHandler.QueryAsync<EncodeStateFunction, byte[]>(encodeStateFunction, blockParameter);
+        }
+
+        public Task<byte[]> EncodeStatsQueryAsync(EncodeStatsFunction encodeStatsFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<EncodeStatsFunction, byte[]>(encodeStatsFunction, blockParameter);
+        }
+
+        
+        public Task<byte[]> EncodeStatsQueryAsync(Stats payload, BlockParameter blockParameter = null)
+        {
+            var encodeStatsFunction = new EncodeStatsFunction();
+                encodeStatsFunction.Payload = payload;
+            
+            return ContractHandler.QueryAsync<EncodeStatsFunction, byte[]>(encodeStatsFunction, blockParameter);
+        }
+
         public Task<LatestSupportedStateOutputDTO> LatestSupportedStateQueryAsync(LatestSupportedStateFunction latestSupportedStateFunction, BlockParameter blockParameter = null)
         {
             return ContractHandler.QueryDeserializingToObjectAsync<LatestSupportedStateFunction, LatestSupportedStateOutputDTO>(latestSupportedStateFunction, blockParameter);

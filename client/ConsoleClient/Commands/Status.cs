@@ -45,6 +45,10 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
         // query the chain to see if any challenges are lodged
         GetAndRenderStatus(deployment.AdjudicatorContractAddress, fixedPart.ChannelId, variablePart);
 
+        var appData = AppData.AbiDecode(variablePart.AppData);
+        var gameState = GameState.AbiDecode(appData.GameState);
+        Utils.renderState(gameState, 0, deployment);
+
         return 0;
     }
 
