@@ -27,13 +27,16 @@ public class ExampleTests
         // initial state
         GameState gs0 = TestHelpers.build1v1 (
             TestHelpers.testMonster1(deployment.Moves[102].Address),
-            TestHelpers.testMonster1(deployment.Moves[102].Address)
+            TestHelpers.testMonster1(deployment.Moves[000].Address)
         );
-        eng.Init(gs0);
-        eng.next(GameAction.Move1, GameAction.Move1, seed);
 
-        // player A takes 20 damage
-        Assert.True(eng.Last().Player(A).Monster(0).HasTakenDamage(20));
+        Console.WriteLine("{0}", gs0.PlayerA.Monsters[0].Moves[0]);
+
+        eng.Init(gs0);
+        eng.next(GameAction.Move1, GameAction.Noop, seed);
+
+        // player A takes 0 damage
+        Assert.True(eng.Last().Player(A).Monster(0).HasTakenDamage(0));
 
         // player B takes 20 damage
         Assert.True(eng.Last().Player(B).Monster(0).HasTakenDamage(20));
@@ -41,8 +44,8 @@ public class ExampleTests
         // Player A PP for move 0 decreases by 1
         Assert.True(eng.Last().Player(A).Monster(0).HasDecreasedPP(0, 1));
 
-        // Player B PP for move 0 decreases by 1
-        Assert.True(eng.Last().Player(B).Monster(0).HasDecreasedPP(0, 1));
+        // Player B PP not decreased
+        Assert.True(eng.Last().Player(B).Monster(0).HasDecreasedPP(0, 0));
     }
 
     // [Fact]
@@ -71,10 +74,10 @@ public class ExampleTests
             TestHelpers.testMonster1(deployment.Moves[000].Address)
         );
         eng.Init(gs0);
-        eng.next(GameAction.Move1, GameAction.Move1, seed);
+        eng.next(GameAction.Move1, GameAction.Noop, seed);
 
         // player B takes some damage determined by type matchup, move power and random variation
-        // this will change if the damage calculation changes
+        // this will change if the damage calculation changes        
         Assert.Equal(28, eng.Last().Player(B).Monster(0).after.Stats.Hp);
     }
 
@@ -124,7 +127,7 @@ public class ExampleTests
         );
         // give A a potion in slot 0
         ItemCard potionCard = new ItemCard() { Definition = deployment.Items[012].Address, Used = false };
-        gs0 = gs0.SetPlayer(gs0[A].AddItem(potionCard), A);
+        gs0[A].Items[0] = potionCard;
         
         // reduce A active monster HP to 10
         var playerA = gs0.PlayerA.SetActiveMonster(gs0.PlayerA.GetActiveMonster() with { Stats = gs0.PlayerA.GetActiveMonster().Stats with { Hp = 10 } } );

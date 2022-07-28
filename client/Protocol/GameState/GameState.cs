@@ -30,6 +30,12 @@ public record GameState
         Players.Add(playerB);
     }
 
+    public static GameState Default() {
+        return new GameState() {
+            Players = new List<PlayerState>() { PlayerState.Default(), PlayerState.Default() }
+        };
+    }
+
     // indexing helper
     public PlayerState this[int index] {
         get => Players[index];

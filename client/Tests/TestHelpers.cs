@@ -7,7 +7,7 @@ public static class TestHelpers {
 	// an example monster card used throughout tests
     // It only has a single move and this is in every move slot 
 	public static MonsterCard testMonster1(string moveAddress) {
-        Stats stats = new Stats {
+        Stats stats = new Stats() {
             Hp = 70,
             Attack = 70,
             Defense = 70,
@@ -17,26 +17,29 @@ public static class TestHelpers {
             PP = new List<uint>(new uint[]{10, 0, 0, 0}),
         };
 
-        return new MonsterCard(
-            stats,
-            stats,
-            new string[]{ moveAddress, moveAddress, moveAddress, moveAddress }
-        );
+        return MonsterCard.Default() with {
+            Stats = stats with {},
+            BaseStats = stats with {},
+            Moves = Enumerable.Repeat(moveAddress, 4).ToList(),
+        };
     }
 
     // build a game state quickly where each player only has one monster
     public static GameState build1v1(MonsterCard one, MonsterCard two) {
-    	return new GameState(
-            new PlayerState(new MonsterCard[]{one}, new ItemCard[0]),
-            new PlayerState(new MonsterCard[]{two}, new ItemCard[0])
-        );
+        var gameState = GameState.Default();
+        gameState.PlayerA.Monsters[0] = one;
+        gameState.PlayerB.Monsters[0] = two;        
+    	return gameState;
     }
 
     public static GameState build2v2(MonsterCard one, MonsterCard two) {
-        return new GameState(
-            new PlayerState(new MonsterCard[]{one, one}, new ItemCard[0]),
-            new PlayerState(new MonsterCard[]{two, two}, new ItemCard[0])
-        );
+        var gameState = GameState.Default();
+        gameState.PlayerA.Monsters[0] = one;
+        gameState.PlayerA.Monsters[1] = one;
+
+        gameState.PlayerB.Monsters[0] = two;
+        gameState.PlayerB.Monsters[1] = two;
+        return gameState;
     }
 
 }

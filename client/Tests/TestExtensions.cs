@@ -42,7 +42,7 @@ public static class MonsterCardExtensions {
 
 	public static MonsterCard DecrementPP(this MonsterCard self, int moveIndex) {
 		Stats stats = self.Stats with { PP = ImmutableArray.Create<uint>(self.Stats.PP.ToArray()).SetItem(moveIndex, SafeMath.subtract(self.Stats.PP[moveIndex], 1)).ToList() };
-		return new MonsterCard(self.BaseStats, stats, self.Moves);
+		return self with { Stats = stats };
 	}
 }
 
@@ -61,10 +61,6 @@ public static class PlayerStateExtensions {
 
 	public static PlayerState SetActiveMonster(this PlayerState self, MonsterCard monster) {
 		return self.SetMonster(monster, self.ActiveMonsterIndex);
-	}
-
-	public static PlayerState AddItem(this PlayerState self, ItemCard item) {
-		return self with { Items = ImmutableArray.Create<ItemCard>(self.Items.ToArray()).Add(item).ToList() };
 	}
 
 	public static PlayerState SetItemUsed(this PlayerState self, int itemIndex) {

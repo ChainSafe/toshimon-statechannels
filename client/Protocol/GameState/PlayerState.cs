@@ -27,6 +27,14 @@ public record PlayerState {
         this.ActiveMonsterIndex = 0;
     }
 
+    public static PlayerState Default() {
+        return new PlayerState() {
+            Monsters = Enumerable.Range(1, 5).Select(_ => MonsterCard.Default()).ToList(),
+            Items = Enumerable.Range(1, 5).Select(_ => ItemCard.Default()).ToList(),
+            ActiveMonsterIndex = 0,
+        };
+    }
+
     public byte[] AbiEncode() {
         ABIEncode abiEncode = new ABIEncode();
         return abiEncode.GetABIParamsEncoded(this);
