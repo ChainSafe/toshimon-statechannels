@@ -17,7 +17,7 @@ public static class TestHelpers {
             PP = new List<uint>(new uint[]{10, 0, 0, 0}),
         };
 
-        return MonsterCard.Default() with {
+        return new MonsterCard() with {
             Stats = stats with {},
             BaseStats = stats with {},
             Moves = Enumerable.Repeat(moveAddress, 4).ToList(),
@@ -26,14 +26,14 @@ public static class TestHelpers {
 
     // build a game state quickly where each player only has one monster
     public static GameState build1v1(MonsterCard one, MonsterCard two) {
-        var gameState = GameState.Default();
+        var gameState = new GameState();
         gameState.PlayerA.Monsters[0] = one;
         gameState.PlayerB.Monsters[0] = two;        
     	return gameState;
     }
 
     public static GameState build2v2(MonsterCard one, MonsterCard two) {
-        var gameState = GameState.Default();
+        var gameState = new GameState();
         gameState.PlayerA.Monsters[0] = one;
         gameState.PlayerA.Monsters[1] = one;
 

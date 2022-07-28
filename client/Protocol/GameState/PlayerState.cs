@@ -19,20 +19,16 @@ public record PlayerState {
     [Parameter("uint8", "activeMonsterIndex", 3)]
     public byte ActiveMonsterIndex { get; set; }
 
-    public PlayerState() {}
+    public PlayerState() {
+        Monsters = Enumerable.Range(1, 5).Select(_ => new MonsterCard()).ToList();
+        Items = Enumerable.Range(1, 5).Select(_ => new ItemCard()).ToList();
+        ActiveMonsterIndex = 0;
+    }
 
-    public PlayerState(MonsterCard[] monsters, ItemCard[] items) {
+    public PlayerState(MonsterCard[] monsters, ItemCard[] items): this() {
         this.Monsters = new List<MonsterCard>(monsters);
         this.Items = new List<ItemCard>(items);
         this.ActiveMonsterIndex = 0;
-    }
-
-    public static PlayerState Default() {
-        return new PlayerState() {
-            Monsters = Enumerable.Range(1, 5).Select(_ => MonsterCard.Default()).ToList(),
-            Items = Enumerable.Range(1, 5).Select(_ => ItemCard.Default()).ToList(),
-            ActiveMonsterIndex = 0,
-        };
     }
 
     public byte[] AbiEncode() {

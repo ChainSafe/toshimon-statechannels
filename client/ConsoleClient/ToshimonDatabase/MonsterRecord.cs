@@ -76,8 +76,8 @@ public record MonsterRecord
         List<uint> pp = moves.Select(m => m.Sp).ToList();
         pp.Add(0); // for the TMM move
 
-        List<string> addresses = moves.Select(m => deployment.getMoveAddressById(m.MoveNumber) ?? "0x0000000000000000000000000000000000000000").ToList();
-        addresses.Add("0x0000000000000000000000000000000000000000"); // for the TMM move
+        List<string> moveAddresses = moves.Select(m => deployment.getMoveAddressById(m.MoveNumber) ?? "0x0000000000000000000000000000000000000000").ToList();
+        moveAddresses.Add("0x0000000000000000000000000000000000000000"); // for the TMM move
 
         Stats stats = new Stats {
             Hp = (byte) MaxHP,
@@ -91,7 +91,7 @@ public record MonsterRecord
         return new MonsterCard(
             stats,
             stats,
-            addresses
+            moveAddresses
         ) { CardId = EthCardIndex };
     }
 

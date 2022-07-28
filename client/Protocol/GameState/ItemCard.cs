@@ -20,12 +20,10 @@ public record ItemCard {
     [Parameter("bool", "used", 3)]
     public bool Used { get; set; }
 
-    public static ItemCard Default() {
-        return new ItemCard() {
-            CardId = 0,
-            Definition = "0x0000000000000000000000000000000000000000",
-            Used = true,
-        };
+    public ItemCard() {
+        CardId = 0;
+        Definition = "0x0000000000000000000000000000000000000000";
+        Used = true;
     }
 
     public byte[] AbiEncode() {

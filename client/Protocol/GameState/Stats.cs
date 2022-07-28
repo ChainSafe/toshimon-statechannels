@@ -34,9 +34,9 @@ public record Stats {
     [Parameter("uint8[4]", "pp", 7)]
     public List<uint> PP { get; set; }
 
-    public static readonly Stats Default = new Stats() {
-        PP = new List<uint>{0, 0, 0, 0}
-    };
+    public Stats() {
+        PP = new List<uint>{0, 0, 0, 0};
+    }
 
     public byte[] AbiEncode() {
         ABIEncode abiEncode = new ABIEncode();

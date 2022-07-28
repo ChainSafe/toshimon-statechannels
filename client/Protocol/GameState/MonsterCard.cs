@@ -51,23 +51,23 @@ public record MonsterCard {
     [Parameter("uint8", "activeMoveCounter", 12)]
     public byte ActiveMoveCounter { get; set; } 
 
-    public MonsterCard() { }
+    public MonsterCard() {
+        CardId = 0;
+        BaseStats = new Stats();
+        Stats = new Stats();
+        Moves = Enumerable.Repeat("0x0000000000000000000000000000000000000000", 4).ToList();
+        StatusCondition = "0x0000000000000000000000000000000000000000";
+        StatusConditionCounter = 0;
+        SpecialStatusCondition = "0x0000000000000000000000000000000000000000";
+        SpecialStatusConditionCounter = 0;
+        ActiveMoveIndex = 0;
+        ActiveMoveCounter = 0; 
+    }
 
-    // This is the same as no monster card and will be ignored by any client and state transition code
-    // Zeros as many fields as possible to save calldata gas
-    public static MonsterCard Default() {
-        return new MonsterCard() {
-            CardId = 0,
-            BaseStats = Stats.Default,
-            Stats = Stats.Default,
-            Moves = Enumerable.Repeat("0x0000000000000000000000000000000000000000", 4).ToList(),
-            StatusCondition = "0x0000000000000000000000000000000000000000",
-            StatusConditionCounter = 0,
-            SpecialStatusCondition = "0x0000000000000000000000000000000000000000",
-            SpecialStatusConditionCounter = 0,
-            ActiveMoveIndex = 0,
-            ActiveMoveCounter = 0,           
-        };
+    public MonsterCard(Stats baseStats, Stats stats, List<string> moves): this() {
+        BaseStats = baseStats;
+        Stats = stats;
+        Moves = moves;
     }
 
     public byte[] AbiEncode() {

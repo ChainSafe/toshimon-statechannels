@@ -22,18 +22,14 @@ public record GameState
 
     //////////////////////////////////////////////////
 
-    public GameState() { }
+    public GameState() {
+        Players = new List<PlayerState>() { new PlayerState(), new PlayerState() };
+    }
 
     public GameState(PlayerState playerA, PlayerState playerB) {
         Players = new List<PlayerState>();
         Players.Add(playerA);
         Players.Add(playerB);
-    }
-
-    public static GameState Default() {
-        return new GameState() {
-            Players = new List<PlayerState>() { PlayerState.Default(), PlayerState.Default() }
-        };
     }
 
     // indexing helper
