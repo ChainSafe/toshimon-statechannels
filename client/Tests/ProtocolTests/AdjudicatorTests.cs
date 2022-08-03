@@ -10,6 +10,9 @@ using Protocol.Adjudicator.ContractDefinition;
 using Protocol.TESTNitroUtils.Service;
 using Protocol.ToshimonStateTransition.Service;
 using Protocol.ToshimonStateTransition.ContractDefinition;
+using Protocol.TESTEncoding.Service;
+using Protocol.TESTEncoding.ContractDefinition;
+
 
 public class AdjudicatorTests
 {
@@ -72,179 +75,204 @@ public class AdjudicatorTests
         return result.FinalizesAt == 0;
     }
 
-    // [Fact]
-    // public void GeneratesCorrectChannelId() {
-    //     var fixedPart = TestFixedPart();
-    //     var service = new TESTNitroUtilsService(web3, deployment.NitroTestContractAddress);
+    [Fact]
+    public void GeneratesCorrectChannelId() {
+        var fixedPart = TestFixedPart();
+        var service = new TESTNitroUtilsService(web3, deployment.NitroTestContractAddress);
 
-    //     var result = service.GetChannelIdQueryAsync(
-    //         fixedPart
-    //     ).Result;
+        var result = service.GetChannelIdQueryAsync(
+            fixedPart
+        ).Result;
 
-    //     Assert.Equal(result, fixedPart.ChannelId);
+        Assert.Equal(result, fixedPart.ChannelId);
 
-    // }
+    }
 
-    // [Fact]
-    // public void GeneratesCorrectStateHash() {
-    //     var fixedPart = TestFixedPart();
-    //     var variablePart0 = TestVariablePart(00);
+    [Fact]
+    public void GeneratesCorrectStateHash() {
+        var fixedPart = TestFixedPart();
+        var variablePart0 = TestVariablePart(00);
 
-    //     var service = new TESTNitroUtilsService(web3, deployment.NitroTestContractAddress);
+        var service = new TESTNitroUtilsService(web3, deployment.NitroTestContractAddress);
 
-    //     var result = service.HashStateQueryAsync(
-    //         fixedPart.ChannelId,
-    //         variablePart0.AppData,
-    //         variablePart0.Outcome,
-    //         variablePart0.TurnNum,
-    //         variablePart0.IsFinal
-    //     ).Result;
+        var result = service.HashStateQueryAsync(
+            fixedPart.ChannelId,
+            variablePart0.AppData,
+            variablePart0.Outcome,
+            variablePart0.TurnNum,
+            variablePart0.IsFinal
+        ).Result;
 
-    //     Assert.Equal(result, new StateUpdate(fixedPart, variablePart0).StateHash);
+        Assert.Equal(result, new StateUpdate(fixedPart, variablePart0).StateHash);
 
-    // }
+    }
 
-    // [Fact]
-    // public void CanRecoverSignerOfStateHash() {
-    //     var fixedPart = TestFixedPart();
-    //     var variablePart0 = TestVariablePart(0);
+    [Fact]
+    public void CanRecoverSignerOfStateHash() {
+        var fixedPart = TestFixedPart();
+        var variablePart0 = TestVariablePart(0);
 
-    //     var stateUpdate = new StateUpdate(TestFixedPart(), TestVariablePart(0));
+        var stateUpdate = new StateUpdate(TestFixedPart(), TestVariablePart(0));
 
-    //     Signature signature = stateUpdate.Sign(aKey);
+        Signature signature = stateUpdate.Sign(aKey);
 
-    //     var service = new TESTNitroUtilsService(web3, deployment.NitroTestContractAddress);
+        var service = new TESTNitroUtilsService(web3, deployment.NitroTestContractAddress);
         
-    //     var result = service.RecoverSignerQueryAsync(
-    //         stateUpdate.StateHash,
-    //         signature
-    //     ).Result;
+        var result = service.RecoverSignerQueryAsync(
+            stateUpdate.StateHash,
+            signature
+        ).Result;
 
-    //     Assert.Equal(result, aKey.GetPublicAddress());
+        Assert.Equal(result, aKey.GetPublicAddress());
 
-    // }
+    }
 
-    // [Fact]
-    // public void ChallengeChannel() {
+    [Fact]
+    public void ChallengeChannel() {
 
-    //     /*
-    //      * A channel can be put into Challenge mode by calling the challenge function on the 
-    //      * adjudicator contract. If a challenge is valid this will put the channel into Challenge
-    //      * mode and start the countdown to expiry. If the expiry is reached before the other party 
-    //      * responds then the channel will finalize in the last published state
-    //      *
-    //      * Only participants in the channel can submit a challenge
-    //      */
+        /*
+         * A channel can be put into Challenge mode by calling the challenge function on the 
+         * adjudicator contract. If a challenge is valid this will put the channel into Challenge
+         * mode and start the countdown to expiry. If the expiry is reached before the other party 
+         * responds then the channel will finalize in the last published state
+         *
+         * Only participants in the channel can submit a challenge
+         *
+         * This test challenges the channel before the actual gameplay part has started 
+         * and so will not do try and decode the game state and check transitions etc
+         */
 
-    //     // Create a new channel fixed part
-    //     var fixedPart = TestFixedPart();
+        GameState gs0 = TestHelpers.build1v1 (
+            TestHelpers.testMonster1(deployment.Moves[102].Address),
+            TestHelpers.testMonster1(deployment.Moves[102].Address)
+        );
 
-    //     var variablePart0 = TestVariablePart(0);
-    //     var signedVariablePart0 = variablePart0.ToSigned(fixedPart, 0, aKey);
+        // Create a new channel fixed part
+        var fixedPart = TestFixedPart();
 
-    //     // create a state update signed by B on their turn
-    //     var variablePart1 = TestVariablePart(1);
-    //     var signedVariablePart1 = variablePart1.ToSigned(fixedPart, 1, bKey);
+        var variablePart0 = TestVariablePart(0);
+        variablePart0.AppData = new AppData(gs0.AbiEncode()).AbiEncode();
+        var signedVariablePart0 = variablePart0.ToSigned(fixedPart, 0, aKey);
 
-    //     // As B, challenge the channel with state you just signed
-    //     var _ = aService.ChallengeRequestAsync(
-    //         fixedPart,
-    //         new List<SignedVariablePart>() { signedVariablePart0, signedVariablePart1 },
-    //         variablePart1.GetChallengeSignature(fixedPart, bKey)
-    //     ).Result;
+        // create a state update signed by B on their turn
+        var variablePart1 = TestVariablePart(1);
+        variablePart1.AppData = new AppData(gs0.AbiEncode()).AbiEncode();
+        var signedVariablePart1 = variablePart1.ToSigned(fixedPart, 1, bKey);
 
-    //     // check the status of the channel 
-    //     // If finalizesAt == 0 then it is open
-    //     // If finalizesAt <= block.timestamp if is finalized
-    //     // else it is in Challenge mode
-    //     var result = aService.UnpackStatusQueryAsync(
-    //         fixedPart.ChannelId
-    //     ).Result;
+        // As B, challenge the channel with state you just signed
+        var _ = aService.ChallengeRequestAsync(
+            fixedPart,
+            new List<SignedVariablePart>() { signedVariablePart0, signedVariablePart1 },
+            variablePart1.GetChallengeSignature(fixedPart, bKey)
+        ).Result;
 
-    //     // this signifigies the Challenged status
-    //     Assert.True(!ChannelIsOpen(fixedPart.ChannelId));
-    // }
+        // check the status of the channel 
+        // If finalizesAt == 0 then it is open
+        // If finalizesAt <= block.timestamp if is finalized
+        // else it is in Challenge mode
+        var result = aService.UnpackStatusQueryAsync(
+            fixedPart.ChannelId
+        ).Result;
 
-    // [Fact]
-    // public void CheckpointChannel() {
+        // this signifigies the Challenged status
+        Assert.True(!ChannelIsOpen(fixedPart.ChannelId));
+    }
 
-    //     /*
-    //         A call to checkpoint accepts a FixedPart and a collection of SignedVariableParts much like a call to challenge.
-    //         It does not require a special signature and it is possible for anyone to make a checkpoint, 
-    //         not just participants in the channel.
-    //         Calling checkpoint will update the data stored agains the channel and will clear any open challenges if conditions are met
-    //      */
+    [Fact]
+    public void CheckpointChannel() {
 
-    //     // Create a new channel fixed part
-    //     var fixedPart = TestFixedPart();
+        /*
+            A call to checkpoint accepts a FixedPart and a collection of SignedVariableParts much like a call to challenge.
+            It does not require a special signature and it is possible for anyone to make a checkpoint, 
+            not just participants in the channel.
+            Calling checkpoint will update the data stored agains the channel and will clear any open challenges if conditions are met
+         */
 
-    //     var variablePart0 = TestVariablePart(0);
-    //     var signedVariablePart0 = variablePart0.ToSigned(fixedPart, 0, aKey);
+        GameState gs0 = TestHelpers.build1v1 (
+            TestHelpers.testMonster1(deployment.Moves[102].Address),
+            TestHelpers.testMonster1(deployment.Moves[102].Address)
+        );
 
-    //     // create a state update signed by B on their turn
-    //     var variablePart1 = TestVariablePart(1);
-    //     var signedVariablePart1 = variablePart1.ToSigned(fixedPart, 1, bKey);
+        // Create a new channel fixed part
+        var fixedPart = TestFixedPart();
 
-    //     // Checkpoint the channel using the pair of states
-    //     var _ = aService.CheckpointRequestAsync(
-    //         fixedPart,
-    //         new List<SignedVariablePart>() { signedVariablePart0, signedVariablePart1 }
-    //     ).Result;
+        var variablePart0 = TestVariablePart(0);
+        variablePart0.AppData = new AppData(gs0.AbiEncode()).AbiEncode();
+        var signedVariablePart0 = variablePart0.ToSigned(fixedPart, 0, aKey);
 
-    //     // check the status of the channel 
-    //     // If finalizesAt == 0 then it is open
-    //     // If finalizesAt <= block.timestamp if is finalized
-    //     // else it is in Challenge mode
-    //     var result = aService.UnpackStatusQueryAsync(
-    //         fixedPart.ChannelId
-    //     ).Result;
+        // create a state update signed by B on their turn
+        var variablePart1 = TestVariablePart(1);
+        variablePart1.AppData = new AppData(gs0.AbiEncode()).AbiEncode();
+        var signedVariablePart1 = variablePart1.ToSigned(fixedPart, 1, bKey);
 
-    //     Assert.Equal(result.TurnNumRecord, (ulong) 1); // registers latest turn number
-    // }    
+        // Checkpoint the channel using the pair of states
+        var _ = aService.CheckpointRequestAsync(
+            fixedPart,
+            new List<SignedVariablePart>() { signedVariablePart0, signedVariablePart1 }
+        ).Result;
 
-    // [Fact]
-    // public void CheckpointClearsChallenge() {
+        // check the status of the channel 
+        // If finalizesAt == 0 then it is open
+        // If finalizesAt <= block.timestamp if is finalized
+        // else it is in Challenge mode
+        var result = aService.UnpackStatusQueryAsync(
+            fixedPart.ChannelId
+        ).Result;
 
-    //     /*
-    //         A channel in Challenge mode can be returned to Open mode by the other party calling the 
-    //         conclude function on the adjudicator. This will check for support on the provided signed states
-    //         and update the status stored against the channel if support is met
-    //     */
+        Assert.Equal(result.TurnNumRecord, (ulong) 1); // registers latest turn number
+    }    
 
-    //     // Create a new channel fixed part
-    //     var fixedPart = TestFixedPart();
+    [Fact]
+    public void CheckpointClearsChallenge() {
 
-    //     var variablePart0 = TestVariablePart(0);
-    //     var signedVariablePart0 = variablePart0.ToSigned(fixedPart, 0, aKey);
+        /*
+            A channel in Challenge mode can be returned to Open mode by the other party calling the 
+            conclude function on the adjudicator. This will check for support on the provided signed states
+            and update the status stored against the channel if support is met
+        */
+       
+        GameState gs0 = TestHelpers.build1v1 (
+            TestHelpers.testMonster1(deployment.Moves[102].Address),
+            TestHelpers.testMonster1(deployment.Moves[102].Address)
+        );
 
-    //     // create a state update signed by B on their turn
-    //     var variablePart1 = TestVariablePart(1);
-    //     var signedVariablePart1 = variablePart1.ToSigned(fixedPart, 1, bKey);
 
-    //     Assert.True(ChannelIsOpen(fixedPart.ChannelId));
+        // Create a new channel fixed part
+        var fixedPart = TestFixedPart();
 
-    //     // As B, challenge the channel with state you just signed
-    //     var _ = aService.ChallengeRequestAsync(
-    //         fixedPart,
-    //         new List<SignedVariablePart>() { signedVariablePart0, signedVariablePart1 },
-    //         variablePart1.GetChallengeSignature(fixedPart, bKey)
-    //     ).Result;
+        var variablePart0 = TestVariablePart(0);
+        variablePart0.AppData = new AppData(gs0.AbiEncode()).AbiEncode();
+        var signedVariablePart0 = variablePart0.ToSigned(fixedPart, 0, aKey);
 
-    //     Assert.True(!ChannelIsOpen(fixedPart.ChannelId));
+        // create a state update signed by B on their turn
+        var variablePart1 = TestVariablePart(1);
+        variablePart1.AppData = new AppData(gs0.AbiEncode()).AbiEncode();
+        var signedVariablePart1 = variablePart1.ToSigned(fixedPart, 1, bKey);
 
-    //     // as A create a new state to checkpoint and update the channel
-    //     var variablePart2 = TestVariablePart(2);
-    //     var signedVariablePart2 = variablePart2.ToSigned(fixedPart, 0, aKey);
+        Assert.True(ChannelIsOpen(fixedPart.ChannelId));
 
-    //     // call checkpoint with the last two pair of states
-    //     var __ = aService.CheckpointRequestAsync(
-    //         fixedPart,
-    //         new List<SignedVariablePart>() { signedVariablePart1, signedVariablePart2 }
-    //     ).Result;
+        // As B, challenge the channel with state you just signed
+        var _ = aService.ChallengeRequestAsync(
+            fixedPart,
+            new List<SignedVariablePart>() { signedVariablePart0, signedVariablePart1 },
+            variablePart1.GetChallengeSignature(fixedPart, bKey)
+        ).Result;
 
-    //     // Channel should be open again
-    //     Assert.True(ChannelIsOpen(fixedPart.ChannelId));
-    // }    
+        Assert.True(!ChannelIsOpen(fixedPart.ChannelId));
+
+        // as A create a new state to checkpoint and update the channel
+        var variablePart2 = TestVariablePart(2);
+        var signedVariablePart2 = variablePart2.ToSigned(fixedPart, 0, aKey);
+
+        // call checkpoint with the last two pair of states
+        var __ = aService.CheckpointRequestAsync(
+            fixedPart,
+            new List<SignedVariablePart>() { signedVariablePart1, signedVariablePart2 }
+        ).Result;
+
+        // Channel should be open again
+        Assert.True(ChannelIsOpen(fixedPart.ChannelId));
+    }    
 
     // [Fact]
     // public void CanDecodeGameStateOnChainIntegration() {
@@ -259,9 +287,10 @@ public class AdjudicatorTests
     //     var fixedPart = TestFixedPart();
         
     //     var variablePart0 = TestVariablePart(6);
-    //     variablePart0.AppData = new AppData(gs0.AbiEncode()).AbiEncode(); // <- This is totally wrong... Should be a rollingRandom appData
+    //     variablePart0.AppData = new AppData(gs0.AbiEncode()).AbiEncode();
     //     var signedVariablePart0 = variablePart0.ToSigned(fixedPart, 0, aKey);
 
+    //     Console.WriteLine("{0}", gs0.AbiEncode().Count());
 
     //     var variablePart1 = TestVariablePart(7); // turnNum must exceed the pre/post fund stages or else decoding is not performed
     //     variablePart1.AppData = new AppData(gs0.AbiEncode()).AbiEncode();
@@ -283,7 +312,7 @@ public class AdjudicatorTests
     //     );
         
     //     var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
-    //     var service = new ToshimonStateTransitionService(web3, deployment.StateTransitionContractAddress);
+    //     var service = new ToshimonStateTransitionService(web3, deployment.EncodingTestContractAddress);
 
         
 
@@ -302,7 +331,7 @@ public class AdjudicatorTests
     public void ChainEncodingSameAsLocal() {
 
         var web3 = new Nethereum.Web3.Web3(Environment.GetEnvironmentVariable("ETH_RPC"));
-        var service = new ToshimonStateTransitionService(web3, deployment.StateTransitionContractAddress);
+        var service = new TESTEncodingService(web3, deployment.EncodingTestContractAddress);
 
         string addr0 = "0x0000000000000000000000000000000000000000";
 
@@ -335,11 +364,15 @@ public class AdjudicatorTests
         };
         Assert.Equal(service.EncodePlayerStateQueryAsync(playerState).Result, playerState.AbiEncode());
 
+
         var gameState = new GameState() {
             Players = new List<PlayerState>{ playerState, playerState }
         };
-
         Assert.Equal(service.EncodeStateQueryAsync(gameState).Result, gameState.AbiEncode());
+
+        var appData = new AppData();
+        Console.WriteLine("{0}", FormatSlots(appData.AbiEncode().ToHex()));
+        Assert.Equal(service.EncodeAppDataQueryAsync(appData).Result, appData.AbiEncode());
 
     } 
 

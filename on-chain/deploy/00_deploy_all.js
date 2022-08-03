@@ -45,6 +45,12 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     log: true,
   });
 
+  await deploy('TESTEncoding', {
+    from: deployer,
+    args: [],
+    log: true,
+  });
+
   // Helper functions
 
   // From a directory containing .sol files with the naming scheme

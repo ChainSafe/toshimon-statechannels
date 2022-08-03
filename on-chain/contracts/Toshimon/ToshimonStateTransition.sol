@@ -16,37 +16,6 @@
  import './interfaces/IStatusCondition.sol';
 
  contract ToshimonStateTransition is CommitRevealApp {
-
-    function encodeState(
-        TM.GameState memory payload
-    ) public pure returns (bytes memory) {
-        return (abi.encode(payload));
-    }
-
-    function encodePlayerState(
-        TM.PlayerState memory payload
-    ) public pure returns (bytes memory) {
-        return (abi.encode(payload));
-    }
-
-    function encodeStats(
-        TM.Stats memory payload
-    ) public pure returns (bytes memory) {
-        return (abi.encode(payload));
-    }
-
-    function encodeItemCard(
-        TM.ItemCard memory payload
-    ) public pure returns (bytes memory) {
-        return (abi.encode(payload));
-    }
-
-    function encodeMonsterCard(
-        TM.MonsterCard memory payload
-    ) public pure returns (bytes memory) {
-        return (abi.encode(payload));
-    }
-
     function advanceState(
         bytes memory _gameState_,
         Outcome.SingleAssetExit[] memory outcome,

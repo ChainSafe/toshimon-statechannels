@@ -36,7 +36,8 @@ public sealed class CreateProposalCommand : Command<CreateProposalCommand.Settin
         // select toshimon
         MonsterCard[] monsters = Utils.selectToshimonParty(deployment);
 
-        PlayerState playerState = new PlayerState(monsters.ToArray(), new ItemCard[0]);
+        PlayerState playerState = new PlayerState();
+        playerState.Monsters = monsters.ToList();
 
         GameProposal proposal = new GameProposal() {
             ChainId = deployment.ChainId,

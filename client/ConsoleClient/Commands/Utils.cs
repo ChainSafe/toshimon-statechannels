@@ -61,7 +61,7 @@ public static class Utils {
     public static MonsterCard[] selectToshimonParty(ToshimonDeployment.ToshimonDeployment deployment) {
       AnsiConsole.Write(new Rule("Select Toshimon Party"));
 
-      List<MonsterCard> monsters = new List<MonsterCard>();
+      var monsters = new MonsterCard[5];
 
      // TODO make this file path an env var or something
       var db = new ToshimonDb("./ToshimonDatabase/toshimon.csv");
@@ -73,8 +73,12 @@ public static class Utils {
                 monster = db.findByToshidexNumber(toshimonNumber);
                 renderMonster(monster);
             } while (!AnsiConsole.Confirm(String.Format("Use this Toshimon?")));
-            monsters.Add(monster.toMonsterCard(deployment));
+            monsters[i] = monster.toMonsterCard(deployment);
             if (!AnsiConsole.Confirm(String.Format("Add another Toshimon to the party?"))) {
+                // fill up the rest of the array with empty monsters
+                i++;
+                for (; i < 5; i++) 
+                    monsters[i] = new MonsterCard();
                 break;
             }
         }
@@ -208,8 +212,8 @@ public static void renderState(GameState state, int whoami, ToshimonDeployment.T
 
     for( int i = 0; i < 5; i++) {
         table.AddRow(
-            i < other.Monsters.Count ? monsterSummary(other.Monsters[i], other.ActiveMonsterIndex == i, db, deployment) : new Table(),
-            i < me.Monsters.Count ? monsterSummary(me.Monsters[i], me.ActiveMonsterIndex == i, db, deployment) : new Table()
+            other.Monsters[i].CardId != 0 ? monsterSummary(other.Monsters[i], other.ActiveMonsterIndex == i, db, deployment) : new Table(),
+            me.Monsters[i].CardId != 0 ? monsterSummary(me.Monsters[i], me.ActiveMonsterIndex == i, db, deployment) : new Table()
         );
     }
 

@@ -47,7 +47,8 @@ public sealed class AcceptProposalCommand : Command<AcceptProposalCommand.Settin
         // initial game state
         // select toshimon
         MonsterCard[] monsters = Utils.selectToshimonParty(deployment);
-        PlayerState playerState = new PlayerState(monsters.ToArray(), new ItemCard[0]);
+        PlayerState playerState = new PlayerState();
+        playerState.Monsters = monsters.ToList();
 
         // create the inital state channel tuples (FixedPart, VariablePart, Signature)
         // using data from the proposal

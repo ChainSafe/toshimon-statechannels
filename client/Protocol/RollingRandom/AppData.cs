@@ -28,11 +28,11 @@ public record AppData
     public byte[] GameState { get; set; }
 
     public AppData() {
-        PreCommitA = new byte[0]{};
-        PreCommitB = new byte[0]{};
+        PreCommitA = new Reveal().CommitHash;
+        PreCommitB = new Reveal().CommitHash;
         RevealA = new Reveal();
         RevealB = new Reveal();
-        GameState = new byte[0]{};
+        GameState = new byte[]{0};
     }
 
     public AppData(byte[] gameState) : this() {
