@@ -12,7 +12,7 @@
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@nomiclabs/hardhat-waffle": "^2.0.2",
     "@statechannels/devtools": "^0.5.7",
-    "@statechannels/nitro-protocol": "https://gitpkg.now.sh/toshimon-io/go-nitro/nitro-protocol?ced040a55caf596eeb5d5fd10e58dc1a69d144f8",
+    "@statechannels/nitro-protocol": "https://gitpkg.now.sh/statechannels/go-nitro/nitro-protocol?be6722ab3348a6c7a210f42d02ef46992e3f6b14",
     "@symblox/hardhat-abi-gen": "^0.2.0",
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.1.0",
@@ -29,7 +29,6 @@
   "dependencies": {
     "@openzeppelin/contracts": "^3.4.2",
     "@statechannels/exit-format": "^0.0.6",
-    "contracts": "https://gitpkg.now.sh/statechannels/go-nitro/nitro-protocol?b3a43a74ea630b2ddec7afe116730accd4a601b3",
     "glob": "^8.0.3"
   }
 }

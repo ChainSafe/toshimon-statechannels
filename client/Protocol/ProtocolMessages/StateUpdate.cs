@@ -14,8 +14,8 @@ public record StateUpdate {
     [Parameter("bytes", "appData", 2)]
     public byte[] AppData { get; set; }
     
-    [Parameter("tuple[]", "outcome", 3)]
-    public List<SingleAssetExit> Outcome { get; set; }
+    [Parameter("bytes", "outcome", 3)]
+    public byte[] Outcome { get; set; }
 
     [Parameter("uint48", "turnNum", 4)]
     public ulong TurnNum { get; set; }

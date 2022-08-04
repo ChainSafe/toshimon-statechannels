@@ -100,47 +100,19 @@ namespace Protocol.Adjudicator.Service
              return ContractHandler.SendRequestAndWaitForReceiptAsync(checkpointFunction, cancellationToken);
         }
 
-        public Task<string> ClaimRequestAsync(ClaimFunction claimFunction)
+        public Task<Compute_reclaim_effectsOutputDTO> Compute_reclaim_effectsQueryAsync(Compute_reclaim_effectsFunction compute_reclaim_effectsFunction, BlockParameter blockParameter = null)
         {
-             return ContractHandler.SendRequestAsync(claimFunction);
+            return ContractHandler.QueryDeserializingToObjectAsync<Compute_reclaim_effectsFunction, Compute_reclaim_effectsOutputDTO>(compute_reclaim_effectsFunction, blockParameter);
         }
 
-        public Task<TransactionReceipt> ClaimRequestAndWaitForReceiptAsync(ClaimFunction claimFunction, CancellationTokenSource cancellationToken = null)
+        public Task<Compute_reclaim_effectsOutputDTO> Compute_reclaim_effectsQueryAsync(List<Allocation> sourceAllocations, List<Allocation> targetAllocations, BigInteger indexOfTargetInSource, BlockParameter blockParameter = null)
         {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(claimFunction, cancellationToken);
-        }
-
-        public Task<string> ClaimRequestAsync(ClaimArgs claimArgs)
-        {
-            var claimFunction = new ClaimFunction();
-                claimFunction.ClaimArgs = claimArgs;
+            var compute_reclaim_effectsFunction = new Compute_reclaim_effectsFunction();
+                compute_reclaim_effectsFunction.SourceAllocations = sourceAllocations;
+                compute_reclaim_effectsFunction.TargetAllocations = targetAllocations;
+                compute_reclaim_effectsFunction.IndexOfTargetInSource = indexOfTargetInSource;
             
-             return ContractHandler.SendRequestAsync(claimFunction);
-        }
-
-        public Task<TransactionReceipt> ClaimRequestAndWaitForReceiptAsync(ClaimArgs claimArgs, CancellationTokenSource cancellationToken = null)
-        {
-            var claimFunction = new ClaimFunction();
-                claimFunction.ClaimArgs = claimArgs;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(claimFunction, cancellationToken);
-        }
-
-        public Task<Compute_claim_effects_and_interactionsOutputDTO> Compute_claim_effects_and_interactionsQueryAsync(Compute_claim_effects_and_interactionsFunction compute_claim_effects_and_interactionsFunction, BlockParameter blockParameter = null)
-        {
-            return ContractHandler.QueryDeserializingToObjectAsync<Compute_claim_effects_and_interactionsFunction, Compute_claim_effects_and_interactionsOutputDTO>(compute_claim_effects_and_interactionsFunction, blockParameter);
-        }
-
-        public Task<Compute_claim_effects_and_interactionsOutputDTO> Compute_claim_effects_and_interactionsQueryAsync(BigInteger initialHoldings, List<Allocation> sourceAllocations, List<Allocation> targetAllocations, BigInteger indexOfTargetInSource, List<BigInteger> targetAllocationIndicesToPayout, BlockParameter blockParameter = null)
-        {
-            var compute_claim_effects_and_interactionsFunction = new Compute_claim_effects_and_interactionsFunction();
-                compute_claim_effects_and_interactionsFunction.InitialHoldings = initialHoldings;
-                compute_claim_effects_and_interactionsFunction.SourceAllocations = sourceAllocations;
-                compute_claim_effects_and_interactionsFunction.TargetAllocations = targetAllocations;
-                compute_claim_effects_and_interactionsFunction.IndexOfTargetInSource = indexOfTargetInSource;
-                compute_claim_effects_and_interactionsFunction.TargetAllocationIndicesToPayout = targetAllocationIndicesToPayout;
-            
-            return ContractHandler.QueryDeserializingToObjectAsync<Compute_claim_effects_and_interactionsFunction, Compute_claim_effects_and_interactionsOutputDTO>(compute_claim_effects_and_interactionsFunction, blockParameter);
+            return ContractHandler.QueryDeserializingToObjectAsync<Compute_reclaim_effectsFunction, Compute_reclaim_effectsOutputDTO>(compute_reclaim_effectsFunction, blockParameter);
         }
 
         public Task<Compute_transfer_effects_and_interactionsOutputDTO> Compute_transfer_effects_and_interactionsQueryAsync(Compute_transfer_effects_and_interactionsFunction compute_transfer_effects_and_interactionsFunction, BlockParameter blockParameter = null)
@@ -284,6 +256,32 @@ namespace Protocol.Adjudicator.Service
                 latestSupportedStateFunction.SignedVariableParts = signedVariableParts;
             
             return ContractHandler.QueryDeserializingToObjectAsync<LatestSupportedStateFunction, LatestSupportedStateOutputDTO>(latestSupportedStateFunction, blockParameter);
+        }
+
+        public Task<string> ReclaimRequestAsync(ReclaimFunction reclaimFunction)
+        {
+             return ContractHandler.SendRequestAsync(reclaimFunction);
+        }
+
+        public Task<TransactionReceipt> ReclaimRequestAndWaitForReceiptAsync(ReclaimFunction reclaimFunction, CancellationTokenSource cancellationToken = null)
+        {
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(reclaimFunction, cancellationToken);
+        }
+
+        public Task<string> ReclaimRequestAsync(ClaimArgs claimArgs)
+        {
+            var reclaimFunction = new ReclaimFunction();
+                reclaimFunction.ClaimArgs = claimArgs;
+            
+             return ContractHandler.SendRequestAsync(reclaimFunction);
+        }
+
+        public Task<TransactionReceipt> ReclaimRequestAndWaitForReceiptAsync(ClaimArgs claimArgs, CancellationTokenSource cancellationToken = null)
+        {
+            var reclaimFunction = new ReclaimFunction();
+                reclaimFunction.ClaimArgs = claimArgs;
+            
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(reclaimFunction, cancellationToken);
         }
 
         public Task<byte[]> StatusOfQueryAsync(StatusOfFunction statusOfFunction, BlockParameter blockParameter = null)

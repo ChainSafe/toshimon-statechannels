@@ -52,30 +52,17 @@ namespace Protocol.Adjudicator.ContractDefinition
         public virtual List<SignedVariablePart> SignedVariableParts { get; set; }
     }
 
-    public partial class ClaimFunction : ClaimFunctionBase { }
+    public partial class Compute_reclaim_effectsFunction : Compute_reclaim_effectsFunctionBase { }
 
-    [Function("claim")]
-    public class ClaimFunctionBase : FunctionMessage
+    [Function("compute_reclaim_effects", typeof(Compute_reclaim_effectsOutputDTO))]
+    public class Compute_reclaim_effectsFunctionBase : FunctionMessage
     {
-        [Parameter("tuple", "claimArgs", 1)]
-        public virtual ClaimArgs ClaimArgs { get; set; }
-    }
-
-    public partial class Compute_claim_effects_and_interactionsFunction : Compute_claim_effects_and_interactionsFunctionBase { }
-
-    [Function("compute_claim_effects_and_interactions", typeof(Compute_claim_effects_and_interactionsOutputDTO))]
-    public class Compute_claim_effects_and_interactionsFunctionBase : FunctionMessage
-    {
-        [Parameter("uint256", "initialHoldings", 1)]
-        public virtual BigInteger InitialHoldings { get; set; }
-        [Parameter("tuple[]", "sourceAllocations", 2)]
+        [Parameter("tuple[]", "sourceAllocations", 1)]
         public virtual List<Allocation> SourceAllocations { get; set; }
-        [Parameter("tuple[]", "targetAllocations", 3)]
+        [Parameter("tuple[]", "targetAllocations", 2)]
         public virtual List<Allocation> TargetAllocations { get; set; }
-        [Parameter("uint256", "indexOfTargetInSource", 4)]
+        [Parameter("uint256", "indexOfTargetInSource", 3)]
         public virtual BigInteger IndexOfTargetInSource { get; set; }
-        [Parameter("uint256[]", "targetAllocationIndicesToPayout", 5)]
-        public virtual List<BigInteger> TargetAllocationIndicesToPayout { get; set; }
     }
 
     public partial class Compute_transfer_effects_and_interactionsFunction : Compute_transfer_effects_and_interactionsFunctionBase { }
@@ -156,6 +143,15 @@ namespace Protocol.Adjudicator.ContractDefinition
         public virtual FixedPart FixedPart { get; set; }
         [Parameter("tuple[]", "signedVariableParts", 2)]
         public virtual List<SignedVariablePart> SignedVariableParts { get; set; }
+    }
+
+    public partial class ReclaimFunction : ReclaimFunctionBase { }
+
+    [Function("reclaim")]
+    public class ReclaimFunctionBase : FunctionMessage
+    {
+        [Parameter("tuple", "claimArgs", 1)]
+        public virtual ClaimArgs ClaimArgs { get; set; }
     }
 
     public partial class StatusOfFunction : StatusOfFunctionBase { }
@@ -275,25 +271,28 @@ namespace Protocol.Adjudicator.ContractDefinition
         public virtual BigInteger DestinationHoldings { get; set; }
     }
 
+    public partial class ReclaimedEventDTO : ReclaimedEventDTOBase { }
+
+    [Event("Reclaimed")]
+    public class ReclaimedEventDTOBase : IEventDTO
+    {
+        [Parameter("bytes32", "channelId", 1, true )]
+        public virtual byte[] ChannelId { get; set; }
+        [Parameter("uint256", "assetIndex", 2, false )]
+        public virtual BigInteger AssetIndex { get; set; }
+    }
 
 
 
 
 
-
-    public partial class Compute_claim_effects_and_interactionsOutputDTO : Compute_claim_effects_and_interactionsOutputDTOBase { }
+    public partial class Compute_reclaim_effectsOutputDTO : Compute_reclaim_effectsOutputDTOBase { }
 
     [FunctionOutput]
-    public class Compute_claim_effects_and_interactionsOutputDTOBase : IFunctionOutputDTO 
+    public class Compute_reclaim_effectsOutputDTOBase : IFunctionOutputDTO 
     {
-        [Parameter("tuple[]", "newSourceAllocations", 1)]
-        public virtual List<Allocation> NewSourceAllocations { get; set; }
-        [Parameter("tuple[]", "newTargetAllocations", 2)]
-        public virtual List<Allocation> NewTargetAllocations { get; set; }
-        [Parameter("tuple[]", "exitAllocations", 3)]
-        public virtual List<Allocation> ExitAllocations { get; set; }
-        [Parameter("uint256", "totalPayouts", 4)]
-        public virtual BigInteger TotalPayouts { get; set; }
+        [Parameter("tuple[]", "", 1)]
+        public virtual List<Allocation> ReturnValue1 { get; set; }
     }
 
     public partial class Compute_transfer_effects_and_interactionsOutputDTO : Compute_transfer_effects_and_interactionsOutputDTOBase { }
@@ -343,6 +342,8 @@ namespace Protocol.Adjudicator.ContractDefinition
         [Parameter("tuple", "", 1)]
         public virtual VariablePart ReturnValue1 { get; set; }
     }
+
+
 
     public partial class StatusOfOutputDTO : StatusOfOutputDTOBase { }
 

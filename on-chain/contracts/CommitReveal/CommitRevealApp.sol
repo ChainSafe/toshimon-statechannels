@@ -130,22 +130,22 @@ abstract contract CommitRevealApp is IForceMoveApp {
      * @notice Encodes application-specific rules for a particular ForceMove-compliant state channel.
      * @dev Encodes application-specific rules for a particular ForceMove-compliant state channel.
      * @param fixedPart Fixed part of the state channel.
-     * @param signedVariableParts Array of variable parts to find the latest of.
+     * @param recoveredVariableParts Array of variable parts to find the latest of.
      * @return VariablePart Latest supported by application variable part from supplied array.
      */    
     function latestSupportedState(
         FixedPart calldata fixedPart,
-        SignedVariablePart[] calldata signedVariableParts
+        RecoveredVariablePart[] calldata recoveredVariableParts
     ) external pure override returns (VariablePart memory) {
         require(fixedPart.participants.length == 2, "Only two participant commit/reveal games are supported");
         // commit-reveal apps require strict turn taking. Each state is only signed by the mover
-        StrictTurnTaking.requireValidTurnTaking(fixedPart, signedVariableParts);
+        StrictTurnTaking.requireValidTurnTaking(fixedPart, recoveredVariableParts);
 
-        for (uint i = 1; i < signedVariableParts.length; i++) {
-            require(_validTransition(signedVariableParts[i-1].variablePart, signedVariableParts[i].variablePart));
+        for (uint i = 1; i < recoveredVariableParts.length; i++) {
+            require(_validTransition(recoveredVariableParts[i-1].variablePart, recoveredVariableParts[i].variablePart));
         }
 
-        return signedVariableParts[signedVariableParts.length - 1].variablePart;
+        return recoveredVariableParts[recoveredVariableParts.length - 1].variablePart;
     }
 
     /**

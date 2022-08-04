@@ -707,11 +707,6 @@
     "@types/sinon-chai" "^3.2.3"
     "@types/web3" "1.0.19"
 
-"@openzeppelin/contracts@3.2.2-solc-0.7":
-  version "3.2.2-solc-0.7"
-  resolved "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-3.2.2-solc-0.7.tgz"
-  integrity sha512-vFV53E4pvfsAEjzL9Um2VX9MEuXyq7Hyd9JjnP77AGsrEPxkJaYS06zZIVyhAt3rXTM6QGdW0C282Zv7fM93AA==
-
 "@openzeppelin/contracts@^3.4.2":
   version "3.4.2"
   resolved "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-3.4.2.tgz"
@@ -885,20 +880,18 @@
     ethers "^5.1.4"
     lodash "^4.17.21"
 
-"@statechannels/nitro-protocol@^0.17.3":
-  version "0.17.3"
-  resolved "https://registry.npmjs.org/@statechannels/nitro-protocol/-/nitro-protocol-0.17.3.tgz"
-  integrity sha512-E372J29OerSFR5RdSwJPPy24C4WXOg9ibTvZ8wueIh0Kii0rNrY/3YxJ9ZFClKpnpZWFo3e2ATMD2Q/Nomf9wA==
-  dependencies:
-    "@openzeppelin/contracts" "3.2.2-solc-0.7"
-    ethers "5.0.12"
-    lodash.isequal "^4.5.0"
-    lodash.pick "4.4.0"
-    lodash.shuffle "^4.2.0"
-
-"@statechannels/nitro-protocol@https://gitpkg.now.sh/toshimon-io/go-nitro/nitro-protocol?ced040a55caf596eeb5d5fd10e58dc1a69d144f8":
+"@statechannels/nitro-protocol@https://gitpkg.now.sh/statechannels/go-nitro/nitro-protocol?be6722ab3348a6c7a210f42d02ef46992e3f6b14":
   version "2.0.0-alpha.0"
-  resolved "https://gitpkg.now.sh/toshimon-io/go-nitro/nitro-protocol?ced040a55caf596eeb5d5fd10e58dc1a69d144f8#2a933b7119ae5daae6068e26c2476b0517cec777"
+  uid "5f77545802fed15799ba2391ed04860eb85b869d"
+  resolved "https://gitpkg.now.sh/statechannels/go-nitro/nitro-protocol?be6722ab3348a6c7a210f42d02ef46992e3f6b14#5f77545802fed15799ba2391ed04860eb85b869d"
+  dependencies:
+    "@openzeppelin/contracts" "^3.4.2"
+    "@statechannels/exit-format" "^0.0.6"
+    "@typechain/ethers-v5" "^9.0.0"
+
+"@statechannels/nitro-protocol@https://gitpkg.now.sh/statechannels/go-nitro/nitro-protocol?main":
+  version "2.0.0-alpha.0"
+  resolved "https://gitpkg.now.sh/statechannels/go-nitro/nitro-protocol?main#5f77545802fed15799ba2391ed04860eb85b869d"
   dependencies:
     "@openzeppelin/contracts" "^3.4.2"
     "@statechannels/exit-format" "^0.0.6"
@@ -2706,14 +2699,6 @@ content-type@~1.0.4:
   version "1.0.4"
   resolved "https://registry.npmjs.org/content-type/-/content-type-1.0.4.tgz"
   integrity sha512-hIP3EEPs8tB9AT1L+NUqtwOAps4mk2Zob89MWXMHjHWg9milF/j4osnnQLXBCBFBk/tvIG/tUc9mOUJiPBhPXA==
-
-"contracts@https://gitpkg.now.sh/statechannels/go-nitro/nitro-protocol?b3a43a74ea630b2ddec7afe116730accd4a601b3":
-  version "1.0.0"
-  resolved "https://gitpkg.now.sh/statechannels/go-nitro/nitro-protocol?b3a43a74ea630b2ddec7afe116730accd4a601b3#e891f4ccaf7bf74b9ebb52744d4319b6d9c26421"
-  dependencies:
-    "@openzeppelin/contracts" "^3.4.2"
-    "@statechannels/exit-format" "^0.0.6"
-    "@typechain/ethers-v5" "^9.0.0"
 
 convert-source-map@^1.5.1:
   version "1.7.0"
@@ -5846,21 +5831,6 @@ lodash.assign@^4.0.3, lodash.assign@^4.0.6:
   version "4.2.0"
   resolved "https://registry.npmjs.org/lodash.assign/-/lodash.assign-4.2.0.tgz"
   integrity sha1-DZnzzNem0mHRm9rrkkUAXShYCOc=
-
-lodash.isequal@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.npmjs.org/lodash.isequal/-/lodash.isequal-4.5.0.tgz"
-  integrity sha1-QVxEePK8wwEgwizhDtMib30+GOA=
-
-lodash.pick@4.4.0:
-  version "4.4.0"
-  resolved "https://registry.npmjs.org/lodash.pick/-/lodash.pick-4.4.0.tgz"
-  integrity sha1-UvBWEP/53tQiYRRB7R/BI6AwAbM=
-
-lodash.shuffle@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.npmjs.org/lodash.shuffle/-/lodash.shuffle-4.2.0.tgz"
-  integrity sha1-FFtQU8+HX29cKjP0i26ZSMbse0s=
 
 lodash@4.17.20, lodash@^4.17.4:
   version "4.17.20"
