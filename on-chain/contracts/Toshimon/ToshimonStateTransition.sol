@@ -11,6 +11,7 @@
  import "@openzeppelin/contracts/math/SafeMath.sol";
  import '../CommitReveal/CommitRevealApp.sol';
  import { ToshimonState as TM } from './ToshimonState.sol';
+ import { ToshimonUtils as Utils } from './ToshimonUtils.sol';
  import './interfaces/IMove.sol';
  import './interfaces/IItem.sol';
  import './interfaces/IStatusCondition.sol';
@@ -65,14 +66,22 @@
             gameState = _useItem(gameState, moveA - 9, B, randomSeed);
         }        
 
-        // next up resolve attacks. Speed should be used to resolve
-        // if both players are attackign but here A always goes first
-        // for demo purposes
-        if ( _isMoveAction(moveA) ) {
+        // next up resolve attacks.
+        // If both players are attacking the speed for the given move needs to be requested
+        // and this is used to resolve who goes first
+        
+        if ( _isMoveAction(moveA) || _isMoveAction(moveB) ) {
+            // get the speeds
+        } else if ( _isMoveAction(moveA) ) {
             gameState = _makeMove(gameState, moveA,  A, randomSeed);
-        }
-        if ( _isMoveAction(moveB) ) {
+            if (_gameIsOver(gameState)) {
+                return (gameState, _updateOutcomeForConclusion(gameState, outcome), true);
+            }        
+        } else if ( _isMoveAction(moveB) ) {
             gameState = _makeMove(gameState, moveB,  B, randomSeed);
+            if (_gameIsOver(gameState)) {
+                return (gameState, _updateOutcomeForConclusion(gameState, outcome), true);
+            }  
         }
 
         // apply the status condition `onAfterTurn` callback on all monsters, not just the
@@ -81,22 +90,20 @@
             TM.MonsterCard memory monster = gameState.players[A].monsters[i];
             if (monster.statusCondition != address(0)) {
                 gameState = IStatusCondition(monster.statusCondition).onAfterTurn(gameState, A, i, randomSeed);
+                if (_gameIsOver(gameState)) {
+                    return (gameState, _updateOutcomeForConclusion(gameState, outcome), true);
+                }  
             }
         }
         for (uint8 i = 0; i < gameState.players[B].monsters.length; i++) {
             TM.MonsterCard memory monster = gameState.players[B].monsters[i];
             if (monster.statusCondition != address(0)) {
                 gameState = IStatusCondition(monster.statusCondition).onAfterTurn(gameState, B, i, randomSeed);
+                if (_gameIsOver(gameState)) {
+                    return (gameState, _updateOutcomeForConclusion(gameState, outcome), true);
+                }  
             }
         }
-
-        // game may have ended during this round. If so set the concluded flag to true
-        if (_gameIsOver(gameState)) {
-            return (gameState, outcome, true);
-        } else {
-            return (gameState, outcome, false);
-        }
-
     }
 
     // For incentive reasons it needs to ensure that each time a player makes
@@ -110,11 +117,11 @@
         Outcome.SingleAssetExit[] memory outcome,
         uint8 playerIndex
         ) override public pure returns (Outcome.SingleAssetExit[] memory) {
-        // Outcome.SingleAssetExit memory wagerAssetExit = outcome[0];
-        // uint256 total = wagerAssetExit.allocations[0].amount + wagerAssetExit.allocations[1].amount;
+        Outcome.SingleAssetExit memory wagerAssetExit = outcome[0];
+        uint256 total = wagerAssetExit.allocations[0].amount + wagerAssetExit.allocations[1].amount;
 
-        // outcome[0].allocations[playerIndex].amount = total;
-        // outcome[0].allocations[~playerIndex].amount = 0;
+        outcome[0].allocations[playerIndex].amount = total;
+        outcome[0].allocations[Utils.not(playerIndex)].amount = 0;
 
         return (outcome);
     }
@@ -144,6 +151,20 @@
 
     function _gameIsOver(TM.GameState memory gameState) pure internal returns (bool) {
         return _is_unconcious(gameState.players[A]) || _is_unconcious(gameState.players[B]);
+    }
+
+    /**
+     * If the game has concluded (either player is unconcious) this returns the adjusted outcome
+     * If the game has not concluded then this will return the outcome unmodified
+     */
+    function _updateOutcomeForConclusion(TM.GameState memory gameState, Outcome.SingleAssetExit[] memory outcome) pure internal returns (Outcome.SingleAssetExit[] memory) {
+        if (_is_unconcious(gameState.players[A])) {
+            return updateOutcomeFavourPlayer(outcome, B);
+        } else if (_is_unconcious(gameState.players[B])) {
+            return updateOutcomeFavourPlayer(outcome, A);
+        } else {
+            return outcome;
+        }
     }
 
     function _swapMoveIfMultiTurnMoveActive(TM.PlayerState memory playerState, uint8 move) pure internal returns (uint8) {
@@ -176,13 +197,20 @@
         // There is a possibility this is a malformed state and the move contract does not exist
         // This must not error!! If it errors then the state channel is locked.
         // Just silently fail to make the move and return the unchanged state
-        // 
-        return IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, attacker.activeMoveIndex, randomSeed);
-        // try IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, attacker.activeMoveIndex, randomSeed) returns (TM.GameState memory newState) {
-        //     return newState;
-        // } catch {
-        //     return gameState;
-        // }
+        try IMove(attacker.moves[moveIndex]).applyMove(gameState, mover, attacker.activeMoveIndex, randomSeed) returns (TM.GameState memory newState) {
+            return newState;
+        } catch {
+            return gameState;
+        }
+    }
+
+    function _getSpeed(TM.GameState memory gameState, uint8 moveIndex, unt mover, bytes32 randomSeed) pure internal returns (uint8) {
+        TM.MonsterCard memory attacker = _getActiveMonster(gameState.players[mover]);
+        try IMove(attacker.moves[moveIndex]).speed(gameState, mover, attacker.activeMoveIndex, randomSeed) returns (TM.GameState memory newState) {
+            return newState;
+        } catch {
+            return gameState;
+        }       
     }
 
     function _useItem(TM.GameState memory gameState, uint8 itemIndex, uint8 mover, bytes32 randomSeed) pure internal returns (TM.GameState memory) {

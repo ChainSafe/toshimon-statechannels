@@ -18,20 +18,18 @@ contract NFTAssetHolder is INFTAssetHolder, StatusManager, ERC1155Receiver {
     // *******
 
     address public collection;
-    address public burnDestination;
 
     mapping(bytes32 => mapping(address => Batch)) nftHoldings;
 
-    constructor(address collection, address burnDestination) {
+    constructor(address collection) {
         collection = collection;
-        burnDestination = burnDestination;
     }
 
     /**
      * @notice Transfers NFTs out of the channel back to the owner
      * @dev Transfers NFTs out of the channel back to the owner
      */
-    function nft_transfer(
+    function nft_reclaim(
         bytes32 fromChannelId,
         address owner
     ) external override {

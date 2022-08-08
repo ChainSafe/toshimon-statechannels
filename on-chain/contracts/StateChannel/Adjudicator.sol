@@ -9,7 +9,7 @@ import './NFTAssetHolder.sol';
  */
 contract Adjudicator is NitroAdjudicator, NFTAssetHolder {
 
-    constructor(address collection, address burnDestination)
-         NFTAssetHolder(collection, burnDestination) {
+    constructor(address collection)
+         NFTAssetHolder(collection) {
     }
 }

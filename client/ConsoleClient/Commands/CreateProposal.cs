@@ -30,6 +30,8 @@ public sealed class CreateProposalCommand : Command<CreateProposalCommand.Settin
         EthECKey key = Utils.createOrLoadKey();
 
         BigInteger wagerAmount = AnsiConsole.Ask<BigInteger>("How much to wager (in lowest denomination", 0);
+        string recipientAddress = AnsiConsole.Ask<string>("Input address to receive winnings");
+
         ulong challengeDuration = AnsiConsole.Ask<ulong>("Channel challenge duration seconds (default 1 day)", 86400);
 
         // initial game state
@@ -45,7 +47,7 @@ public sealed class CreateProposalCommand : Command<CreateProposalCommand.Settin
             AppDefinition = deployment.StateTransitionContractAddress,
             SigningKey = key.GetPublicAddress(),
             RecoveryKey = key.GetPublicAddress(),
-            Recipient = key.GetPublicAddress(),
+            Recipient = recipientAddress.ToHex(),
             WagerAssetAddress = "0x0000000000000000000000000000000000000000", // the native asset
             WagerAmount = wagerAmount,
             ChallengeDuration = challengeDuration,

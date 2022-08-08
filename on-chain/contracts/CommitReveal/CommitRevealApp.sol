@@ -2,7 +2,7 @@
 
 /**
  * Created on 2022-06-02 12:37
- * @summary: An abstract contract for implementing a ForceMove application with shared randomness
+ * @summary: An abstract contract for implementing a 2-player ForceMove application with shared randomness
  * @author: Willem Olding (ChainSafe)
  */
 pragma solidity 0.7.6;
@@ -156,14 +156,14 @@ abstract contract CommitRevealApp is IForceMoveApp {
         VariablePart memory next
     ) internal pure returns (bool) {
         
-        if (next.turnNum < 4) {
+        if (next.turnNum < 4 || prev.isFinal) {
             require(
                 Outcome.exitsEqual(prev.outcome, next.outcome),
-                'Outcome change forbidden in pre-find and post-fund stages'
+                'Outcome change forbidden in pre-find and post-fund stages or after channel finalizes'
             );
             require(keccak256(abi.encodePacked(prev.appData)) == 
                     keccak256(abi.encodePacked(next.appData)),
-                'appData change forbidden in pre-find and post-fund stages'
+                'appData change forbidden in pre-find and post-fund stages or after channel finalizes'
             );
             return true;
         }
@@ -188,7 +188,7 @@ abstract contract CommitRevealApp is IForceMoveApp {
         } else if (phase == Phase.A_REVEAL) {
             // no change constraints
             require(_compareBytes(prevData.gameState, nextData.gameState), "Cannot mutate the game state in [A reveal] move");
-            // require(prevData.preCommitA == nextData.preCommitA, "Cannot mutate A's preCommit in [A reveal] move");
+            require(prevData.preCommitA == nextData.preCommitA, "Cannot mutate A's preCommit in [A reveal] move");
             require(prevData.preCommitB == nextData.preCommitB, "Cannot mutate B's preCommit in [A reveal] move");
             // reveal matches preCommit
             require(prevData.preCommitA ==  keccak256(abi.encode(nextData.revealA)), "Reveal does not match pre-commit for A reveal");
@@ -197,19 +197,22 @@ abstract contract CommitRevealApp is IForceMoveApp {
         } else if (phase == Phase.B_REVEAL) {
             // reveal matches preCommit
             require(prevData.preCommitB == keccak256(abi.encode(nextData.revealB)), "Reveal does not match pre-commit for B reveal");
-            // outcome
-            require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, B)), "Outcome is not correctly set for B reveal");
             // game state update is made correctly with respect to the committed moves and random seeds
             bytes32 randomSeed = _mergeSeeds(nextData.revealA.seed, nextData.revealB.seed);
-            (bytes memory newState,, bool isFinal) = advanceState(prevData.gameState, prev.outcome, nextData.revealA.move, nextData.revealB.move, randomSeed);
+            (bytes memory newState, Outcome.SingleAssetExit[] memory newOutcome, bool isFinal) = advanceState(prevData.gameState, prev.outcome, nextData.revealA.move, nextData.revealB.move, randomSeed);
             require(
                 _compareBytes(
                     newState,
                     nextData.gameState
                 ), "New state must be computed based on preCommit moves in [B reveal] move"
             );
-            // if the game state concluded this must be reflected in the variable part of the channel state
-            require(isFinal == next.isFinal);
+            // if the game state concluded (or not) this must be reflected in the variable part of the channel state
+            require(isFinal == next.isFinal, "Game finality not reflected in game state");
+            if (!isFinal) {
+                require(_compareOutcomes(next.outcome, updateOutcomeFavourPlayer(prev.outcome, B)), "Outcome is not correctly set for B reveal");
+            } else {
+                // advanceState determinte what the final outcome should be once the game finalizes
+            }
         }
 
         return true;

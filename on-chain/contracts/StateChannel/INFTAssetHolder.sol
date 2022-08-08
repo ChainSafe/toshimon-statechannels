@@ -16,7 +16,7 @@ interface INFTAssetHolder {
      * @notice Transfers NFTs out of the channel back to the owner
      * @dev Transfers NFTs out of the channel back to the owner
      */
-    function nft_transfer(
+    function nft_reclaim(
         bytes32 fromChannelId,
         address owner
     ) external;

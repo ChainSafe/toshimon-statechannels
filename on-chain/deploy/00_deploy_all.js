@@ -14,6 +14,10 @@
 var glob = require("glob");
 const path = require('path');
 
+// hardcode this since it isn't expected to change
+// Ensure this matches the ERC1155 collection address on the deployent chain
+const toshimonContractAddress = "0xd2d2a84f0eb587f70e181a0c4b252c2c053f80cb";
+
 module.exports = async ({getNamedAccounts, deployments}) => {
   const {deploy, execute, log, saveDotFile} = deployments;
   const {deployer} = await getNamedAccounts();
@@ -29,7 +33,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
 
   await deploy('Adjudicator', {
     from: deployer,
-    args: [],
+    args: [toshimonContractAddress],
     log: true,
   });
 

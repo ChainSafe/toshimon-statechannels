@@ -38,6 +38,8 @@ public sealed class AcceptProposalCommand : Command<AcceptProposalCommand.Settin
             return 0;
         }
 
+        
+
         EthECKey key = Utils.createOrLoadKey();
         var participants = new List<string>();
 
