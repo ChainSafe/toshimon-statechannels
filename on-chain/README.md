@@ -1,8 +1,6 @@
 # Toshimon State Channels Battle System
 
-WORK IN PROGRESS
-
-This repo contains Solidity contracts and testing code to implement the Toshimon battle game using the ForceMove framework for state channels. 
+This repo contains Solidity contracts and testing code for an example implementation of the Toshimon battle game using the ForceMove framework for state channels. 
 
 The Solidity project enviroment uses [hardhat](https://hardhat.org/) for building, deployment and testing.
 
@@ -35,6 +33,10 @@ yarn hardhat node
 ```
 
 This is required to be running to run the C# tests.
+
+## License
+
+- This is a private prototype and not currently under a public license
 
 ## Contributors
 

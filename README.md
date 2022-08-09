@@ -6,7 +6,7 @@ A monorepo for the Toshimon battle game implemented in state channels. This is s
 
  The on-chain components are contracts which live on-chain and provide the adjudicator for the state channels.
 
-## Client_libary
+## Client
 
 The client library is a collection of C# class libs designed to help with the implementation of the peer-to-peer aspect of the protocol as well as the on-chain interactions.
 

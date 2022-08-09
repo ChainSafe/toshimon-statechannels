@@ -29,11 +29,6 @@ Finally, the tests can be run using
 ETH_RPC=http://127.0.0.1:8545 DEPLOYMENT=<full-path>/on-chain/deployments/locahost/ dotnet test
 ```
 
-## Writing Tests
-
-TODO
-
-
 ## License
 
 - This is a private prototype and not currently under a public license
